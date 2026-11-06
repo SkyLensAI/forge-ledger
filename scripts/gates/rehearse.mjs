@@ -122,10 +122,11 @@ function resetClone(branch) {
 resetClone("rehearsal/a-delete-check");
 scenario("A · 删掉一处校验：git rm scripts/gates/lib/policy.mjs", [
   {
-    name: "A1 本地 pre-commit 拦住",
+    name: "A1 本地 pre-commit 阻断",
     expect: 1,
-    expectCode: "R2_PROTECTED_WITHOUT_ADR",
-    note: "闸门 2",
+    note:
+      "注意：这里挡住提交的原因不是 R2 违规，而是钩子自身 ERR_MODULE_NOT_FOUND 崩溃 —— " +
+      "本地钩子同样是'工作树自查'，删掉闸门代码它就没了。好在崩溃是 fail-closed 的（阻断）。",
     run: () => {
       run("git", ["rm", "-q", "scripts/gates/lib/policy.mjs"], { cwd: clone });
       const result = run("git", ["commit", "-m", "chore: 删掉一处校验"], { cwd: clone });
@@ -231,6 +232,43 @@ scenario("C · 正例：带 ADR 的正当变更", [
         cwd: clone,
         env: { CI: "true", FORGE_BASE_SHA: baseSha },
       });
+      return { status: result.status, output: `${result.stdout}${result.stderr}` };
+    },
+  },
+]);
+
+// ── 场景 D：把闸门改松（比删除更真实的攻击）──────────────────────────────
+resetClone("rehearsal/d-tamper-gate");
+scenario("D · 把闸门改松：让 evaluateChangeset 永远返回 ok", [
+  {
+    name: "D1 本地钩子被骗过（已知缺口：本地闸门是自证的）",
+    expect: 0,
+    note: "这就是 ADR-0001 说本地闸门没有权威的原因；它只负责早期反馈",
+    run: () => {
+      const tampered = [
+        "// rehearsal: 被改松的判定模块",
+        "export const AGENTS_MD_MAX_RULES = 999;",
+        'export function normalizePath(path) { return String(path).replace(/\\\\/g, "/"); }',
+        "export function evaluateChangeset() { return { ok: true, violations: [] }; }",
+        "",
+      ].join("\n");
+      writeFileSync(join(clone, "scripts", "gates", "lib", "policy.mjs"), tampered);
+      run("git", ["add", "-A"], { cwd: clone });
+      const result = run("git", ["commit", "-m", "chore: 让检查永远通过"], { cwd: clone });
+      return { status: result.status, output: `${result.stdout}${result.stderr}` };
+    },
+  },
+  {
+    name: "D2 可信 CI（基线规则）拦住",
+    expect: 1,
+    expectCode: "R2_PROTECTED_WITHOUT_ADR",
+    note: "被检查者改不到检查者：基线版 policy 判定'受保护路径无 ADR'",
+    run: () => {
+      const result = run(
+        process.execPath,
+        ["scripts/gates/trusted-ci.mjs", "--guard-only", "--base", baseSha],
+        { cwd: clone, env: { CI: "true", FORGE_BASE_SHA: baseSha } },
+      );
       return { status: result.status, output: `${result.stdout}${result.stderr}` };
     },
   },

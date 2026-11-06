@@ -11,12 +11,12 @@ pnpm gate:rehearse    # 演练：故意写错的改动必须被拦住
 
 | 命令 | 作用 |
 |---|---|
-| `pnpm test` | 闸门自身的测试（38 条：policy / harness 完整性 / agent hook / pre-push / 发布门） |
+| `pnpm test` | 闸门自身的测试（37 条：policy / harness 完整性 / agent hook / pre-push / 发布门） |
 | `pnpm lint` / `pnpm typecheck` | 与 CI 相同的静态检查 |
 | `pnpm check` | 上面三件事一起跑（提交前的完整本地验证） |
 | `pnpm gate:ci` | **闸门 3 的本地等价物**：变更集判定 + harness 完整性 + lint/typecheck/test |
 | `pnpm gate:trusted` | **闸门 3 的权威形态**：闸门代码取自基线修订，判定当前工作树（ADR-0005） |
-| `pnpm gate:rehearse` | 退出条件演练（临时克隆里跑 8 个场景，不碰工作区）；CI 也会跑 |
+| `pnpm gate:rehearse` | 退出条件演练（临时克隆里跑 10 个场景，不碰工作区）；CI 也会跑 |
 
 ## 闸门红了怎么办
 

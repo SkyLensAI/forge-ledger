@@ -47,7 +47,7 @@ jobs:
           # 否则 diff 为空、闸门会静默空转。
           FORGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
 
-      # 退出条件本身进 CI：一个故意写错的改动必须被拦住（在临时克隆里跑 8 个场景）。
+      # 退出条件本身进 CI：一个故意写错的改动必须被拦住（在临时克隆里跑 10 个场景）。
       # 它验证的是"闸门还拦得住吗"，而不是"代码合规吗"——两者都要。
       - name: rehearsal (exit condition)
         run: pnpm gate:rehearse
