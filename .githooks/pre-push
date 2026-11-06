@@ -1,0 +1,12 @@
+#!/bin/sh
+# 闸门 4 本机镜像 · pre-push
+#
+# 真正的 branch rule 在 GitHub 上（scripts/gates/setup-branch-protection.sh）。
+# 这里只做同一规则的早期反馈：不直接推 main、不删远端 main。
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "✗ 闸门 4：找不到 node，拒绝推送（fail-closed）。" >&2
+  exit 1
+fi
+
+exec node "$(git rev-parse --show-toplevel)/scripts/gates/pre-push.mjs"

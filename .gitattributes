@@ -1,0 +1,9 @@
+# 强制 LF：emit 的"逐字节确定性"（Phase 2 退出条件）在这里就开始了。
+# 如果 CRLF/LF 随平台漂移，快照测试会在 CI 上以最不可读的方式失败。
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary

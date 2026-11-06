@@ -1,0 +1,30 @@
+{
+  "name": "forge",
+  "version": "0.0.0",
+  "private": true,
+  "description": "把痕迹编译成资产 —— 会话/文档/PR 编译为带类型、带出处、可维护的资产库",
+  "type": "module",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "prepare": "node scripts/gates/install-hooks.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test \"scripts/gates/tests/**/*.test.mjs\"",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "gate:precommit": "node scripts/gates/pre-commit.mjs",
+    "gate:ci": "node scripts/gates/ci.mjs",
+    "gate:release": "node scripts/gates/release.mjs",
+    "gate:rehearse": "node scripts/gates/rehearse.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "turbo": "^2.11.10",
+    "typescript": "^7.0.2"
+  }
+}

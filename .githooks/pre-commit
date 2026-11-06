@@ -1,0 +1,12 @@
+#!/bin/sh
+# 闸门 2 · pre-commit（本地早期反馈）
+#
+# 权威在 CI（闸门 3）。`git commit --no-verify` 可以跳过这里，但跳不过 CI。
+# 安装：core.hooksPath=.githooks（pnpm install 时由 scripts/gates/install-hooks.mjs 设置）
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "✗ 闸门 2：找不到 node，拒绝提交（fail-closed）。装好 Node >= 22 再提交。" >&2
+  exit 1
+fi
+
+exec node "$(git rev-parse --show-toplevel)/scripts/gates/pre-commit.mjs"

@@ -1,0 +1,41 @@
+name: ci
+
+# 闸门 3 的载体。job id / name 必须叫 `gates`：
+# 分支保护里登记的 required status check context 就是这个字符串，
+# 改名等于把闸门摘掉（harness 完整性检查会因此变红）。
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    name: gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 必须全量历史：闸门要 diff 出"这次变更到底改了什么"。
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: install
+        run: pnpm install --frozen-lockfile
+
+      # 与本地 pre-commit 使用同一套 policy：所以 --no-verify 没有意义。
+      - name: gates
+        run: pnpm gate:ci
+        env:
+          # push 事件没有 GITHUB_BASE_REF，靠 base.sha / before 拿基线，
+          # 否则 diff 为空、闸门会静默空转。
+          FORGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}

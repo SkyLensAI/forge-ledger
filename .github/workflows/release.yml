@@ -1,0 +1,45 @@
+name: release
+
+# 闸门 5 的载体：发布只能从 CI 发出。
+# environment: release 是发布门的"人"那一半 —— 在仓库设置里给它配
+# required reviewers，发布就会卡在人工审批上（scripts/gates/setup-branch-protection.sh 会尽量代配）。
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    name: release-gate
+    runs-on: ubuntu-latest
+    environment: release
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: install
+        run: pnpm install --frozen-lockfile
+
+      # 发布前把闸门 3 完整重跑一遍：tag 上的代码必须和 main 上一样绿。
+      - name: gates
+        run: pnpm gate:ci
+
+      - name: release gate
+        run: pnpm gate:release
+
+      # Phase 2 起在这里接真正的产物发布（emit 快照 + provenance 校验）。
+      # 在那之前，本 workflow 只负责"证明发布被允许"，不产出任何东西。
+      - name: publish (placeholder)
+        run: echo "Phase 0：发布门只做判定，产物发布在 Phase 2 接入"
