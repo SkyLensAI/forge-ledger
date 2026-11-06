@@ -32,12 +32,13 @@ pnpm gate:rehearse  # 退出条件演练（临时克隆，不碰工作区）
 |---|---|---|---|
 | 1 | agent hook | `.claude/settings.json` → `scripts/gates/agent-guard.mjs` | 早期反馈 |
 | 2 | pre-commit | `.githooks/pre-commit` | 早期反馈 |
-| 3 | required status check | `.github/workflows/ci.yml` → `pnpm gate:ci` | **权威** |
+| 3 | required status check | `.github/workflows/ci.yml` → `pnpm gate:trusted` + `pnpm gate:ci` | **权威** |
 | 4 | branch rule | `scripts/gates/setup-branch-protection.sh` | **权威** |
 | 5 | 发布门 | `.github/workflows/release.yml` | **权威** + 人工审批 |
 
 判定逻辑只有一份：`scripts/gates/lib/policy.mjs`（纯函数、零 IO）。
-**本地闸门全部可被绕过，权威只在服务端** —— 完整清单见 `docs/gates/bypass-matrix.md`。
+**本地闸门全部可被绕过，权威只在服务端**；且判定由**基线修订**里的闸门执行
+（`trusted-ci.mjs`），所以"删掉或改松闸门"不能给自己发合格证 —— 完整清单见 `docs/gates/bypass-matrix.md`。
 
 ## 建 remote 之后要做的两件事
 

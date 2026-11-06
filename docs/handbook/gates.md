@@ -11,11 +11,12 @@ pnpm gate:rehearse    # 演练：故意写错的改动必须被拦住
 
 | 命令 | 作用 |
 |---|---|
-| `pnpm test` | 闸门自身的测试（35 条：policy / harness 完整性 / agent hook / pre-push / 发布门） |
+| `pnpm test` | 闸门自身的测试（38 条：policy / harness 完整性 / agent hook / pre-push / 发布门） |
 | `pnpm lint` / `pnpm typecheck` | 与 CI 相同的静态检查 |
 | `pnpm check` | 上面三件事一起跑（提交前的完整本地验证） |
 | `pnpm gate:ci` | **闸门 3 的本地等价物**：变更集判定 + harness 完整性 + lint/typecheck/test |
-| `pnpm gate:rehearse` | 退出条件演练（临时克隆里跑 7 个场景，不碰工作区） |
+| `pnpm gate:trusted` | **闸门 3 的权威形态**：闸门代码取自基线修订，判定当前工作树（ADR-0005） |
+| `pnpm gate:rehearse` | 退出条件演练（临时克隆里跑 8 个场景，不碰工作区）；CI 也会跑 |
 
 ## 闸门红了怎么办
 
@@ -28,6 +29,8 @@ pnpm gate:rehearse    # 演练：故意写错的改动必须被拦住
 | `R3_SECRET_IN_REPO` | `.env*` 等进了 git | 移出暂存区；样板用 `.env.example` |
 | `G0_AGENTS_MD_TOO_MANY_RULES` | AGENTS.md 超过 8 条 | 删到 8 条以内：新规则只能由真实错误长出 |
 | `G1_*` / `G2_*` / `G3_*` / `G5_*` | 闸门本身被拆了 | 恢复闸门载体；这类改动必须走 ADR |
+| `G3_TRUSTED_JUDGE_MISSING` | CI 不再用基线修订的闸门判定 | 恢复 `pnpm gate:trusted` 这一步（ADR-0005） |
+| `G3_SHALLOW_CLONE` | 浅克隆会让 diff 为空、闸门静默空转 | `actions/checkout` 里设 `fetch-depth: 0` |
 | `B1`–`B4` | agent 试图用 shell 绕过闸门 | 不要绕过：先修被拦下的问题 |
 
 ## 新增一条纪律的顺序

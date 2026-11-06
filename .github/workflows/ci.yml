@@ -32,6 +32,13 @@ jobs:
       - name: install
         run: pnpm install --frozen-lockfile
 
+      # 权威判定：闸门代码取自**基线修订**，判定对象是当前工作树。
+      # 这样"删掉/改松闸门"就不能自己给自己发合格证（见 ADR-0005）。
+      - name: gates (trusted judge from base revision)
+        run: pnpm gate:trusted
+        env:
+          FORGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+
       # 与本地 pre-commit 使用同一套 policy：所以 --no-verify 没有意义。
       - name: gates
         run: pnpm gate:ci
@@ -39,3 +46,8 @@ jobs:
           # push 事件没有 GITHUB_BASE_REF，靠 base.sha / before 拿基线，
           # 否则 diff 为空、闸门会静默空转。
           FORGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+
+      # 退出条件本身进 CI：一个故意写错的改动必须被拦住（在临时克隆里跑 8 个场景）。
+      # 它验证的是"闸门还拦得住吗"，而不是"代码合规吗"——两者都要。
+      - name: rehearsal (exit condition)
+        run: pnpm gate:rehearse

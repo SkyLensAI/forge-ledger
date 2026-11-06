@@ -23,6 +23,18 @@
 
 ## 一、逐条绕过方式与验证
 
+### 演练发现的唯一"结构错误"（已修）
+
+第一版 CI 直接跑工作树里的 `ci.mjs`。演练场景 A 把 `scripts/gates/lib/policy.mjs` 删掉后：
+
+- 不可信版（工作树自查）：`ERR_MODULE_NOT_FOUND` 崩溃——**不是"判定为红"，而是"检查者自己没了"**
+- 更坏的改法：把 `evaluateChangeset` 改成永远返回 `ok: true` → 闸门会**报绿**
+
+这类问题不是"绕过方式"，而是结构错误：**被检查者同时是检查者**。修法是 ADR-0005
+（判定代码取自基线修订），演练 A3/A4 就是这条的回归用例。
+
+> 这正是 Phase 0 要"先有 harness"的原因：这个洞是靠**演练**而不是靠**读代码**发现的。
+
 ### 闸门 1 · agent hook（`.claude/settings.json` → `agent-guard.mjs`）
 
 | # | 绕过方式 | 成功？ | 为什么 | 缓解 | 残余风险 |
@@ -53,11 +65,12 @@
 | # | 绕过方式 | 成功？ | 为什么 | 缓解 | 残余风险 |
 |---|---|---|---|---|---|
 | 3.1 | 改 job 名（让 required check 永远等不到） | 否 | harness 检查 `G3_REQUIRED_JOB_MISSING`；且分支保护要求的 context 会一直处于 expected 状态，PR 无法合并 | — | 无 |
-| 3.2 | 删掉 workflow / 改成 `echo skipped` | 否 | harness 检查 `G3_CI_WORKFLOW_MISSING` / `G3_CI_ENTRY_MISSING` | — | 无 |
+| 3.2 | 删掉 workflow / 改成 `echo skipped` | 否 | harness 检查 `G3_CI_WORKFLOW_MISSING` / `G3_CI_ENTRY_MISSING`；且这些都**由基线版本的 harness 执行** | — | 无 |
 | 3.3 | 放宽 policy 让检查通过 | **是**（需 ADR） | policy 本身是代码 | `scripts/gates/**` 是受保护路径：同一变更集必须有 ADR，即"放水"必须留下书面理由 | 有 ADR 的放水仍是放水，只能靠人审 |
 | 3.4 | 改 `eslint.config.mjs` / `tsconfig.json` 放宽 lint | **是** | 工具链配置不在受保护路径内（有意：保护清单太长会训练人绕过流程） | 评审；Phase 3 起 eval 阈值不依赖本地 lint 配置 | **已知缺口**：lint 强度可被静默调低 |
-| 3.5 | 浅克隆导致 diff 为空、闸门空转 | 否 | workflow 固定 `fetch-depth: 0`；且无基线时 `ci.mjs` 会**显式报警**而不是静默跳过 | — | 无 |
+| 3.5 | 浅克隆导致 diff 为空、闸门空转 | 否 | workflow 固定 `fetch-depth: 0`，且 harness 检查 `G3_SHALLOW_CLONE`；无基线时 `ci.mjs` 会**显式报警**而不是静默跳过 | — | 无 |
 | 3.6 | fork PR | 否 | `pull_request` 事件下 secrets 不注入，但 `pnpm gate:ci` 不需要 secrets | — | 无 |
+| 3.7 | **删掉/改松闸门代码**（如把 `evaluateChangeset` 改成永远 ok） | 否 | 判定由**基线修订**里的闸门执行（`trusted-ci.mjs` 把 base checkout 到临时 worktree）：被检查者改不到检查者。演练 A3/A4 实测：不可信版直接崩溃，可信版报 `R2_PROTECTED_WITHOUT_ADR` | — | PR 可重写 workflow 文件本身不被调用 → 缓解见 3.2（由基线版 harness 检查） |
 
 ### 闸门 4 · branch rule（`setup-branch-protection.sh`）
 
@@ -101,10 +114,13 @@
 |---|---|---|
 | 1 agent hook | `.claude/settings.json` + `agent-guard.mjs` | 已配置；判定逻辑有测试覆盖（8 条）。**宿主是否加载项目级 settings 取决于宿主**（见 1.2） |
 | 2 pre-commit | `.githooks/pre-commit`（`core.hooksPath`） | 已生效并实测拦截 |
-| 3 required status check | `.github/workflows/ci.yml` | workflow 已就位；**服务端 branch protection 需建 remote 后执行脚本** |
+| 3 required status check | `.github/workflows/ci.yml` | workflow 已就位（可信判定 + 本地判定 + 演练三步）；**服务端 branch protection 需建 remote 后执行脚本** |
 | 4 branch rule | `setup-branch-protection.sh` | 脚本已就位；**未应用**（无 remote） |
 | 5 发布门 | `.github/workflows/release.yml` | workflow 已就位；environment reviewer **未配置** |
 
 **诚实结论**：Phase 0 结束时，真正在服务端生效的是 0 道；本地生效的是 2 道（1、2）；
 其余 3 道的载体与配置脚本已就位，等待 remote。这是"没有 remote 的仓库"这一事实决定的，
 不是设计缺陷——但必须写在纸上，否则会误以为五道闸门都在运行。
+
+**本地可复现的验证**：`pnpm gate:rehearse` 在临时克隆里跑 8 个场景，全部与期望一致
+（含 3 个反例、1 个正例、1 个结构缺陷实证）。它是 Phase 0 退出条件的可执行形式，也已进 CI。

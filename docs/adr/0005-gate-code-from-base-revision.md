@@ -1,0 +1,58 @@
+---
+id: dec_01M6QE6A1F7ZK2NQ0T8H4WY3VB
+type: decision
+status: accepted
+created: 2026-11-06
+last_confirmed: 2026-11-06
+supersedes: null
+origin_incident: "Phase 0 演练场景 A：删掉 scripts/gates/lib/policy.mjs 后，CI 不是判定为红，而是 ERR_MODULE_NOT_FOUND 崩溃"
+sources:
+  - "scripts/gates/rehearse.mjs#场景 A"
+  - "implement1.md#2.3 把「清单」变成「闸门」"
+sensitivity: internal
+confidence: 0.9
+---
+
+# 闸门代码取自基线修订，不取自被检查的工作树
+
+## 问题
+
+演练场景 A（"删掉一处校验"）暴露了一个结构错误，而不是一个 bug：
+
+CI 直接运行工作树里的 `ci.mjs` 时，**被检查的东西同时是检查者**。删掉 `policy.mjs` 之后，
+CI 的输出不是"R2 违规"，而是一段 `ERR_MODULE_NOT_FOUND` 堆栈。
+
+崩溃还算好的结果。真正危险的是另一种改法：把 `evaluateChangeset` 改成永远返回
+`{ ok: true }`——闸门会**兴高采烈地报绿**。一个能给自己发合格证的闸门不是闸门。
+
+## 考虑过的选项
+
+1. **加一条"不许改闸门代码"的规则**（写进 AGENTS.md / 靠评审）。这正是本项目的反模式 2：
+   用自然语言提示代替代码强制。
+2. **在 CI 里对闸门文件做哈希比对**，发现改动就报警。能发现，但规则仍然由被检查的那份代码执行，
+   而且合法改动（带 ADR 的规则演进）会被无差别拦截。
+3. **判定者来自基线修订**：把 base commit checkout 到临时 worktree，用**那里的** `ci.mjs`
+   判定**当前工作树**的内容。
+
+## 选定
+
+**选 3**，实现为 `scripts/gates/trusted-ci.mjs`（只依赖 node 内建模块）：
+
+- `git worktree add --detach <tmp> <base>` → 拿到基线的闸门实现
+- 以当前仓库为 cwd 执行 `<tmp>/scripts/gates/ci.mjs` → ESM 的 import 相对**脚本自身**解析，
+  所以规则来自基线、内容来自工作树
+- 退出码原样透传；拿不到基线时**显式报警**再退回工作树版本（可见的降级，不静默）
+
+**有意的副作用：新规则在合并之后才生效。** PR 里的规则改动不会被自己的新规则判绿——
+"不能自己给自己发合格证"这条纪律，对闸门本身也成立。
+
+## 后果
+
+- **好**：删掉或改松闸门代码 → 判定仍然由旧规则执行 → R2 违规照常报红（演练 A4）。
+- **好**：把"闸门是否完整"变成可执行断言，而不是一句评审意见。
+- **好**：与 `ci.yml` 里保留的 `pnpm gate:ci` 形成双跑——两者都绿才算绿。
+- **代价**：每次 CI 多一次 worktree 建立（本地实测 < 1s）；CI 必须 `fetch-depth: 0`。
+- **残余风险**：PR 仍可重写 `.github/workflows/ci.yml` 让这个检查不被调用。
+  缓解：harness 完整性检查（同样由基线版本执行）要求 workflow 里必须存在 `gates` job
+  与 `gate:trusted` 调用；且分支保护把 required check 名字钉死为 `gates`，
+  改名会让 PR 永远处于 pending 而无法合并。见 `docs/gates/bypass-matrix.md` 3.1/3.2/3.7。

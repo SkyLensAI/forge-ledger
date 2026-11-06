@@ -16,6 +16,7 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "gate:precommit": "node scripts/gates/pre-commit.mjs",
     "gate:ci": "node scripts/gates/ci.mjs",
+    "gate:trusted": "node scripts/gates/trusted-ci.mjs",
     "gate:release": "node scripts/gates/release.mjs",
     "gate:rehearse": "node scripts/gates/rehearse.mjs"
   },

@@ -173,6 +173,23 @@ export function checkHarness(options) {
         fix: "在 workflow 里执行 pnpm gate:ci",
       });
     }
+    // 可信判定：闸门代码必须取自基线修订，否则被检查者可以给自己发合格证（ADR-0005）。
+    if (!ciText.includes("gate:trusted")) {
+      findings.push({
+        code: "G3_TRUSTED_JUDGE_MISSING",
+        message:
+          "ci.yml 没有执行 pnpm gate:trusted：判定者变成了被检查的工作树自己（删掉闸门代码就能让它报绿）。",
+        fix: "在 workflow 里加一步 pnpm gate:trusted（见 ADR-0005）",
+      });
+    }
+    // 变更集的判定依赖完整历史：浅克隆会让 diff 为空、闸门静默空转。
+    if (!/fetch-depth:\s*0/.test(ciText)) {
+      findings.push({
+        code: "G3_SHALLOW_CLONE",
+        message: "ci.yml 没有 fetch-depth: 0：浅克隆下 diff 可能为空，闸门会静默空转。",
+        fix: "在 actions/checkout 里设 fetch-depth: 0",
+      });
+    }
   }
 
   // 闸门 5：发布门

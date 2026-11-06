@@ -100,6 +100,30 @@ test("变异：CI 不再执行 gate:ci —— 必须变红", () => {
   }
 });
 
+test("变异：去掉可信判定（判定者变回工作树自己）—— 必须变红", () => {
+  const root = fixtureRoot();
+  try {
+    mutate(root, join(".github", "workflows", "ci.yml"), (text) =>
+      text.replace("pnpm gate:trusted", "echo skipped"),
+    );
+    assert.ok(codes(checkHarness({ root, env: CI_ENV })).includes("G3_TRUSTED_JUDGE_MISSING"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("变异：浅克隆（diff 会为空，闸门静默空转）—— 必须变红", () => {
+  const root = fixtureRoot();
+  try {
+    mutate(root, join(".github", "workflows", "ci.yml"), (text) =>
+      text.replace("fetch-depth: 0", "fetch-depth: 1"),
+    );
+    assert.ok(codes(checkHarness({ root, env: CI_ENV })).includes("G3_SHALLOW_CLONE"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("变异：发布门去掉人工审批 environment —— 必须变红", () => {
   const root = fixtureRoot();
   try {
