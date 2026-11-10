@@ -129,9 +129,10 @@ Phase 5 要动分类法本身（给 `state` 加必填的题面 `subject`，ADR-0
 抽码正则只认一位数，于是 `E10`/`E11` 这类两位数码**根本不会被 `C4` 看到**——
 改完它，handbook 里那两行才从"人写的"变成"机器要求的"（ADR-0033，
 演练里配了一条**反例**：删掉那两行必须报红）。
-Phase 8 又生成了 **v5（尚未落盘）**：ADR-0043 把子闸门的判定代码也搬到基线修订
+Phase 8 的 **v5 也已经落盘**：ADR-0043 把子闸门的判定代码也搬到基线修订
 （关闭 bypass-matrix 6.10），ADR-0044 接上发布前检查与真实的 `pnpm -r publish`。
-`node handoff/apply.mjs --verify` 已经在临时仓库里验过两批载荷。
+落盘前 `node handoff/apply.mjs --verify` 已在临时仓库里验过两批载荷；
+落盘后 `pnpm check` / `gate:ci` / `gate:trusted` 已重跑。
 **"由人执行"就是一条命令**：
 
 ```bash
@@ -140,6 +141,8 @@ node handoff/apply.mjs --verify   # 在临时目录里演练，核对结果与�
 node handoff/apply.mjs --yes      # 确认后落盘
 pnpm check && pnpm gate:ci        # 全量测试 + 闸门 3 的完整判定
 ```
+
+v3 / v4 / v5 都已经按这条流程落盘；`handoff/` 用完即删，现在不在仓库里。
 
 **v3 一共八个文件**：Phase 4 的 `schema/provenance.md`，加上 Phase 5 的
 `schema/taxonomy.yaml`、四份资产模板、`packages/schema` 的 `fields.ts` 与 `assets.ts`。
@@ -154,7 +157,7 @@ pnpm check && pnpm gate:ci        # 全量测试 + 闸门 3 的完整判定
 
 agent 没有、也不会用 `FORGE_GATE_OVERRIDE` 给自己放行（bypass-matrix 1.4 明确说
 "agent 自己设置它属于违宪"），也不会走 1.5 那个已知的 Bash 缺口。
-细节见 `handoff/README.md`——那里还记着一条本次撞到的**闸门误报**
+细节见 `evals/regressions/0001` 与 ADR-0043——那里还记着一次撞到的**闸门误报**
 （`B4_DELETE_PROTECTED` 按子串匹配，一条只是**提到**受保护路径的命令会被拦下）。
 
 > **上一批（Phase 3）已经在工作区里落盘了**，而 `README.md` 当时还写着"待人工落盘"。
@@ -462,7 +465,6 @@ listing/            上架包（draft）——由 `forge listing --repo` 生成�
 demo/               对外 demo——由 `forge demo --repo` 生成，bootstrap 校验
 AGENTS.md           agent 的种子规则（≤ 8 条，CI 校验）
 data/               用户数据，gitignored
-handoff/            待人工落盘的受保护路径产物（用完即删，不属于仓库）
 ```
 
 **`evals/` 的读法**（ADR-0020）：打分在 `packages/core`（纯函数），信任边界在

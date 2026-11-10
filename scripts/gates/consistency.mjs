@@ -14,10 +14,16 @@
  * 缓解是 R2：`schema/` 的改动必须配 ADR，而 ADR 是给人看的。
  */
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-import { pathToFileURL } from "node:url";
+import { join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { repoRoot } from "./lib/git.mjs";
 import { degrade, fail, ok, warn } from "./lib/report.mjs";
+
+/** 数据来自当前工作树，判定代码来自本脚本所在的修订（见 `assets.mjs` 的同名注释）。 */
+const dataRoot = process.env.FORGE_JUDGE_DATA_ROOT
+  ? resolve(process.env.FORGE_JUDGE_DATA_ROOT)
+  : (repoRoot() ?? process.cwd());
+const codeRoot = fileURLToPath(new URL("../..", import.meta.url));
 
 /** 一致性检查自己的码，也必须出现在 docs/handbook/gates.md 里（ADR-0010）。 */
 export const CONSISTENCY_CODES = {
@@ -27,28 +33,26 @@ export const CONSISTENCY_CODES = {
   GATE_CODE_NOT_DOCUMENTED: "C4_GATE_CODE_NOT_DOCUMENTED",
 };
 
-const root = repoRoot() ?? process.cwd();
-
 /**
  * @param {string} relative
  * @returns {string | null}
  */
 function read(relative) {
   try {
-    return readFileSync(join(root, relative), "utf8");
+    return readFileSync(join(dataRoot, relative), "utf8");
   } catch {
     return null;
   }
 }
 
-if (!existsSync(join(root, "node_modules"))) {
+if (!existsSync(join(codeRoot, "node_modules")) && !existsSync(join(dataRoot, "node_modules"))) {
   warn("[consistency] node_modules 未安装，跳过 schema 一致性检查（CI 会装依赖并跑全量）");
   degrade();
 }
 
 let schema;
 try {
-  schema = await import(pathToFileURL(join(root, "packages/schema/src/index.ts")).href);
+  schema = await import(pathToFileURL(join(codeRoot, "packages/schema/src/index.ts")).href);
 } catch (error) {
   warn(
     `[consistency] 无法加载 packages/schema（${error instanceof Error ? error.message : String(error)}）——` +
@@ -84,7 +88,7 @@ if (provenanceText === null) {
   problems.push(`[${CONSISTENCY_CODES.CODE_NOT_DOCUMENTED}] schema/provenance.md 不存在`);
 } else {
   // 码表来自代码，不是写死在这份脚本里——写死会在加码时忘掉同步。
-  const core = await import(pathToFileURL(join(root, "packages/core/src/index.ts")).href).catch(() => null);
+  const core = await import(pathToFileURL(join(codeRoot, "packages/core/src/index.ts")).href).catch(() => null);
   const codes =
     core === null
       ? []

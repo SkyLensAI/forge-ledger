@@ -137,7 +137,7 @@
 | 6.7 | 改 golden 集的期望值（让实现显得更准） | **是** | 用例是数据 | 每条用例必须带一个能解析到仓库原文的 `span`（`E5`）——改期望就得同时改得动它所引用的那份文档；且确认状态会退回 `proposed`，要人重签 | 有人"顺手重签"，见 ADR-0020 的残余风险 |
 | 6.8 | 删掉 `scripts/gates/evals.mjs`，或留着文件但从 `ci.mjs` 的清单里摘掉它 | 否 | — | `G3_EVAL_GATE_MISSING`（harness 完整性检查）**由基线修订执行** | 无 |
 | 6.9 | 把 `evals/extractors/null.ts` 改成会返回正确答案的实现 | **是** | 它是普通文件 | 那等于承认退出条件可以被伪造——但它要留下 diff | **已知缺口**：没有机器判定"空实现真的是空的"；靠评审看 diff |
-| 6.10 | 把 `evals/runner/run.ts` / `gate.ts` 改成永远返回满分 | **落盘前是** | runner 与判定都在 `evals/`（不受保护），而子闸门是**从工作树**跑起来的 | **ADR-0043**：判定代码与数据根分离；载荷在 `handoff/`，`apply.mjs --verify` 已通过 | **落盘前仍是缺口**；落盘后子闸门代码取自基线修订 |
+| 6.10 | 把 `evals/runner/run.ts` / `gate.ts` 改成永远返回满分 | **否（ADR-0043 已落盘）** | 子闸门的 import 走 `FORGE_JUDGE_ROOT`（基线），数据读 `FORGE_JUDGE_DATA_ROOT`（当前工作树） | **ADR-0043**：判定代码与数据根分离；`trusted-ci` 传两个根 | 无。第 4 步的 lint/typecheck/test 仍跑工作树脚本，见 3.4 |
 
 ### 6.10 的准确描述（修正一处过度承诺）
 
@@ -171,15 +171,14 @@
 `ci.mjs`；三个子闸门的 import 走 `codeRoot`，读资产 / schema / 黄金集 / 阈值走
 `dataRoot`。依赖用 junction 接进基线 worktree，不重新安装。
 
-- **当前状态**：ADR-0043 与载荷已落 `handoff/`，`node handoff/apply.mjs --verify`
-  三步验证通过；**在人工落盘之前，6.10 仍然是缺口**。落盘后它关闭。
+- **当前状态**：ADR-0043 已由人落盘，`pnpm check` / `gate:ci` / `gate:trusted` 均已重跑；
+  **6.10 已关闭**。落盘前的三步验证器 `handoff/verify-gate610.mjs` 已随 `handoff/`
+  删除，判据由 `evals/regressions/regressions.test.ts` 的 0001 长期执行。
 - **代价**：基线判定代码与工作树依赖可能来自不同修订；新规则仍然在合并之后才生效；
   `ci.mjs` 第 4 步（lint/typecheck/test）仍跑工作树里的 `package.json` 脚本（3.4）。
-- **验证**：`handoff/verify-gate610.mjs` 证明三件事——坏出处资产被可信判定看见、
-  改松工作树的 `judgeLibrary` 后不可信入口会绿（缺口真实存在）、同一份工作树走
-  `trusted-ci` 仍然红（修复生效）。
-- **审计**：`evals/regressions/0001` 仍然钉住"6.10 被写着"。落盘后那条回归的措辞
-  需要跟着改成"已关闭"，否则它会变成一条过期的缺口记录。
+- **验证**：0001 现在断言修复仍在——`ci.mjs` / `trusted-ci.mjs` / 三个子闸门
+  都保留 `FORGE_JUDGE_ROOT` / `FORGE_JUDGE_DATA_ROOT` 的分工；删掉它们，回归立刻红。
+- **审计**：0001 的正文已经改成"后来怎么修好的"，不再把这条写成未修缺口。
 
 ---
 

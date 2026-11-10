@@ -6,16 +6,15 @@
  * 纪律：**发布只能从 CI 发出，不能在笔记本上手动发。**
  * 一旦允许"本机 publish"，前面四道闸门全部作废——因为发布者可以不带任何检查地发出产物。
  *
- * 本阶段（Phase 0）能真实判定的三项：
+ * 本阶段能真实判定的四项：
  *   1. 必须运行在 CI 里，且是 tag 触发
- *   2. tag 必须与 package.json 的版本一致
+ *   2. tag 必须与 package.json 的版本一致，且版本不是占位的 0.0.0
  *   3. 自上一个 tag 以来的所有变更，必须重新过一遍 policy（受保护路径要有 ADR）
+ *   4. 发布前的包结构检查由 `release-preflight.mjs` 负责（ADR-0044）
  *
- * 明确**尚未**覆盖（Phase 1–3 补）：
- *   - provenance 完整性（P1/S6）
- *   - emit 逐字节快照（P2/S10）
- *   - eval 阈值（P3/S14）
- * 这些不能假装存在，见 docs/gates/bypass-matrix.md 的"未覆盖"一节。
+ * provenance / emit 快照 / eval 阈值**不在本脚本里重复跑**：`release.yml` 在
+ * `gate:release` 之前已经跑过完整的 `gate:ci`。在这里再写一份就是第二个真相；
+ * 本脚本只回答发布门的三个问题。
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -56,6 +55,11 @@ if (refName.length > 0 && version.length > 0) {
   if (refName !== expected) {
     problems.push(`tag ${refName} 与 package.json 版本不一致（应为 ${expected}）。`);
   }
+}
+if (version === "0.0.0") {
+  problems.push(
+    "package.json 的版本还是 0.0.0：它是「尚未发布」的占位，不是一次发布。先把版本定下来，再打 tag。",
+  );
 }
 
 // ── 3. 自上一个 tag 以来的变更重判 ────────────────────────────────────────

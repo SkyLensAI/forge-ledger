@@ -16,22 +16,32 @@
  * 这个缺口记在 bypass-matrix 里——**记账，不假装没有**。
  */
 import { existsSync } from "node:fs";
-import { join } from "node:path";
-import { pathToFileURL } from "node:url";
+import { join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { repoRoot } from "./lib/git.mjs";
 import { degrade, warn } from "./lib/report.mjs";
 
-const root = repoRoot() ?? process.cwd();
+/**
+ * 判定对象（数据）来自**当前工作树**；判定代码来自**这份脚本所在的修订**。
+ *
+ * `trusted-ci.mjs` 把基线修订 checkout 到临时 worktree，然后从那里运行本文件，
+ * 并通过 `FORGE_JUDGE_DATA_ROOT` 指向当前工作树。于是"改松判定"改不到判定者
+ * （ADR-0005 / bypass-matrix 6.10），而资产仍然是这一份 PR 的资产。
+ */
+const dataRoot = process.env.FORGE_JUDGE_DATA_ROOT
+  ? resolve(process.env.FORGE_JUDGE_DATA_ROOT)
+  : (repoRoot() ?? process.cwd());
+const codeRoot = fileURLToPath(new URL("../..", import.meta.url));
 
 /**
  * @param {string} relative
  * @returns {Promise<any>}
  */
 async function load(relative) {
-  return import(pathToFileURL(join(root, relative)).href);
+  return import(pathToFileURL(join(codeRoot, relative)).href);
 }
 
-if (!existsSync(join(root, "node_modules"))) {
+if (!existsSync(join(codeRoot, "node_modules")) && !existsSync(join(dataRoot, "node_modules"))) {
   warn("[assets] node_modules 未安装，跳过资产审核（CI 会装依赖并跑全量）");
   degrade();
 }
@@ -49,9 +59,9 @@ try {
   degrade();
 }
 
-const { docs, invalid } = store.readRepoAssets(root);
+const { docs, invalid } = store.readRepoAssets(dataRoot);
 // CI 里没有 sources 层，所以 src:// 一律报「无法校验」而不是放过（ADR-0009）。
-const index = store.buildSpanIndex({ sources: null, workspaces: [root] });
+const index = store.buildSpanIndex({ sources: null, workspaces: [dataRoot] });
 
 /** @type {import("../../packages/core/src/violation.ts").Violation[]} */
 const violations = [

@@ -23,7 +23,14 @@
  *   node scripts/gates/trusted-ci.mjs --guard-only     # 透传给 ci.mjs
  */
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  symlinkSync,
+  unlinkSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -78,6 +85,62 @@ if (base === undefined) {
 const passthrough = process.argv.slice(2).filter((arg) => arg.startsWith("--") && arg !== "--base");
 
 /**
+ * 把工作树的依赖接进基线 worktree。
+ *
+ * 基线 worktree 是 `git worktree add` 出来的，没有 `node_modules`。子闸门的判定代码
+ * （`packages/core` / `packages/store` / `packages/schema` / `evals/runner`）现在取自
+ * 基线，所以它们需要能解析到依赖。这里**接**而不是复制：pnpm 的符号链接农场
+ * 复制不动，而且复制会让"我到底装的是哪一份依赖"多出一个说不清的地方。
+ *
+ * 这是 ADR-0043 记下的代价：判定代码与依赖可能来自不同修订。依赖是环境，
+ * 不是判定逻辑；真正要防的是"改松判定代码"。
+ *
+ * @param {string} repo
+ * @param {string} tree
+ * @returns {string[]} 建出来的链接路径（清理时先拆它们）
+ */
+function linkNodeModules(repo, tree) {
+  /** @type {string[]} */
+  const linked = [];
+  const candidates = ["node_modules"];
+  for (const group of ["apps", "packages", "evals", "scripts"]) {
+    const dir = join(repo, group);
+    if (!existsSync(dir)) continue;
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory()) candidates.push(`${group}/${entry.name}/node_modules`);
+    }
+  }
+
+  for (const relative of candidates) {
+    const from = join(repo, relative);
+    const to = join(tree, relative);
+    if (!existsSync(from) || existsSync(to)) continue;
+    try {
+      symlinkSync(from, to, process.platform === "win32" ? "junction" : "dir");
+      linked.push(to);
+    } catch {
+      // 接不上就交给子闸门自己的降级路径（它会说"node_modules 未安装"，不是静默绿）。
+    }
+  }
+  return linked;
+}
+
+/**
+ * @param {string[]} linked
+ * @returns {void}
+ */
+function unlinkLinked(linked) {
+  // 必须先拆链接再删 worktree：`rmSync(recursive)` 顺着 junction 走会删到工作区。
+  for (const path of linked) {
+    try {
+      unlinkSync(path);
+    } catch {
+      // 已经没了就算了。
+    }
+  }
+}
+
+/**
  * 基线不可用时退回工作树里的闸门，但必须**显式报警**：这是一次可见的降级。
  * @param {string} reason
  */
@@ -105,11 +168,14 @@ const workdir = mkdtempSync(join(tmpdir(), "forge-gate-base-"));
 const tree = join(workdir, "base");
 /** @type {number | undefined} */
 let status;
+/** @type {string[]} */
+let linked = [];
 try {
   const added = run("git", ["worktree", "add", "--detach", "--quiet", tree, baseSha], { cwd: repo });
   if (added.status !== 0) {
     fallback(`无法基于 ${baseSha.slice(0, 8)} 建立 worktree：${added.stderr.trim()}`);
   }
+  linked = linkNodeModules(repo, tree);
 
   const trustedEntry = join(tree, "scripts", "gates", "ci.mjs");
   if (!existsSync(trustedEntry)) {
@@ -123,12 +189,18 @@ try {
   // 而 cwd 是当前工作树 —— 所以判定的是 PR 的内容，用的是 PR 改不到的规则。
   const result = run(process.execPath, [trustedEntry, ...passthrough], {
     cwd: repo,
-    env: { FORGE_BASE_SHA: baseSha },
+    env: {
+      FORGE_BASE_SHA: baseSha,
+      // 子闸门代码也取自基线；数据仍然是当前工作树（ADR-0043）。
+      FORGE_JUDGE_ROOT: tree,
+      FORGE_JUDGE_DATA_ROOT: repo,
+    },
   });
   process.stdout.write(result.stdout);
   process.stderr.write(result.stderr);
   status = result.status;
 } finally {
+  unlinkLinked(linked);
   run("git", ["worktree", "remove", "--force", tree], { cwd: repo });
   run("git", ["worktree", "prune"], { cwd: repo });
   rmSync(workdir, { recursive: true, force: true });

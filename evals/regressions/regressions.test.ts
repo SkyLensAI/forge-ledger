@@ -88,15 +88,25 @@ function candidate(overrides: Partial<CandidateAssertion> = {}): CandidateAssert
 const CASES: RegressionCase[] = [
   {
     id: "0001",
-    // 它是一条**已知缺口**，不是一条已经修好的 bug：E7/E8 那类子闸门跑的是工作树里的文件。
-    // 能自动验的是"缺口仍然被写着"——这一条比"我记得它还在"强，而且不会过期得悄无声息。
+    // ADR-0043 已经把它修好。回归不再只断言"缺口被写着"，而是断言**修复还在**：
+    // 子闸门代码仍然取自基线修订，数据仍然取自当前工作树。删掉这条修复，这里就红。
     check: () => {
+      const ci = readFileSync(join(REPO_ROOT, "scripts", "gates", "ci.mjs"), "utf8");
+      const trusted = readFileSync(join(REPO_ROOT, "scripts", "gates", "trusted-ci.mjs"), "utf8");
       const matrix = readFileSync(join(REPO_ROOT, "docs", "gates", "bypass-matrix.md"), "utf8");
-      assert.ok(
-        matrix.includes("6.10"),
-        "bypass-matrix 里必须仍然写着 6.10（子闸门判定取自工作树这个已知缺口）——" +
-          "它被修好之前，删掉这条记录等于假装它不存在",
-      );
+
+      assert.match(ci, /FORGE_JUDGE_ROOT/, "ci.mjs 必须把子闸门的代码根与数据根分开");
+      assert.match(ci, /FORGE_JUDGE_DATA_ROOT/, "ci.mjs 必须把数据根传给子闸门");
+      assert.match(trusted, /FORGE_JUDGE_ROOT:\s*tree/, "trusted-ci 必须把基线 worktree 作为代码根");
+      assert.match(trusted, /FORGE_JUDGE_DATA_ROOT:\s*repo/, "trusted-ci 必须把当前工作树作为数据根");
+
+      for (const name of ["assets.mjs", "consistency.mjs", "evals.mjs"]) {
+        const text = readFileSync(join(REPO_ROOT, "scripts", "gates", name), "utf8");
+        assert.match(text, /FORGE_JUDGE_DATA_ROOT/, `${name} 必须从 dataRoot 读数据`);
+      }
+
+      assert.match(matrix, /6\.10/, "bypass-matrix 里必须仍然记着 6.10（现在写的是它已关闭）");
+      assert.match(matrix, /已关闭|已落盘/, "6.10 修复之后，清单要写明它已经关闭");
     },
   },
   {

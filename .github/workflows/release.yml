@@ -17,6 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     timeout-minutes: 20
+    env:
+      # 发布凭据只在 release environment 里可见；preflight 会明确要求它存在。
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,6 +32,8 @@ jobs:
           # 与 ci.yml 同一个下限（ADR-0011）：发布环境跑得动，本地才敢说"CI 会绿"。
           node-version: 24
           cache: pnpm
+          # npm provenance 与 NODE_AUTH_TOKEN 需要 registry 配置。
+          registry-url: https://registry.npmjs.org
 
       - name: install
         run: pnpm install --frozen-lockfile
@@ -40,7 +45,14 @@ jobs:
       - name: release gate
         run: pnpm gate:release
 
-      # Phase 2 起在这里接真正的产物发布（emit 快照 + provenance 校验）。
-      # 在那之前，本 workflow 只负责"证明发布被允许"，不产出任何东西。
-      - name: publish (placeholder)
-        run: echo "Phase 0：发布门只做判定，产物发布在 Phase 2 接入"
+      # 发布前的结构检查：版本、private、依赖链、files/engines/publishConfig。
+      # 它不发布，只回答"现在这批 package.json 能不能被发出去"。
+      - name: release preflight
+        run: node scripts/gates/release-preflight.mjs
+
+      # private 包会被 pnpm 跳过。把哪些包改成可发布是人的决定，
+      # 但一旦改了，preflight 会保证依赖链完整。
+      - name: publish
+        run: pnpm -r publish --access public --provenance --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -22,21 +22,25 @@
  *   node scripts/gates/evals.mjs
  */
 import { existsSync } from "node:fs";
-import { join } from "node:path";
-import { pathToFileURL } from "node:url";
+import { join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { repoRoot } from "./lib/git.mjs";
 import { degrade, fail, ok, warn } from "./lib/report.mjs";
 
-const root = repoRoot() ?? process.cwd();
+/** 数据来自当前工作树，判定代码来自本脚本所在的修订（见 `assets.mjs` 的同名注释）。 */
+const dataRoot = process.env.FORGE_JUDGE_DATA_ROOT
+  ? resolve(process.env.FORGE_JUDGE_DATA_ROOT)
+  : (repoRoot() ?? process.cwd());
+const codeRoot = fileURLToPath(new URL("../..", import.meta.url));
 
-if (!existsSync(join(root, "node_modules"))) {
+if (!existsSync(join(codeRoot, "node_modules")) && !existsSync(join(dataRoot, "node_modules"))) {
   warn("[evals] node_modules 未安装，跳过 eval 阈值判定（CI 会装依赖并跑全量）");
   degrade();
 }
 
 // 依赖已就位：从这里往后没有降级出口，任何失败都是红。
-const RUNNER = join(root, "evals", "runner", "run.ts");
-const JUDGE = join(root, "evals", "runner", "gate.ts");
+const RUNNER = join(codeRoot, "evals", "runner", "run.ts");
+const JUDGE = join(codeRoot, "evals", "runner", "gate.ts");
 if (!existsSync(RUNNER) || !existsSync(JUDGE)) {
   fail(
     `✗ [evals] ${!existsSync(RUNNER) ? "evals/runner/run.ts" : "evals/runner/gate.ts"} 不存在：` +
@@ -60,7 +64,7 @@ try {
   process.exit(1);
 }
 
-const thresholds = runner.loadThresholds(root);
+const thresholds = runner.loadThresholds(dataRoot);
 const measured = runner.EXTRACTORS.get("baseline-lexical");
 const dead = runner.EXTRACTORS.get("null");
 if (measured === undefined || dead === undefined) {
@@ -68,8 +72,8 @@ if (measured === undefined || dead === undefined) {
   process.exit(1);
 }
 
-const report = runner.runEval({ repoRoot: root, extractor: measured });
-const nullReport = runner.runEval({ repoRoot: root, extractor: dead });
+const report = runner.runEval({ repoRoot: dataRoot, extractor: measured });
+const nullReport = runner.runEval({ repoRoot: dataRoot, extractor: dead });
 
 ok(`[evals] 被测实现：${report.extractor}`);
 ok(runner.formatReport(report));
