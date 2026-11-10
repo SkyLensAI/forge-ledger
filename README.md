@@ -185,7 +185,9 @@ agent 没有、也不会用 `FORGE_GATE_OVERRIDE` 给自己放行（bypass-matri
   数据被改写只发生在两处：`forge inbox --promote` 与 `forge conflicts --resolve`，
   两处都由人触发。
 - **拿不准就新建。** 归并的假阴性只是库里多一条；假阳性是两条事实被压成一条，
-  而且看不出来。模型的归并提议**进队列**，`proposedMergesApplied()` 自证它没被自动应用。
+  而且看不出来。模型的归并提议**不会自动成立**，`proposedMergesApplied()` 自证它没被
+  自动应用；当前它只在 `forge link` 的报告里可见——把归并提议也持久化成队列
+  （`_conflicts/` 只收冲突候选）仍是尚未完成的一项。
 - **冲突永不自动覆盖。** `ConflictCandidate` 的形状里没有"应用"这一档；
   改写只能由 `resolve --decision replace` 触发，而它必填日期与理由。
   落盘方式是**新一代状态 + `supersedes` 链**（旧的那代只改 `status`），
