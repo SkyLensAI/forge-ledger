@@ -9,9 +9,9 @@ supersedes: null
 origin_incident: "file://listing/SUBMISSION.md#t:成为一个真正可安装的命令"
 sources:
   - "file://listing/SUBMISSION.md#t:成为一个真正可安装的命令"
-  - "file://.github/workflows/release.yml#t:publish (placeholder)"
-  - "file://scripts/gates/release.mjs#t:明确**尚未**覆盖"
   - "file://README.md#t:一个真正可安装的"
+  - "file://docs/gates/bypass-matrix.md#t:闸门 5 · 发布门"
+  - "file://docs/adr/0041-listing-is-a-draft-not-a-submission.md#t:需要账号、仓库 URL、一个真正可安装的"
 sensitivity: internal
 confidence: 0.9
 ---
