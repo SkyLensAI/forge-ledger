@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "forge capture",
+  "version": "0.0.0",
+  "description": "取用 + 增量采集：把正在读的东西送进本机的 forge 资产库，也能把库里的相关条目取回来。",
+  "minimum_chrome_version": "116",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["http://127.0.0.1/*"],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["src/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "forge",
+    "default_popup": "src/popup.html"
+  },
+  "options_ui": {
+    "page": "src/options.html",
+    "open_in_tab": false
+  }
+}

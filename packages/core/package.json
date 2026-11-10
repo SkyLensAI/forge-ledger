@@ -1,0 +1,22 @@
+{
+  "name": "@forge/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "编译与维护引擎：零 IO、纯函数（AGENTS.md R5）",
+  "engines": {
+    "node": ">=24"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@forge/schema": "workspace:*"
+  }
+}

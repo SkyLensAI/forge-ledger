@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "payment_signal": null,
+  "capabilities": {
+    "permissions": false,
+    "concurrency": false,
+    "sensitivity": false
+  },
+  "about": "implement2.md S30：团队版只在出现付费信号后做。三项能力对应单人模式的三个缺失项：没权限、没并发、没敏感度切分。payment_signal 只能由人填写；代码只负责在它为 null 时拒绝把任何一项能力报告成已启用。"
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@forge/store",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "存储层：sources 只读 / assets 可写 / index 可重建（S8）",
+  "engines": {
+    "node": ">=24"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@forge/core": "workspace:*",
+    "@forge/ingest": "workspace:*",
+    "@forge/schema": "workspace:*"
+  }
+}

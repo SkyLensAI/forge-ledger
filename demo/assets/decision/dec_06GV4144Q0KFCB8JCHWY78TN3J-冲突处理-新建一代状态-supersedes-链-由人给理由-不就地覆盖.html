@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>冲突处理：新建一代状态 + `supersedes` 链，由人给理由；不就地覆盖 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV4144Q0KFCB8JCHWY78TN3J</p>
+<h1>冲突处理：新建一代状态 + `supersedes` 链，由人给理由；不就地覆盖</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0028-conflict-resolution-supersede-chain.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:人工冲突确认队列</code></li>
+<li><code>file://docs/directory.md#t:写入用户工作区一律要经过审核队列</code></li>
+<li><code>file://docs/directory.md#t:audit/         # 变更日志 + 冲突待确认队列</code></li>
+<li><code>file://docs/implement2.md#t:人工冲突确认队列（**这是你未来的收费点**）</code></li>
+<li><code>file://schema/taxonomy.yaml#t:就地替换，必须带日期</code></li>
+<li><code>file://AGENTS.md#t:产出必须逐字节确定</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>冲突处理：新建一代状态 + <code>supersedes</code> 链，由人给理由；不就地覆盖</h1>
+<h2>问题</h2>
+<p>人在队列里点&quot;新的对&quot;之后，落盘要动<strong>已有的资产</strong>。这一动有三条互相拉扯的约束：</p>
+<ol><li>**<code>state</code> 的写规则是&quot;就地替换，必须带日期&quot;**（<code>schema/taxonomy.yaml</code>）。 &quot;就地&quot;的意思是：一个问题只有一条当前答案，不许两条并存—— 否则&quot;现在是什么样&quot;变成一个需要检索和比较的问题。</li><li><strong>不许静默覆盖。</strong> 用户的库未必在版本控制里：<code>data/</code> 是用户的 home 目录 （<code>directory.md</code> §五），不是每个人的 <code>~/.forge/</code> 都有 git。 就地覆盖会让被推翻的那一代<strong>只剩一份</strong>，而且是在冲突记录里，不是在库里。</li><li><strong>判定的责任要能被指认。</strong> 一次状态替换改变了用户库里的&quot;事实&quot;。 如果记录里只有&quot;新的赢了&quot;，下一个读它的人没法回答&quot;当时为什么信新的&quot;。</li></ol>
+<h2>考虑过的选项</h2>
+<ol><li><strong>就地覆盖旧文件</strong>：把新内容写进同一个 <code>state_*.md</code>，更新 <code>last_confirmed</code>。 最贴合 <code>replace_in_place</code> 的字面意思，也只有一条文件。 代价是旧内容在库里消失（没有 git 就没有第二份），而且 <code>supersedes</code> / 不变量 2（新状态不早于旧状态的确认日）那套机制全部用不上。</li><li>**新建一代 + <code>supersedes</code> 链**：新 <code>state_*.md</code>（<code>supersedes: &lt;旧 id&gt;</code>）， 旧的那条把 <code>status</code> 改成 <code>superseded</code>。 两代都在库里、可 diff、可回滚；&quot;就地&quot;在<strong>实体</strong>层面成立 （一个题面只有一条 <code>active</code>）。</li><li><strong>两条都留但都不改状态</strong>，靠时间戳排序决定谁是&quot;当前&quot;。 那等于把&quot;当前状态&quot;变成一个每次读取都要算的查询——而&quot;过期的事实比没有事实更糟&quot; 这条失败模式，正是从&quot;当前状态需要推断&quot;开始的。</li><li><strong>根本不动资产</strong>：把决定只写在队列记录里（&quot;采纳新的&quot;），下次编译时再合成。 于是资产不再是事实的唯一真相，而编译多出一条只有某个阶段才跑得到的路径。</li></ol>
+<h2>选定</h2>
+<p><strong>选 2</strong>，并且把那次替换的<strong>两个日期</strong>都强制带上：</p>
+<ul><li><strong>新资产</strong> <code>created</code> = <code>last_confirmed</code> = 人给的那个日期（<strong>必填，没有默认值</strong>）。 与 <code>forge inbox --promote</code> 同一条理由：值得记的是&quot;人确认它的那天&quot;， 不是命令跑的那天；而默认值会让&quot;确认&quot;退化成一次点击。</li><li>**旧资产只改 <code>status: superseded</code>**，正文与 <code>sources</code> 一个字节都不动。 于是一代状态被推翻之后仍然可读、可核对——这是&quot;不许静默覆盖&quot;在结构上的兑现。</li><li>**<code>supersedes</code> 必须同时指向旧的那条，且旧的必须存在**。 这条链不是装饰：不变量 2 会检查&quot;新状态的 <code>created</code> 不早于旧状态的 <code>last_confirmed</code>&quot;，于是&quot;新状态从过去就开始生效&quot;这类时间线错误会被抓到 （<code>evals/invariants/invariants.test.ts</code>）。</li><li>**<code>rationale</code> 必填**（和 <code>confidence</code> 一样，没有默认值）。 队列里那条记录同时留下<strong>替换前的完整快照</strong>（旧 id、旧正文、旧出处、旧状态）， 于是&quot;当时为什么信新的&quot;这个问题在记录里就有答案，而不用去挖历史。</li><li><strong>三种决定，语义各自独立</strong>：<code>replace</code>（新的对，落盘）、 <code>keep</code>（旧的仍然成立，<strong>不写任何资产</strong>）、<code>defer</code>（今天不判，留在队列里）。 三者的区别是&quot;动了什么&quot;，所以它们必须是三档，而不是一个布尔值。</li></ul>
+<p><strong>这一条是 Phase 5 的 CI 强制项</strong>（implement2.md 的 P5 行写的是&quot;无自动覆盖&quot;）： 队列是<strong>唯一</strong>能改 <code>assets/</code> 的冲突通路，而它只接受人的显式决定。 闸门每次 CI 都跑一遍合成集，要求&quot;零条被自动应用&quot;。</p>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：状态的历史留在库里，不在某个日志里。用户回滚一次误判， 只需要把 <code>superseded</code> 改回 <code>active</code>——不需要找到备份。</li><li><strong>好</strong>：<code>replace</code> 的三个输入（决议、日期、理由）全是人的判断， 而它们都进了队列记录：<strong>&quot;谁在什么时候凭什么把这条状态换掉了&quot;</strong> 有答案。 这是将来团队版与审计层（Phase 7 / S27）的接口。</li><li><strong>好</strong>：<code>keep</code> 与 <code>defer</code> 都不写资产，所以队列可以是&quot;看一遍什么都不改&quot;的地方—— 一个必须有产出的队列，会训练人乱点。</li><li><strong>代价</strong>：<code>state</code> 的条数会随替换次数增长，而 <code>last_confirmed</code> 只挂在最新那代上。 查询&quot;当前状态&quot;必须过滤 <code>status: active</code>。这条口径写在 <code>docs/handbook/conflicts.md</code> 里，并且由冲突检测<strong>自己遵守</strong> （它只把 <code>active</code> 的那条当作&quot;现有的旧状态&quot;——否则每一代旧状态都会重复报一次冲突）。</li><li><strong>代价</strong>：一次替换要写两个文件（新资产 + 旧资产的 status），而它们不是原子的。 写了一半的后果是&quot;两代都标着 active&quot;，下一次 <code>forge link</code> 会把它当成 &quot;同一个题面有两条 active&quot;报出来（<code>docs/handbook/conflicts.md</code> 里写明怎么修）。 没有做事务：<code>data/</code> 是文件系统，事务会是这一层里唯一一个假装自己是数据库的东西。</li><li><strong>残余风险</strong>：<code>rationale</code> 是自由文本，所以&quot;写了理由&quot;不等于&quot;理由成立&quot;。 与所有评审类机制一样（ADR-0020 的残余风险同款），它降低&quot;没想就点&quot;的概率， 不保证&quot;想过&quot;。</li><li><strong>残余风险</strong>：不变量 2 只检查日期与链路，不检查&quot;新的内容是否真的比旧的更接近事实&quot;。 那件事没有任何机器判据——它是人的判断，而这个设计把它放在人手里的方式是 <strong>让证据必须两侧齐全、可点开</strong>（ADR-0027），而不是让它自动发生。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>模型产出永不直接进 `assets/`：一条不可配置的判据，加一条候选区 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV05GPG05T9ZGQE24Y6F2NNV</p>
+<h1>模型产出永不直接进 `assets/`：一条不可配置的判据，加一条候选区</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0022-trust-boundary-is-code-not-prompt.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement1.md#t:把信任边界实现在代码里</code></li>
+<li><code>file://docs/implement2.md#t:不确定的一律进候选区</code></li>
+<li><code>file://docs/implement1.md#t:丢弃模型编造的内容</code></li>
+<li><code>file://AGENTS.md#t:信任边界必须写在代码里</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>模型产出永不直接进 <code>assets/</code>：一条不可配置的判据，加一条候选区</h1>
+<h2>问题</h2>
+<p>S15/S16 的要求可以压成三句话：<strong>低置信度起步</strong>、**用真实抓取到的来源重建 <code>sources</code><strong>、 </strong>丢弃编造的内容<strong>。难点不在&quot;要不要做&quot;，在于</strong>做在哪一层**。</p>
+<p>一步步退让的写法是这样的：先写进提示词（&quot;只引用上面列出的 key&quot;）， 再加一条&quot;如果置信度低就进候选区&quot;，然后把阈值做成参数，最后有人为了跑通一次演示 把它调成 0——每一步都合理，合起来就是 implement1.md 反模式 6 （让运行时的 agent 自动覆盖用户已有的状态，信任一次崩掉就回不来）。</p>
+<p>还有一个具体缺口：Phase 3 的 <code>judgeCandidates</code> 判的是&quot;这条提议有没有越界&quot;， 它<strong>不改变</strong>提议；而 S15 要求的是<strong>改变</strong>它（重建出处、压置信度、丢弃）。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>把要求写进提示词 + 在 runner 里加几条 if。</strong> 最省事。代价是： 边界变成了散落在调用点的一串条件，而每一个调用点都要记得写全。 换一个调用方（MCP server）就少一遍。</li><li>**只加一个&quot;如果 <code>origin === &#39;model&#39;</code> 就进候选区&quot;的分支**，置信度照收模型报的值。 这一条挡住了&quot;直接进库&quot;，但把&quot;低置信度起步&quot;整个丢掉了—— 而低置信度正是候选区里排序、以及将来人工确认顺序的依据。</li><li><strong>三件都在严格函数里做，而且分成两段</strong>： <code>sanitizeCandidates</code>（把模型的话<strong>铸成</strong>候选：重建出处、压置信度、丢弃编造内容） → <code>guardCandidates</code>（决定去哪：<code>admit</code> / <code>inbox</code> / <code>reject</code>）。</li><li>**不要候选区，全部进 <code>assets/</code> 但打上 <code>status: proposed</code>。** 那就回到了&quot;让 LLM 直接写正式资产&quot;——implement2.md 明确把它列为不可逆点之一 （垃圾污染库并变成先验）。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3</strong>，并且把它写成两条<strong>互相独立</strong>的判据：</p>
+<ul><li>**<code>sanitizeCandidates</code> 是&quot;铸币&quot;**：模型给的是 <code>unknown</code>，<strong>只有它</strong>能把那些东西 变成 <code>CandidateAssertion</code>。这一条在<strong>类型层面</strong>成立——<code>parseExtractionResponse</code> 返回 <code>unknown[]</code> 而不是 <code>CandidateAssertion[]</code>，于是任何想直接用模型输出的代码 都编译不过。出处逐条解析、只留指得回本次输入的那些，再用 <code>formatSpan</code> <strong>重建</strong>字符串 （存下来的那个字符串就是 <code>SpanIndex</code> 查表用的键，差一个空格就是静默查不到）； 置信度 <code>min(模型说的, 0.3)</code>；类型不在受控词表、没有标题、一条出处都留不下的整条丢掉。</li><li>**<code>guardCandidates</code> 是&quot;发证&quot;<strong>：它</strong>先自己复核一遍出处**（<code>judgeCandidates</code>）， 不假设上游 sanitize 过——这是换一个调用方时的兜底。然后三选一， 其中 <code>origin === &quot;model&quot;</code> → **永远 <code>inbox</code><strong>，与置信度无关、与策略无关、</strong>不可配置**。 把它做成配置项等于给&quot;让模型直接写正式资产&quot;留一个旋钮，而那个旋钮迟早会被拧。</li></ul>
+<p><strong>候选区的形状</strong>同样是判定的一部分（三条，都写进结构而不是写进规矩）：</p>
+<ol><li>**<code>_inbox/</code> 是 <code>assets/</code> 的兄弟目录，不是它的子目录。** ADR-0012 定的是 &quot;约定即集合：任何带 front-matter 的 markdown 都是资产&quot;，而 <code>assets.scan()</code> 递归扫整个 <code>assets/</code>。候选区若住在里面，它的每个文件都会立刻被当成资产—— 于是要么它必须长成一份合法资产（那就不是候选了），要么闸门会为一批 &quot;还没准备好&quot;的东西长期报红（那会训练人无视闸门）。</li><li><strong>候选是 JSON，不是 markdown。</strong> 这条更硬：markdown + front-matter 就是资产的写法， 而候选<strong>不是资产</strong>。用 JSON 之后，&quot;候选区里的东西不可能是资产&quot;这件事 <strong>在结构上</strong>成立，不依赖任何人记得这条规矩（R8）。</li><li><strong>候选 ID 是内容寻址的</strong>（前缀 <code>cand_</code>，取值是 sha256(类型 + 出处列表)）， <strong>记录里没有时间戳</strong>，而且这个前缀**刻意不进 <code>schema/ids.md</code> 的前缀表<strong>—— 那张表是</strong>资产** ID 的表，而候选不是资产。把它混进去会让&quot;哪些 ID 属于资产&quot; 这个问题第一次变得需要解释。 于是同一份来源用同一个 harness 抽两次，得到的是同一个文件、同一份字节—— 重跑不产生第二份候选（R6）。&quot;什么时候抽的&quot;是审计层的事（Phase 7 / S27）。</li></ol>
+<p><code>admit</code> 这一档保留着，尽管 v0 的抽取路径永远走不到它：它是&quot;非模型来源按置信度入库&quot; 那条路的位置，而没有它，那条路将来只能从后门加。CLI 反过来把 &quot;抽取路径上出现了 <code>admit</code>&quot;当成<strong>不变量违例</strong>报错——那说明守卫被改松了。</p>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：三条要求各自有了一个能指认的执行体，而且都能单独测 （<code>packages/core/test/model.test.ts</code> / <code>guard.test.ts</code>）。</li><li><strong>好</strong>：<code>origin: &quot;model&quot;</code> 这一条判据与 <code>LOW_CONFIDENCE</code>（0.3）<strong>两条门同时存在</strong>， 由测试钉住&quot;入库线必须高于 0.3&quot;——少任何一条，另一条都还能独立挡住模型产出。</li><li><strong>好</strong>：候选区不可疑地进不了资产集合，所以 <code>pnpm gate:ci</code> 的资产闸门 不需要为 Phase 4 加任何豁免。<strong>没有豁免</strong>比&quot;有一个写清楚的豁免&quot;结实得多。</li><li><strong>代价</strong>：多了一层 <code>sanitize → guard</code> 的间接，以及一个&quot;候选不是资产&quot;的新概念。 代价换来的是：候选区可以被人随手编辑、删掉、重跑，而不会碰到正式资产一寸。</li><li><strong>代价</strong>：<code>_inbox/</code> 是第四层目录。<code>ensureVault</code> 现在建五个目录。 已知的别扭点：它不是&quot;三层权限规则&quot;之一（ADR-0015），而是<strong>第四种东西</strong>—— 一种&quot;尚未成为资产、也永远不会自动成为资产&quot;的暂存。这条不一致是有意的。</li><li><strong>残余风险</strong>：<code>admit</code> 在 v0 是<strong>死代码</strong>（抽取路径走不到）。 留着的理由是&quot;它表示一条将来会有的路&quot;，但这也意味着它在 Phase 5 之前 不会被真实用法检验过。缓解是 CLI 把它当成不变量违例——至少它不会静静地错。</li><li><strong>残余风险</strong>：候选的去重靠内容寻址 ID，所以&quot;同一处证据被两条不同的措辞抽到&quot; 会是<strong>两条</strong>候选。人去确认时会看到两条说的是一件事。缓解是 <code>promote</code> 时按 <code>(类型, 出处)</code> 拒绝重复，但那是在<strong>确认</strong>那一步才拦，不是抽取那一步。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

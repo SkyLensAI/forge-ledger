@@ -26,7 +26,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # Node >= 24：原生类型擦除（零 build）+ node --test 对 .ts 的稳定支持（ADR-0011）。
+          # 本地 engines 与这里必须一致，否则会出现"本地过、CI 挂"。
+          node-version: 24
           cache: pnpm
 
       - name: install
@@ -40,6 +42,7 @@ jobs:
           FORGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
 
       # 与本地 pre-commit 使用同一套 policy：所以 --no-verify 没有意义。
+      # 这一步同时跑 schema 一致性（S7）与资产出处（S6）——见 ci.mjs。
       - name: gates
         run: pnpm gate:ci
         env:

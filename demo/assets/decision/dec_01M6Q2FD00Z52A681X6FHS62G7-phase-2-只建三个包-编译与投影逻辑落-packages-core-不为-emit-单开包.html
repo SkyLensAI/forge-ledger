@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>Phase 2 只建三个包：编译与投影逻辑落 `packages/core`，不为 emit 单开包 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6Q2FD00Z52A681X6FHS62G7</p>
+<h1>Phase 2 只建三个包：编译与投影逻辑落 `packages/core`，不为 emit 单开包</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.8</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0018-phase2-three-packages-no-emit-package.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://AGENTS.md#t:编译与维护逻辑必须落在</code></li>
+<li><code>file://docs/implement1.md#t:编排用确定性 DAG / 状态机</code></li>
+<li><code>file://docs/directory.md#t:第二天你就得把同一段逻辑复制到 CLI 和 MCP server</code></li>
+<li><code>file://docs/adr/0006-taxonomy-v1-four-asset-types.md#t:判定分支可穷举、可测试</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>Phase 2 只建三个包：编译与投影逻辑落 <code>packages/core</code>，不为 emit 单开包</h1>
+<h2>问题</h2>
+<p><code>directory.md</code> 的 v0 最小版列了 6 个包（<code>schema</code> / <code>core</code> / <code>llm</code> / <code>ingest</code> / <code>store</code> / <code>emit</code>）， 完整目录树里还有更多。Phase 2 要写 store、normalizer、emitter、CLI—— 按那张清单，<code>emit</code> 该是一个独立包，<code>provenance</code> 也该是。</p>
+<p>但 R5 说的是&quot;编译与维护逻辑必须落在 <code>packages/core</code>（零 IO、纯函数）&quot;， 而&quot;为每个出口一个文件&quot;（<code>directory.md</code> §三）说的是<strong>文件</strong>，不是包。 两者不冲突，但把&quot;文件&quot;读成&quot;包&quot;很容易。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>照 v0 清单建包</strong>：<code>packages/emit</code>、<code>packages/provenance</code>、<code>packages/lint</code> … 各建一个。</li><li><strong>只建三个</strong>：<code>schema</code>（IR + 校验 + 迁移）、<code>core</code>（全部纯逻辑，含 emit 投影）、 <code>store</code>（IO）、<code>ingest</code>（连接器）——即四个，其中 <code>schema</code> 是 Phase 1 的。</li><li><strong>按&quot;消费者&quot;拆</strong>：给 CLI 一个包，给将来的 MCP server 一个包。</li></ol>
+<h2>选定</h2>
+<p><strong>选 2。</strong></p>
+<ul><li><code>directory.md</code> §六自己给了拆包信号：&quot;需要第二个消费者（比如 MCP server）→ 把逻辑从 app 下沉到 <code>packages/core</code>&quot;。<strong>在第二个消费者出现之前拆包，只是在制造 需要维护的空壳</strong>，而空壳的害处不是浪费，是让人以为那里有边界。</li><li><code>emit</code> 不独立成包的实质理由：emitter 的实现是<strong>模板 + 排序键 + 换行规则</strong>， 三者都必须与 <code>sortAssets</code>、<code>Occurred_at</code> 归一、<code>\n</code> 约定共用同一份约定。 拆成两个包就得把这些约定导出成公共 API，而它们本来是内部细节。 出口多起来（Skill / Eval / Obsidian，S24）之后如果 <code>emit.ts</code> 真的长到难以阅读， 那时按出口拆——<strong>那时</strong>它能拆得干净，因为边界由真实的模板共性和差异决定。</li><li><code>provenance</code> 同理：它是 300 行的纯函数 + 一份判定，塞进一个包只会让 <code>@forge/core</code> 的 <code>exports</code> 多一行。它的<strong>逻辑</strong>独立（这是 ADR-0009 的重点）， 包不必独立。</li><li>编排是<strong>写死的 DAG</strong>（sources → 事件 → 资产 → 投影），不是 orchestrator agent。 它住在 <code>store/vault.ts</code>（因为每一步都碰 IO）而<strong>不是</strong> <code>core</code>—— R5 说的是&quot;业务逻辑不写在 apps&quot;，不是&quot;所有代码都写进 core&quot;。 判定在 core，IO 在 store，参数在 apps。三层各管一段，没有一层跨过别人的活。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：<code>grep</code> 一处就能回答&quot;这条规则谁在判&quot;——它在 <code>packages/core</code>。 CI 闸门、CLI、将来的 MCP server 都调同一份，不存在两份会漂移的实现。</li><li><strong>好</strong>：包数量少意味着 <code>pnpm install</code> 快、依赖图浅、<code>tsconfig</code> 一处配置。</li><li><strong>代价</strong>：<code>packages/core/src/emit.ts</code> 会随出口数量增长。已知会咬人的点， 处理方式写在&quot;选定&quot;里（按出口拆），不是现在预拆。</li><li><strong>代价</strong>：<code>directory.md</code> 的目录树与仓库实际布局不一致了。 这不是漂移而是<strong>有意的分歧</strong>（分歧理由记在这里），但必须在文档里说清， 否则下一个人会以为仓库建漏了——这条已记进 README 的「目录」一节。</li><li><strong>残余风险</strong>：<code>apps/cli/src/main.ts</code> 目前自己做了&quot;读文件 → 调 core → 打印&quot;的编排。 这<strong>是</strong> app 层该干的事（宿主适配），但它也意味着 CLI 与将来的 MCP server 会有两段相似而不共享的编排代码。第二个消费者出现时，把这段下沉到 <code>store</code>—— 信号很明确：出现第二份，就下沉。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

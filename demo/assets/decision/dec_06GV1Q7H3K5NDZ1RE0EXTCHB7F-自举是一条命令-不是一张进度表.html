@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>自举是一条命令，不是一张进度表 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV1Q7H3K5NDZ1RE0EXTCHB7F</p>
+<h1>自举是一条命令，不是一张进度表</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0039-bootstrap-is-a-command-not-a-scoreboard.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:**自举**：用本项目的 CLI 管本项目的 ADR / 规则 / eval</code></li>
+<li><code>file://docs/implement2.md#t:目标自己产出 30+ ADR</code></li>
+<li><code>file://packages/core/src/bootstrap.ts#t:BOOTSTRAP_ADR_TARGET = 30</code></li>
+<li><code>file://apps/cli/src/main.ts#t:forge bootstrap</code></li>
+<li><code>file://packages/core/src/bootstrap.ts#t:数量是「决策日志被用起来」的痕迹</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>自举是一条命令，不是一张进度表</h1>
+<h2>问题</h2>
+<p>implement2.md 给 S29 写的目标有两半：</p>
+<blockquote><p><strong>自举</strong>：用本项目的 CLI 管本项目的 ADR / 规则 / eval，目标自己产出 30+ ADR。</p></blockquote>
+<p>第二半（30+ ADR）容易被数出来，第一半（<strong>用本项目的 CLI 管</strong>）却容易变成一句 &quot;我们平时也用 <code>forge lint --repo</code>&quot;。这两件事的差别很大：</p>
+<ul><li>只数 ADR，一个把模板抄 30 遍的仓库也能过；</li><li>只在嘴上说&quot;用 CLI 管&quot;，<code>docs/adr/</code>、<code>AGENTS.md</code>、<code>evals/</code>、两个对外产物 就会各自漂移，而漂移不会自己发出声音。</li></ul>
+<p>自举要证明的不是&quot;我们写了 38 条决策&quot;，而是<strong>同一套判定能把这个仓库自己读进来、 审一遍、并发现它有没有退步</strong>。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>只数 ADR，报告一个数字。</strong> 否决。数字是 vanity metric： 它不区分&quot;真的做过 30 个决策&quot;和&quot;把同一个模板改了 30 次标题&quot;。</li><li><strong>人工写一份自举报告，放进 README。</strong> 否决。这份仓库已经付过两次代价 （<code>evals/regressions/0003</code> / <code>0005</code>）：一份说&quot;已经完成&quot;的文档， 下一次改动就会让它变成谎话。报告必须能重算。</li><li><strong>用一条命令把四件事一起判：资产、种子规则、尺子、对外产物。</strong> 采纳。</li></ol>
+<h2>选定</h2>
+<ul><li><code>forge bootstrap</code>：</li><li>用 <code>readRepoAssets</code> 读仓库自己的资产，用与 <code>forge lint --repo</code> <strong>同一份</strong> <code>judgeLibrary</code> 审出处；</li><li>数 <code>docs/adr/</code> 下的 <code>decision</code> 资产，<strong>30 条是底线</strong>，不是目标本身；</li><li>读 <code>AGENTS.md</code> 的种子规则时<strong>直接复用闸门 1 的解析器</strong> （<code>scripts/gates/lib/harness.mjs</code>），避免报告说绿、闸门说红；</li><li>读两把尺子的 <code>review</code> 与阈值批准状态：自举只自举文档、不自举质量门，不算成立；</li><li>用<strong>同一批资产</strong>重算 <code>listing/</code> 与 <code>demo/</code>，逐字节比对；</li><li>团队版按 S30 的顺序判定（见 ADR-0040）。</li><li>判定住在 <code>packages/core/src/bootstrap.ts</code>（零 IO），宿主只负责读文件与打印。</li><li>退出码：<code>0</code> = 自举成立；<code>1</code> = 有具体问题；<code>2</code> = 用法错误。</li><li><code>listing/</code> 与 <code>demo/</code> 是投影，加入 <code>DEFAULT_REPO_EXCLUDES</code>： 否则 <code>listing/</code> 里的 <code>SKILL.md</code>（以 <code>---</code> 开头的 Skill front-matter） 会被 <code>readRepoAssets</code> 当成坏资产，自举还没开始就先红了。</li><li>两个产物目录各写一份 <code>.forge-manifest.json</code>，记录这一轮生成器写了哪些文件。 下一次生成只清理<strong>上一份清单里列过、这一轮没有</strong>的文件——目录里人放的东西 （<code>CNAME</code>、<code>LICENSE</code>）不在清单里，所以永远不会被删；清单读不懂时也什么都不删。 <code>bootstrap</code> 与 <code>E15</code> 把清单之外的残留同样算作漂移：所有&quot;期望的文件都在&quot;的检查 都看不见残留文件，而残留文件不再对应任何资产。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：&quot;自举完成&quot;从一句愿望变成一组可重算的读数。ADR 数量、规则出处、 尺子确认、产物一致、团队版顺序，任何一项退步都会让命令变红。</li><li><strong>好</strong>：自举报告与 <code>E15</code> 探针共用同一批判据；<code>forge bootstrap</code> 是给人看的入口， <code>E15</code> 是每次 CI 都会跑的那一份。两处不会给出两个答案。</li><li><strong>代价</strong>：<code>forge bootstrap</code> 每次都重算 demo / listing（38 条资产、约 80 个文件）， 比一条 <code>lint</code> 慢；但它仍然在几十毫秒级，而&quot;对外产物漂移&quot;是它最值钱的那条检查。</li><li><strong>代价</strong>：30 条是 implement2.md 给的量级，不是本仓库证明出来的最佳值。 它的作用是<strong>防止自举退化成 3 条 ADR 的演示仓库</strong>，不是奖励凑数。</li><li><strong>残余风险</strong>：ADR 的<strong>质量</strong>仍由人判断。命令只能保证它们能被读、能过出处、 数量够；一条内容空洞但格式正确的 ADR 它拦不住。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

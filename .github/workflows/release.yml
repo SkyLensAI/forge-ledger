@@ -26,7 +26,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # 与 ci.yml 同一个下限（ADR-0011）：发布环境跑得动，本地才敢说"CI 会绿"。
+          node-version: 24
           cache: pnpm
 
       - name: install

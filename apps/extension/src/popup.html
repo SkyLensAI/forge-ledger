@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <title>forge</title>
+    <style>
+      /* 派生版式：与 popup 的脚本分离（MV3 不允许内联脚本）。 */
+      body { font: 13px/1.6 system-ui, sans-serif; margin: 0; padding: 12px; width: 380px; }
+      h1 { font-size: 14px; margin: 0 0 8px; }
+      textarea { width: 100%; box-sizing: border-box; height: 64px; font: inherit; }
+      button { font: inherit; margin-top: 6px; }
+      pre { white-space: pre-wrap; word-break: break-word; background: #f5f5f4; padding: 8px; max-height: 260px; overflow: auto; }
+      .muted { color: #666; }
+      .error { color: #a40000; }
+    </style>
+  </head>
+  <body>
+    <h1>forge</h1>
+    <p class="muted">取用：问一句，拿回预算内的一段上下文（不是全库）。</p>
+    <textarea id="query" placeholder="为了做完这件事，我需要知道什么？"></textarea>
+    <button id="ask">取用</button>
+    <button id="capture">采集这一页</button>
+    <pre id="out" hidden></pre>
+    <p class="muted" id="status"></p>
+    <script src="popup.js" type="module"></script>
+  </body>
+</html>

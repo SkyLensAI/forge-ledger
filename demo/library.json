@@ -1,0 +1,804 @@
+{
+  "about": "由 forge demo 从本仓库自己的 44 条资产生成。每一条都带可解析的出处；这里没有编造的样例数据。",
+  "assets": [
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_01M6Q2FD002MW3PYGNRES1PGRW",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6Q2FD002MW3PYGNRES1PGRW-派生出来的东西用-内容寻址-id-人写的东西才用-ulid.html",
+      "path": "docs/adr/0013-derived-ids-content-addressed.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/directory.md#t:ID 带类型前缀 + ULID",
+        "file://AGENTS.md#t:产出必须逐字节确定",
+        "file://docs/implement1.md#t:增量编译 + 内容哈希缓存",
+        "file://docs/adr/0007-id-scheme-prefix-plus-ulid.md#t:ULID 的随机段"
+      ],
+      "status": "accepted",
+      "title": "派生出来的东西用**内容寻址** ID，人写的东西才用 ULID",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_01M6Q2FD00AX057HVVTGFVQC8M",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6Q2FD00AX057HVVTGFVQC8M-emit-的确定性靠-消灭输入端的不确定性-不靠-跑两遍比对.html",
+      "path": "docs/adr/0017-emit-determinism-by-construction.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://AGENTS.md#t:产出必须逐字节确定",
+        "file://docs/directory.md#t:这样才能做快照测试",
+        "file://docs/implement1.md#t:逐字节确定性快照",
+        "file://docs/implement2.md#t:无 API key 就能跑通全链路"
+      ],
+      "status": "accepted",
+      "title": "emit 的确定性靠\"消灭输入端的不确定性\"，不靠\"跑两遍比对\"",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_01M6Q2FD00CQS8ZBPRX44R5C3P",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6Q2FD00CQS8ZBPRX44R5C3P-结构化来源用-k-键锚点定位-不用-t-文本片段.html",
+      "path": "docs/adr/0014-structured-sources-use-key-anchors.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/adr/0009-provenance-is-scheme-span.md#t:真正需要精确定位的场景",
+        "file://docs/implement2.md#t:为什么来源选导出而不是插件",
+        "file://docs/adr/0009-provenance-is-scheme-span.md#t:腐烂的出处比没有出处更糟"
+      ],
+      "status": "accepted",
+      "title": "结构化来源用 `#k:` 键锚点定位，不用 `#t:` 文本片段",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_01M6Q2FD00GRZFQ6K3F6KPGA03",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6Q2FD00GRZFQ6K3F6KPGA03-store-三层是三条-权限规则-由-api-形状强制-不靠自觉.html",
+      "path": "docs/adr/0015-store-three-layers-are-permission-rules.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/directory.md#t:源头不可变，编译层可重建",
+        "file://docs/implement2.md#t:只读、`assets/` 可写、`index/` 可重建",
+        "file://docs/directory.md#t:数据目录按 ID 前缀分区"
+      ],
+      "status": "accepted",
+      "title": "store 三层是三条**权限规则**，由 API 形状强制，不靠自觉",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_01M6Q2FD00NVKBVBH80QD63VSX",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6Q2FD00NVKBVBH80QD63VSX-事件-ir-是-派生数据-住在-index-不是资产.html",
+      "path": "docs/adr/0016-event-ir-is-derived-data.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement1.md#t:原始来源 → 规范化事件 IR",
+        "file://docs/implement2.md#t:为什么来源选导出而不是插件",
+        "file://docs/directory.md#t:索引、向量、摘要缓存都该在"
+      ],
+      "status": "accepted",
+      "title": "事件 IR 是**派生数据**，住在 `index/`，不是资产",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_01M6Q2FD00P3EVALGATE000000",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6Q2FD00P3EVALGATE000000-eval-阈值接进闸门-3-判定住在-evals-闸门脚本只是薄壳.html",
+      "path": "docs/adr/0020-eval-thresholds-are-a-gate.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:先有尺子，再接模型",
+        "file://docs/implement2.md#t:把 Extractor 换成一个",
+        "file://docs/implement1.md#t:没有 eval 就说",
+        "file://docs/implement1.md#t:绿灯只说明你写的检查通过了",
+        "file://docs/implement1.md#t:这些是纯确定性断言，不靠模型判断",
+        "file://AGENTS.md#t:用自然语言提示代替代码强制"
+      ],
+      "status": "accepted",
+      "title": "eval 阈值接进闸门 3；判定住在 `evals/`，闸门脚本只是薄壳",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.9,
+      "created": "2026-11-06",
+      "id": "dec_01M6Q2FD00Y6MM10J4YRMSYM2Q",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6Q2FD00Y6MM10J4YRMSYM2Q-v0-v1-迁移分两半-机械的归迁移-语义的归人.html",
+      "path": "docs/adr/0019-migration-splits-mechanical-from-semantic.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/adr/0008-schema-version-and-migration-channel.md#t:迁移只在被已有资产触发时才被真正验证",
+        "file://docs/adr/0009-provenance-is-scheme-span.md#t:出处写了，但没有任何东西能校验它",
+        "file://docs/implement2.md#t:迁移通道（哪怕只有 v1 的空迁移，通道必须先建）",
+        "file://docs/implement2.md#t:迁移成本随数据量线性增长"
+      ],
+      "status": "accepted",
+      "title": "v0→v1 迁移分两半：机械的归迁移，语义的归人",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_01M6Q2FD00Z52A681X6FHS62G7",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6Q2FD00Z52A681X6FHS62G7-phase-2-只建三个包-编译与投影逻辑落-packages-core-不为-emit-单开包.html",
+      "path": "docs/adr/0018-phase2-three-packages-no-emit-package.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://AGENTS.md#t:编译与维护逻辑必须落在",
+        "file://docs/implement1.md#t:编排用确定性 DAG / 状态机",
+        "file://docs/directory.md#t:第二天你就得把同一段逻辑复制到 CLI 和 MCP server",
+        "file://docs/adr/0006-taxonomy-v1-four-asset-types.md#t:判定分支可穷举、可测试"
+      ],
+      "status": "accepted",
+      "title": "Phase 2 只建三个包：编译与投影逻辑落 `packages/core`，不为 emit 单开包",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.9,
+      "created": "2026-11-06",
+      "id": "dec_01M6QE3MZA2AX3RJB1EGTGZ7SY",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6QE3MZA2AX3RJB1EGTGZ7SY-闸门的权威只来自服务端-本地闸门只负责-尽快失败.html",
+      "path": "docs/adr/0001-gate-authority-lives-in-ci.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:agent hook → pre-commit → required status check",
+        "file://docs/implement1.md#t:定义完成的清单（checklist）会被 agent 跳过"
+      ],
+      "status": "accepted",
+      "title": "闸门的权威只来自服务端；本地闸门只负责\"尽快失败\"",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.75,
+      "created": "2026-11-06",
+      "id": "dec_01M6QE3MZBQ94WCYD1ZATQN3KP",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6QE3MZBQ94WCYD1ZATQN3KP-本地钩子用-core-hookspath-裸脚本-不引入-husky-lint-staged.html",
+      "path": "docs/adr/0002-core-hookspath-over-husky.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:建仓 + 工具链",
+        "file://docs/directory.md#h:八、命名与迁移纪律（三条硬规矩）"
+      ],
+      "status": "accepted",
+      "title": "本地钩子用 core.hooksPath + 裸脚本，不引入 husky / lint-staged",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_01M6QE3MZCXNVVEHFZ5Q2F198J",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6QE3MZCXNVVEHFZ5Q2F198J-行尾强制-lf-gitattributes-在-phase-0-就定下来.html",
+      "path": "docs/adr/0003-force-lf-line-endings.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/directory.md#t:每个出口一个文件，输出必须",
+        "file://docs/implement2.md#t:输出必须逐字节确定"
+      ],
+      "status": "accepted",
+      "title": "行尾强制 LF（.gitattributes），在 Phase 0 就定下来",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_01M6QE3MZDZ9JE8EFMW27VAVKT",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6QE3MZDZ9JE8EFMW27VAVKT-phase-0-不预建-packages-与-apps-脚手架跟着需求长.html",
+      "path": "docs/adr/0004-no-speculative-packages-in-phase-0.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:把闸门写成 checklist",
+        "file://docs/directory.md#h:六、v0 最小版（照抄这个开始，别一上来就建 20 个包）",
+        "file://docs/directory.md#t:每个来源一个包 / 建一个万能"
+      ],
+      "status": "accepted",
+      "title": "Phase 0 不预建 `packages/` 与 `apps/`：脚手架跟着需求长",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.9,
+      "created": "2026-11-06",
+      "id": "dec_01M6QE6A1F7ZK2NQ0T8H4WY3VB",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6QE6A1F7ZK2NQ0T8H4WY3VB-闸门代码取自基线修订-不取自被检查的工作树.html",
+      "path": "docs/adr/0005-gate-code-from-base-revision.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://scripts/gates/rehearse.mjs#t:A4 CI（闸门 3·可信版）用基线规则判定",
+        "file://docs/implement1.md#t:定义完成的清单（checklist）会被 agent 跳过"
+      ],
+      "status": "accepted",
+      "title": "闸门代码取自基线修订，不取自被检查的工作树",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.9,
+      "created": "2026-11-06",
+      "id": "dec_01M6QGCKYWGDFKGD5J54CTNGZX",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6QGCKYWGDFKGD5J54CTNGZX-分类法-v1-只定-4-种资产-decision-state-event-rule.html",
+      "path": "docs/adr/0006-taxonomy-v1-four-asset-types.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:只定 4 种资产",
+        "file://docs/implement2.md#t:别一上来 15 种",
+        "file://docs/directory.md#t:schema 是宪法"
+      ],
+      "status": "accepted",
+      "title": "分类法 v1 只定 4 种资产：decision / state / event / rule",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_01M6QGCKYXNFDEANHYXWJF1SPR",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6QGCKYXNFDEANHYXWJF1SPR-id-是-类型前缀-ulid-前缀由分类法声明-不写在代码里.html",
+      "path": "docs/adr/0007-id-scheme-prefix-plus-ulid.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/directory.md#t:ID 带类型前缀 + ULID",
+        "file://docs/directory.md#t:数据目录按 ID 前缀分区",
+        "file://docs/implement2.md#t:`dec_`/`state_`/`event_`/`rule_` + ULID"
+      ],
+      "status": "accepted",
+      "title": "ID 是「类型前缀 + ULID」，前缀由分类法声明，不写在代码里",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.9,
+      "created": "2026-11-06",
+      "id": "dec_01M6QGCKYYJCGQNQYSRXMM35HW",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6QGCKYYJCGQNQYSRXMM35HW-front-matter-带-schema-version-版本号就是分类法版本-迁移通道现在建-现在用.html",
+      "path": "docs/adr/0008-schema-version-and-migration-channel.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:迁移通道（哪怕只有 v1 的空迁移，通道必须先建）",
+        "file://docs/implement2.md#t:迁移成本随数据量线性增长",
+        "file://docs/directory.md#t:资产比代码活得久"
+      ],
+      "status": "accepted",
+      "title": "front-matter 带 `schema_version`，版本号就是分类法版本；迁移通道现在建、现在用",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.9,
+      "created": "2026-11-06",
+      "id": "dec_01M6QGCKYZDMT05VEV396CG75P",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6QGCKYZDMT05VEV396CG75P-出处是-带-scheme-的-span-判定是纯函数-io-在边缘-不可解析与没有出处分开报.html",
+      "path": "docs/adr/0009-provenance-is-scheme-span.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:没有 span 断言的资产不许入库",
+        "file://docs/implement1.md#t:没有 source span 的断言不许进",
+        "file://docs/directory.md#t:没有出处的一行，不允许进入"
+      ],
+      "status": "accepted",
+      "title": "出处是「带 scheme 的 span」：判定是纯函数，IO 在边缘；不可解析与没有出处分开报",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_01M6QGCKZ0K58JW6B7TYNM9X5Q",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6QGCKZ0K58JW6B7TYNM9X5Q-schema-与-packages-schema-一一对应-必须变成机器可判定的红.html",
+      "path": "docs/adr/0010-doc-code-consistency-is-machine-checked.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/directory.md#t:两者必须一一对应，且在 CI 里比对一致性",
+        "file://docs/implement1.md#t:把信任边界实现在代码里，而不是写在提示词里",
+        "file://AGENTS.md#t:信任边界必须写在代码里"
+      ],
+      "status": "accepted",
+      "title": "「schema/ 与 packages/schema 一一对应」必须变成机器可判定的红",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_01M6QGCKZ15QPTV67AZ839ZQ40",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6QGCKZ15QPTV67AZ839ZQ40-零-build-ts-由-node-原生类型擦除直接执行-包只发布源码.html",
+      "path": "docs/adr/0011-zero-build-node-type-stripping.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:pnpm workspaces / turbo / tsconfig / eslint",
+        "file://docs/adr/0002-core-hookspath-over-husky.md#t:意味着钩子本身不会因为依赖树变动而失效",
+        "file://docs/directory.md#t:core 是纯函数，IO 全在边缘"
+      ],
+      "status": "accepted",
+      "title": "零 build：TS 由 Node 原生类型擦除直接执行，包只发布源码",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_01M6QGCKZ2Q8K348RJ1T59CZV4",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_01M6QGCKZ2Q8K348RJ1T59CZV4-资产集合的判据是-带-front-matter-的-markdown-仓库里的第一批资产是-adr.html",
+      "path": "docs/adr/0012-assets-are-frontmatter-markdown.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement1.md#t:你不需要编 demo 数据，你的开发历史就是数据",
+        "file://docs/implement1.md#t:用本项目的 lint 检查本项目自己的 harness 有没有腐化",
+        "file://docs/directory.md#t:在代码库里它通常是空的"
+      ],
+      "status": "accepted",
+      "title": "资产集合的判据是「带 front-matter 的 markdown」；仓库里的第一批资产是 ADR",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_06GV05GPG015QD6E4X09KWRCCP",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV05GPG015QD6E4X09KWRCCP-模型是一台-可注入的同步-model-真实调用在边缘-评测对着录像跑.html",
+      "path": "docs/adr/0021-model-is-an-injectable-sync-seam.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement1.md#t:模型负责抽取，代码负责不信任",
+        "file://docs/implement2.md#t:Extractor：LLM",
+        "file://docs/implement2.md#t:连续 3 天稳定",
+        "file://docs/implement1.md#t:用便宜模型，冲突裁决才用贵模型",
+        "file://AGENTS.md#t:产出必须逐字节确定"
+      ],
+      "status": "accepted",
+      "title": "模型是一台**可注入的同步** `Model`：真实调用在边缘，评测对着录像跑",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_06GV05GPG05T9ZGQE24Y6F2NNV",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV05GPG05T9ZGQE24Y6F2NNV-模型产出永不直接进-assets-一条不可配置的判据-加一条候选区.html",
+      "path": "docs/adr/0022-trust-boundary-is-code-not-prompt.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement1.md#t:把信任边界实现在代码里",
+        "file://docs/implement2.md#t:不确定的一律进候选区",
+        "file://docs/implement1.md#t:丢弃模型编造的内容",
+        "file://AGENTS.md#t:信任边界必须写在代码里"
+      ],
+      "status": "accepted",
+      "title": "模型产出永不直接进 `assets/`：一条不可配置的判据，加一条候选区",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_06GV05GPG0AEW1V0Q79JRHCYZ0",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV05GPG0AEW1V0Q79JRHCYZ0-信任边界进闸门-用一台敌意模型当长期探针-e7.html",
+      "path": "docs/adr/0023-trust-boundary-probe-enters-the-gate.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:连续 3 天稳定",
+        "file://docs/implement2.md#t:把信任边界实现在代码里",
+        "file://docs/implement2.md#t:把 Extractor 换成一个",
+        "file://AGENTS.md#t:信任边界必须写在代码里"
+      ],
+      "status": "accepted",
+      "title": "信任边界进闸门：用一台敌意模型当长期探针（`E7`）",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.75,
+      "created": "2026-11-06",
+      "id": "dec_06GV05GPG0F3EM59RCE7B3Q805",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV05GPG0F3EM59RCE7B3Q805-没有-key-时-s17-的基准报告只能是-协议-可测证据-不能是一组分数.html",
+      "path": "docs/adr/0024-eval-report-without-an-api-key.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:跑 eval 定阈值",
+        "file://docs/implement2.md#t:连续 3 天稳定",
+        "file://docs/implement1.md#t:没有 eval 就说",
+        "file://AGENTS.md#t:信任边界必须写在代码里"
+      ],
+      "status": "accepted",
+      "title": "没有 key 时，S17 的基准报告只能是\"协议 + 可测证据\"，不能是一组分数",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_06GV1A5F888TPGPM7XJWH09JKP",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1A5F888TPGPM7XJWH09JKP-同一个值-的判据要剥掉模板骨架-章节标题不是内容.html",
+      "path": "docs/adr/0032-value-comparison-strips-template-headings.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement1.md#t:过期的事实比没有事实更糟",
+        "file://docs/implement1.md#t:也是你唯一能收订阅费的动作",
+        "file://docs/handbook/conflicts.md#t:归一化相等 = 再确认；证据两侧齐全且可解析"
+      ],
+      "status": "accepted",
+      "title": "\"同一个值\"的判据要剥掉模板骨架：章节标题不是内容",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_06GV1M4G181B659Z0SJ2P8FAZH",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1M4G181B659Z0SJ2P8FAZH-取用是确定性的-打分可解释-预算硬上限-不许预加载-可判定.html",
+      "path": "docs/adr/0029-retrieval-is-deterministic-and-budgeted.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:Retriever + 注入预算控制",
+        "file://docs/implement2.md#t:**绝不预加载全库**（会 context rot）",
+        "file://docs/implement1.md#t:检索优先，绝不预加载整个大脑",
+        "file://docs/implement1.md#t:检索 + 新鲜度/出处",
+        "file://docs/implement1.md#t:查询 → 预算内的上下文",
+        "file://docs/implement2.md#t:Retriever + 注入预算控制"
+      ],
+      "status": "accepted",
+      "title": "取用是确定性的：打分可解释、预算硬上限、\"不许预加载\"可判定",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_06GV1M4G1CA298WMATFJRQRCB1",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1M4G1CA298WMATFJRQRCB1-多出口是投影-不是第二个真相-导出的-eval-不许自称-已确认.html",
+      "path": "docs/adr/0031-multi-outlet-emit-is-projection.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:Skill 导出",
+        "file://docs/implement2.md#t:输出必须逐字节确定",
+        "file://docs/implement1.md#t:emit 是否逐字节确定",
+        "file://docs/implement1.md#t:检索优先，绝不预加载整个大脑",
+        "file://evals/README.md#t:阈值是地板，不是目标"
+      ],
+      "status": "accepted",
+      "title": "多出口是投影，不是第二个真相；导出的 eval 不许自称\"已确认\"",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_06GV1M4G1CX62QZHZXWGFBXDV1",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1M4G1CX62QZHZXWGFBXDV1-浏览器的脆弱性前移成一份可热更新的配置-判定一律不进扩展.html",
+      "path": "docs/adr/0030-browser-fragility-becomes-hot-updatable-config.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:选择器配置可远端热更新",
+        "file://docs/implement2.md#t:平台一改版工具就坏",
+        "file://docs/implement2.md#t:只做\"取用 + 增量采集\"",
+        "file://docs/implement2.md#t:浏览器扩展：只做",
+        "file://docs/implement2.md#t:让 Claude/Cursor 直接调用你的资产"
+      ],
+      "status": "accepted",
+      "title": "浏览器的脆弱性前移成一份可热更新的配置；判定一律不进扩展",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.9,
+      "created": "2026-11-06",
+      "id": "dec_06GV1P5C685NDZ1RE0EXTCHB1C",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1P5C685NDZ1RE0EXTCHB1C-闸门码的抽取正则要认多位数-否则新码可以绕过-c4.html",
+      "path": "docs/adr/0033-gate-code-regex-accepts-two-digits.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/handbook/gates.md#t:它的正则原本只认**一位数**",
+        "file://docs/implement1.md#t:没有 eval 就说\"效果不错\"",
+        "file://docs/handbook/gates.md#t:新增一条纪律的顺序"
+      ],
+      "status": "accepted",
+      "title": "闸门码的抽取正则要认多位数，否则新码可以绕过 C4",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_06GV1Q7H3K5NDZ1RE0EXTCHB2A",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB2A-健康检查判四类腐烂-但不给库打健康分.html",
+      "path": "docs/adr/0034-health-check-judges-four-rots-without-a-score.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:Linter：孤儿页、索引漂移、过期断言、静默被取代",
+        "file://docs/implement2.md#t:库里涨到 **500–1000 条事实仍然可用**",
+        "file://docs/implement2.md#t:linter、定时任务 | **什么算过期**",
+        "file://packages/core/src/asset.ts#t:闸门的判据必须只依赖输入，而新鲜度依赖",
+        "file://packages/core/src/conflict.ts#t:只有 `state` 会产生冲突"
+      ],
+      "status": "accepted",
+      "title": "健康检查判四类腐烂，但不给库打健康分",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_06GV1Q7H3K5NDZ1RE0EXTCHB3B",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB3B-审计是写前日志-见证人从写门的签名里要.html",
+      "path": "docs/adr/0035-audit-is-a-write-ahead-witnessed-log.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:审计日志 + hook 强制执行，**不靠礼貌指令**",
+        "file://packages/store/src/paths.ts#t:只读、只追加，永不修改、永不删除",
+        "file://packages/core/src/asset.ts#t:没有出处的一行不许进 assets/",
+        "file://docs/handbook/gates.md#t:**修问题，不要修闸门。**"
+      ],
+      "status": "accepted",
+      "title": "审计是写前日志，见证人从写门的签名里要",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_06GV1Q7H3K5NDZ1RE0EXTCHB4C",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB4C-新鲜度任务只能问-不能自己答.html",
+      "path": "docs/adr/0036-freshness-job-asks-never-answers.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:新鲜度任务：state 超期主动确认",
+        "file://docs/implement2.md#t:linter、定时任务 | **什么算过期**",
+        "file://packages/core/src/asset.ts#t:确认它是否仍然成立",
+        "file://packages/store/src/vault.ts#t:没有理由的确认等于一次点击"
+      ],
+      "status": "accepted",
+      "title": "新鲜度任务只能问，不能自己答",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.8,
+      "created": "2026-11-06",
+      "id": "dec_06GV1Q7H3K5NDZ1RE0EXTCHB5D",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB5D-周报是与健康报告同源的另一份投影-没有日志就说没有日志.html",
+      "path": "docs/adr/0037-weekly-report-is-another-projection.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:健康报告 → 周报",
+        "file://packages/core/src/emit.ts#t:截断长度是常量，而且**截断必须说出来**",
+        "file://docs/implement2.md#t:输出必须逐字节确定",
+        "file://evals/README.md#t:阈值是地板，不是目标"
+      ],
+      "status": "accepted",
+      "title": "周报是与健康报告同源的另一份投影，没有日志就说没有日志",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.75,
+      "created": "2026-11-06",
+      "id": "dec_06GV1Q7H3K5NDZ1RE0EXTCHB6E",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB6E-规模探针是退出条件的结构性替身-不是退出条件本身.html",
+      "path": "docs/adr/0038-scale-probe-is-a-structural-stand-in.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:库里涨到 **500–1000 条事实仍然可用**",
+        "file://docs/implement2.md#t:这是唯一重要的北极星",
+        "file://evals/runner/maintenance.ts#t:它证明的是机器不会崩、边界不会松、信号不会淹",
+        "file://packages/core/src/health.ts#t:**不给库打健康分。**"
+      ],
+      "status": "accepted",
+      "title": "规模探针是退出条件的结构性替身，不是退出条件本身",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_06GV1Q7H3K5NDZ1RE0EXTCHB7F",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB7F-自举是一条命令-不是一张进度表.html",
+      "path": "docs/adr/0039-bootstrap-is-a-command-not-a-scoreboard.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:**自举**：用本项目的 CLI 管本项目的 ADR / 规则 / eval",
+        "file://docs/implement2.md#t:目标自己产出 30+ ADR",
+        "file://packages/core/src/bootstrap.ts#t:BOOTSTRAP_ADR_TARGET = 30",
+        "file://apps/cli/src/main.ts#t:forge bootstrap",
+        "file://packages/core/src/bootstrap.ts#t:数量是「决策日志被用起来」的痕迹"
+      ],
+      "status": "accepted",
+      "title": "自举是一条命令，不是一张进度表",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.9,
+      "created": "2026-11-06",
+      "id": "dec_06GV1Q7H3K5NDZ1RE0EXTCHB8G",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB8G-团队版由付费信号闸门-不由路线图解锁.html",
+      "path": "docs/adr/0040-team-edition-is-gated-by-a-payment-signal.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:团队版**只在出现付费信号后**做",
+        "file://docs/implement2.md#t:单人模式的三个缺失项：没权限、没并发、没敏感度切分",
+        "file://packages/core/src/team.ts#t:TEAM_CAPABILITIES = [\"permissions\", \"concurrency\", \"sensitivity\"]",
+        "file://docs/team/status.json#t:payment_signal",
+        "file://evals/runner/gate.ts#t:TEAM_UNGUARDED: \"E16_EVAL_TEAM_UNGUARDED\""
+      ],
+      "status": "accepted",
+      "title": "团队版由付费信号闸门，不由路线图解锁",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_06GV1Q7H3K5NDZ1RE0EXTCHB9H",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB9H-上架包是-draft-代码不替人按提交按钮.html",
+      "path": "docs/adr/0041-listing-is-a-draft-not-a-submission.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:上架路径：Skill/MCP 提交，借平台分发与已承诺预算结算",
+        "file://packages/core/src/distribution.ts#t:status: \"draft\"",
+        "file://packages/core/src/distribution.ts#t:published: false",
+        "file://packages/core/src/distribution.ts#t:直接复用 `emitSkill`：Skill 出口只有一个真相",
+        "file://packages/core/src/distribution.ts#t:上架需要人：账号、仓库 URL、一个真正可安装的"
+      ],
+      "status": "accepted",
+      "title": "上架包是 draft，代码不替人按提交按钮",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_06GV1Q7H3K5NDZ1RE0EXTCHBAJ",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHBAJ-demo-只从自己的库生成.html",
+      "path": "docs/adr/0042-demo-is-generated-from-our-own-library.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:对外 demo = **你自己的库**，不是编造的样例",
+        "file://packages/core/src/demo.ts#t:source === \"repo\" ? \"本仓库自己的\" : \"资产库里的\"",
+        "file://packages/core/src/demo.ts#t:资产正文是人写的，也是模型写的",
+        "file://packages/core/src/demo.ts#t:页面没有外部依赖：直接打开",
+        "file://evals/runner/phase8.ts#t:demo 不是从本仓库自己的资产完整生成的"
+      ],
+      "status": "accepted",
+      "title": "demo 只从自己的库生成",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_06GV413S007GM47SMDX193Y58T",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV413S007GM47SMDX193Y58T-题面-subject-进-front-matter-身份是结构-不是从正文猜出来的.html",
+      "path": "docs/adr/0025-subject-is-structure-not-guess.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement1.md#t:判断两条断言是否在说同一件事",
+        "file://docs/implement1.md#t:判断新事件与现有 state 是否冲突",
+        "file://docs/implement1.md#t:候选断言 → 归并 / 新建实体",
+        "file://AGENTS.md#t:信任边界必须写在代码里",
+        "file://docs/directory.md#t:两者必须一一对应，且在 CI 里比对一致性"
+      ],
+      "status": "accepted",
+      "title": "题面（`subject`）进 front-matter：身份是结构，不是从正文猜出来的",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_06GV413WX0PE51K4GYG9J7DXFP",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV413WX0PE51K4GYG9J7DXFP-归并-规则先判-模型只提议-拿不准就新建.html",
+      "path": "docs/adr/0026-linker-rules-first-model-proposes.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:规则优先，LLM 只判",
+        "file://docs/implement1.md#t:判断两条断言是否在说同一件事",
+        "file://docs/implement1.md#t:让运行时的 agent 自动覆盖用户已有的状态",
+        "file://docs/adr/0025-subject-is-structure-not-guess.md#t:它是一条**索引**，所以它的可信度",
+        "file://AGENTS.md#t:信任边界必须写在代码里"
+      ],
+      "status": "accepted",
+      "title": "归并：规则先判，模型只提议；拿不准就新建",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_06GV4140T0WP918KYT73XYTBW3",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV4140T0WP918KYT73XYTBW3-冲突判定只出候选与证据-永不落库-已经确认过-不等于-冲突.html",
+      "path": "docs/adr/0027-conflicts-are-candidates-never-applied.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:只出候选 + 证据，不落库",
+        "file://docs/implement2.md#t:进队列且证据正确",
+        "file://docs/implement1.md#t:冲突永远不自动覆盖",
+        "file://docs/implement1.md#t:一律进人工队列——这是",
+        "file://docs/implement2.md#t:冲突判定原则** | 无自动覆盖",
+        "file://docs/implement1.md#t:必须带证据 span"
+      ],
+      "status": "accepted",
+      "title": "冲突判定只出候选与证据，永不落库；\"已经确认过\"不等于\"冲突\"",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.85,
+      "created": "2026-11-06",
+      "id": "dec_06GV4144Q0KFCB8JCHWY78TN3J",
+      "last_confirmed": "2026-11-06",
+      "page": "assets/decision/dec_06GV4144Q0KFCB8JCHWY78TN3J-冲突处理-新建一代状态-supersedes-链-由人给理由-不就地覆盖.html",
+      "path": "docs/adr/0028-conflict-resolution-supersede-chain.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/implement2.md#t:人工冲突确认队列",
+        "file://docs/directory.md#t:写入用户工作区一律要经过审核队列",
+        "file://docs/directory.md#t:audit/         # 变更日志 + 冲突待确认队列",
+        "file://docs/implement2.md#t:人工冲突确认队列（**这是你未来的收费点**）",
+        "file://schema/taxonomy.yaml#t:就地替换，必须带日期",
+        "file://AGENTS.md#t:产出必须逐字节确定"
+      ],
+      "status": "accepted",
+      "title": "冲突处理：新建一代状态 + `supersedes` 链，由人给理由；不就地覆盖",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.9,
+      "created": "2026-11-10",
+      "id": "dec_06GWAN2J00D8KSGBNT0GA0HH9Q",
+      "last_confirmed": "2026-11-10",
+      "page": "assets/decision/dec_06GWAN2J00D8KSGBNT0GA0HH9Q-子闸门也取自基线修订-而不只是入口.html",
+      "path": "docs/adr/0043-subgates-also-come-from-base-revision.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://docs/gates/bypass-matrix.md#t:统一修法已经写成 ADR-0043",
+        "file://scripts/gates/ci.mjs#t:scripts/gates/${script}",
+        "file://scripts/gates/trusted-ci.mjs#t:以当前仓库为工作目录去判定",
+        "file://evals/regressions/0001-trusted-judge-does-not-cover-sub-gates.md#t:子闸门是怎么被调起来的"
+      ],
+      "status": "accepted",
+      "title": "子闸门也取自基线修订，而不只是入口",
+      "type": "decision"
+    },
+    {
+      "confidence": 0.9,
+      "created": "2026-11-10",
+      "id": "dec_06GWAN2J00V8MGMMYQRM7FVRR2",
+      "last_confirmed": "2026-11-10",
+      "page": "assets/decision/dec_06GWAN2J00V8MGMMYQRM7FVRR2-发布门要检查包结构-而不是只打一个占位.html",
+      "path": "docs/adr/0044-release-preflight-before-publish.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://listing/SUBMISSION.md#t:成为一个真正可安装的命令",
+        "file://.github/workflows/release.yml#t:publish (placeholder)",
+        "file://scripts/gates/release.mjs#t:明确**尚未**覆盖",
+        "file://README.md#t:一个真正可安装的"
+      ],
+      "status": "accepted",
+      "title": "发布门要检查包结构，而不是只打一个占位",
+      "type": "decision"
+    }
+  ],
+  "counts": {
+    "decision": 44,
+    "event": 0,
+    "rule": 0,
+    "state": 0,
+    "total": 44
+  },
+  "kind": "forge-demo",
+  "schema_version": 1,
+  "source": "repo"
+}

@@ -8,14 +8,22 @@
  * 所以本地闸门只负责"尽快失败"，真正的判定必须发生在服务端、
  * 在一条人改不了的路径上。
  *
- * 它做三件事：
+ * 它做四件事：
  *   1. 用与本地完全相同的 policy 重判变更集（这就是 --no-verify 无效的原因）
  *   2. 检查"闸门本身是否还完整"——agent 拆掉自己的 hook，这里会红
- *   3. 跑 lint / typecheck / test
+ *   3. 三个补充判定：schema 一致性（S7）、资产出处（S6）、eval 阈值（S12–S14）
+ *   4. 跑 lint / typecheck / test
  *
  * 用法：
  *   pnpm gate:ci              完整判定
  *   node scripts/gates/ci.mjs --guard-only   只做 1+2（不需要 node_modules，演练用）
+ *
+ * 为什么 3 与 4 只在完整模式跑：`--guard-only` 要能在没有依赖的临时克隆里跑得动
+ * （Phase 0 的演练靠这一点）。降级是**记账的降级**——三个子闸门自己会打印
+ * "本次没查"，而不是安静地返回绿（见 lib/report.mjs 的 degrade）。
+ *
+ * 为什么 eval 阈值也是**子闸门**而不是散在这里的一段：见脚本自己的注释——
+ * 判定住在 `evals/runner/gate.ts`，这里只负责编排与退出码。
  */
 import { spawnSync } from "node:child_process";
 import { adrRefsSince, changesBetween, repoRoot, resolveBaseRef } from "./lib/git.mjs";
@@ -28,6 +36,19 @@ const root = repoRoot() ?? process.cwd();
 const env = process.env;
 
 let failed = false;
+
+/**
+ * @param {string} script
+ * @returns {boolean}
+ */
+function runGateScript(script) {
+  const result = spawnSync("node", [`scripts/gates/${script}`], {
+    cwd: root,
+    stdio: "inherit",
+    shell: process.platform === "win32",
+  });
+  return result.status === 0;
+}
 
 // ── 1. 变更集判定（与 pre-commit 同一套 policy）────────────────────────────
 const base = resolveBaseRef({ cwd: root, env });
@@ -65,7 +86,17 @@ if (harnessFindings.length > 0) {
   failed = true;
 }
 
-// ── 3. 重活：lint / typecheck / test ─────────────────────────────────────
+// ── 3. 补充判定：schema 一致性（S7）· 资产出处（S6）· eval 阈值（S12–S14）──
+if (!guardOnly) {
+  for (const script of ["consistency.mjs", "assets.mjs", "evals.mjs"]) {
+    ok(`[gate3] node scripts/gates/${script} …`);
+    if (!runGateScript(script)) {
+      failed = true;
+    }
+  }
+}
+
+// ── 4. 重活：lint / typecheck / test ─────────────────────────────────────
 for (const check of heavyChecks) {
   ok(`[gate3] pnpm ${check.command} …`);
   const result = spawnSync("pnpm", ["--silent", check.command], {

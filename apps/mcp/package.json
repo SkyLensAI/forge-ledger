@@ -1,0 +1,27 @@
+{
+  "name": "@forge/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "forge MCP server：让 Claude / Cursor 直接调用资产库（S22）",
+  "engines": {
+    "node": ">=24"
+  },
+  "bin": {
+    "forge-mcp": "./src/main.ts"
+  },
+  "exports": {
+    ".": "./src/server.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@forge/core": "workspace:*",
+    "@forge/schema": "workspace:*",
+    "@forge/store": "workspace:*"
+  }
+}

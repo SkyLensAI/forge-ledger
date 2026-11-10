@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>没有 key 时，S17 的基准报告只能是&quot;协议 + 可测证据&quot;，不能是一组分数 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV05GPG0F3EM59RCE7B3Q805</p>
+<h1>没有 key 时，S17 的基准报告只能是&quot;协议 + 可测证据&quot;，不能是一组分数</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.75</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0024-eval-report-without-an-api-key.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:跑 eval 定阈值</code></li>
+<li><code>file://docs/implement2.md#t:连续 3 天稳定</code></li>
+<li><code>file://docs/implement1.md#t:没有 eval 就说</code></li>
+<li><code>file://AGENTS.md#t:信任边界必须写在代码里</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>没有 key 时，S17 的基准报告只能是&quot;协议 + 可测证据&quot;，不能是一组分数</h1>
+<h2>问题</h2>
+<p>S17 的交付物写的是&quot;一份基准报告&quot;，退出条件是&quot;精确率/召回率达标，且连续 3 天稳定&quot;。</p>
+<p>而本仓库<strong>没有 API key</strong>。于是有两种做法：</p>
+<ul><li>造一份合成 cassette（手写模型的回答），让它跑出好看的分数，写进报告。</li><li>如实写：模型路径<strong>没有在真实模型上量过</strong>，交付的是&quot;要量什么、怎么量&quot;的协议 ＋ 已经能测的那部分证据。</li></ul>
+<p>第一种做法在这个仓库里有专门的名字：<strong>让模型给自己发合格证</strong>。 手写的回答可以逐条贴合 20 条 golden 用例——那测出来的是&quot;出题人也会答题&quot;， 不是抽取质量。而这份分数一旦写进 README，它就会变成后续所有讨论的前提， 且没有人能从那个数字里看出它来自一份手写的录像。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>合成 cassette + 分数。</strong> 报告好看，但那个数字是编的（见上）。</li><li><strong>不写报告</strong>，等有 key 再说。那就是&quot;没有 eval 就说效果不错&quot;的反面： 连&quot;该量什么&quot;都没留下，下一个人（或下一个 agent）得从零想一遍。</li><li><strong>只写协议</strong>：把阈值、量法、复现命令、验收判据写清楚，分数留空。</li><li><strong>协议 + 把&quot;现在就能测的部分&quot;全部测掉</strong>：信任边界（<code>E7</code>）、 管道的确定性（同一份录像跑两次字节相同）、<code>sanitize</code> 的逐条行为、 以及<strong>词法基线在同一把尺子上的分数</strong>（0.882，它不需要 key）。</li></ol>
+<h2>选定</h2>
+<p><strong>选 4。</strong> 具体落在三处：</p>
+<ul><li><code>evals/README.md</code> 新增「Phase 4 · 模型路径怎么量」一节：量什么、用什么命令、 阈值从哪来、什么算达标、以及<strong>当前状态是&quot;未量过&quot;</strong>。</li><li><code>evals/runner/main.ts --extractor model-replay</code> 是那条命令：它对着一份录像跑， 走的是与真实调用<strong>完全相同</strong>的代码（录制完立刻回放，只走一条路）。</li><li><strong>仓库里不放任何 cassette</strong>（ADR-0021）。所以那个抽取器在没有 <code>FORGE_CASSETTE</code> 时<strong>抛错</strong>，而不是返回空——&quot;没有录像&quot;与&quot;模型什么都没抽出来&quot;必须能被分开。</li></ul>
+<p>报告里<strong>一个字都没提到</strong>&quot;模型抽得准不准&quot;的结论，因为那需要一个真实运行。</p>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：交付物是<strong>可执行的</strong>，不是一段承诺。有人拿到 key 之后， 两条命令就能得到第一份真实报告，而&quot;怎么算达标&quot;已经写在前面了 （阈值 + <code>E2</code>/<code>E6</code> 的人工确认，与 Phase 3 同一套）。</li><li><strong>好</strong>：把&quot;未量过&quot;写进 README 的当前进度表，而不是留在 PR 描述里。 一份把状态写成&quot;完成&quot;的文档，比一份写得难看的文档更危险。</li><li><strong>好</strong>：Phase 3 那句&quot;阈值是地板，不是目标&quot;因此有了下半句—— 地板现在也铺到了模型路径上，只是<strong>还没人在上面走过</strong>。</li><li><strong>代价</strong>：Phase 4 的退出条件在本仓库<strong>没有达成</strong>，而这会一直显示在 README 上。 这是对的：它是事实，而&quot;用一份合成录像把它变成绿色&quot;是把闸门当成装饰。</li><li><strong>残余风险</strong>：没有真实运行，就没有真实失败案例，<code>evals/regressions/</code> 里 关于模型的条目只能是&quot;我在开发中踩的&quot;（例如 0002 那条编排错位）， 而不是&quot;模型在真实数据上踩的&quot;。棘轮的输入因此少了一类—— 而这正是 Phase 4 之后必须尽快补上的东西：<strong>第一件真实失败案例</strong>。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

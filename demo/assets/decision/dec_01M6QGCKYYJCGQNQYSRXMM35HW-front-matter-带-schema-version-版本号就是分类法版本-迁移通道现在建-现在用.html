@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>front-matter 带 `schema_version`，版本号就是分类法版本；迁移通道现在建、现在用 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6QGCKYYJCGQNQYSRXMM35HW</p>
+<h1>front-matter 带 `schema_version`，版本号就是分类法版本；迁移通道现在建、现在用</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.9</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0008-schema-version-and-migration-channel.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:迁移通道（哪怕只有 v1 的空迁移，通道必须先建）</code></li>
+<li><code>file://docs/implement2.md#t:迁移成本随数据量线性增长</code></li>
+<li><code>file://docs/directory.md#t:资产比代码活得久</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>front-matter 带 <code>schema_version</code>，版本号就是分类法版本；迁移通道现在建、现在用</h1>
+<h2>问题</h2>
+<p>S5 要定 front-matter，S7 要建迁移通道。front-matter 里要不要版本号？ 如果要，它和 <code>taxonomy.yaml</code> 的 <code>version</code> 是一个东西还是两个？</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>不放版本号</strong>，靠&quot;字段长什么样&quot;猜版本（缺 <code>origin_incident</code> 即旧版……）。</li><li>**放 <code>schema_version</code>，与 <code>taxonomy.version</code> 分开编号**。</li><li>**放 <code>schema_version</code>，语义上就是分类法版本**：只有一个版本号。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3</strong>，并且通道现在建、现在用。</p>
+<ul><li>两个版本号会立刻产生&quot;哪个才是权威&quot;的问题，而它们的取值必然在某些变更里不同步。</li><li>分类法版本<strong>就是</strong>资产格式版本：加类型、改必填字段、改状态词表，都是同一件事—— 资产格式变了。于是判定只需要比较一个数： <code>schema_version !== taxonomy.version</code> → <code>SCHEMA_VERSION_MISMATCH</code>（附修法：跑迁移通道）。 不需要一张&quot;字段 → 版本&quot;的推测表——推测版本看着省事，实际在制造不可判定的边界， 而且它永远会漏掉&quot;只改了状态词表&quot;这类变更。</li><li>通道先建，是排序原则 1（回填不了的东西先做）：<strong>通道建好之前写入的数据，将来只能靠一次性脚本硬改</strong>， 而硬改脚本没有测试、没有版本区间、也没有&quot;从哪迁到哪&quot;的记录。</li><li>第一批被迁移的不是假数据：仓库里已有的 5 条 ADR 写在 schema 之前（没有 <code>schema_version</code>）， <code>v0 → v1</code> 迁移的第一个真实任务就是把它们纳入版本纪律。 <strong>缺版本号 = v0</strong>：这条规则让&quot;还没迁移的旧资产&quot;可判定，而不是让它们静默通过。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：迁移是可测试的纯函数（<code>planMigration(from, to)</code> 返回区间列表；每个区间是一个纯变换）。</li><li><strong>好</strong>：区间缺口（有 0→1、没有 1→2）会明确报错，而不是&quot;尽力而为地跳过去&quot;。</li><li><strong>好</strong>：CI 对未迁移资产明确报红，不会&quot;顺手兼容一下&quot;——兼容分支是迁移债务的温床。</li><li><strong>代价</strong>：每次改资产格式都要写一段迁移 + bump 版本，即使当时库里是空的。</li><li><strong>代价</strong>：每个资产多背一个字段（一行）。</li><li><strong>残余风险</strong>：迁移只在被已有资产触发时才被真正验证。空库阶段的迁移是一段<strong>没有数据可跑</strong>的代码， 所以 v0→v1 必须建立在真实存在的 v0 数据上——这 5 条 ADR 就是它的回归用例。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>ID 是「类型前缀 + ULID」，前缀由分类法声明，不写在代码里 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6QGCKYXNFDEANHYXWJF1SPR</p>
+<h1>ID 是「类型前缀 + ULID」，前缀由分类法声明，不写在代码里</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0007-id-scheme-prefix-plus-ulid.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/directory.md#t:ID 带类型前缀 + ULID</code></li>
+<li><code>file://docs/directory.md#t:数据目录按 ID 前缀分区</code></li>
+<li><code>file://docs/implement2.md#t:`dec_`/`state_`/`event_`/`rule_` + ULID</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>ID 是「类型前缀 + ULID」，前缀由分类法声明，不写在代码里</h1>
+<h2>问题</h2>
+<p>ID 方案属于回填不了的那一类：一旦有真实数据，改 ID 等于改所有引用。 用 UUIDv4？自增整数？前缀 + ULID？前缀表放在代码常量里，还是放在分类法里？</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>UUIDv4</strong>，类型只存在 front-matter 的 <code>type</code> 字段里。</li><li><strong>单调自增整数</strong>（数据库分配）。</li><li>**<code>&lt;类型前缀&gt;_&lt;ULID&gt;</code>**，前缀由 <code>schema/taxonomy.yaml</code> 声明，代码只读不写。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3。</strong></p>
+<ul><li><strong>前缀进 ID，而不是只进字段</strong>：<code>grep -r &quot;dec_&quot;</code>、按 ID 前缀分区目录、日志里一眼看出是什么， 这三件事都因此成立。类型信息放在两个地方（ID + 字段）比放在一个地方更难丢。</li><li><strong>ULID 而不是 UUIDv4</strong>：前 48 位是毫秒时间戳，ID 天然按时序可排序—— 目录列表、审计日志、导出的 diff 都能直接排序，不需要额外字段参与。 （<code>created</code> 仍然单独存，因为它会被人工修正，而 ID 不会。）</li><li><strong>ULID 而不是自增</strong>：ID 必须在客户端离线生成（本地优先是这个品类的核心偏好）， 自增需要中心分配，与&quot;没有服务端也要能用&quot;直接冲突。</li><li>**前缀表放在 <code>taxonomy.yaml</code>，不放在代码里**：类型和它的前缀必须一起改。 两处维护必然漂移，而漂移的表现是&quot;分类法加了类型、ID 前缀忘了加&quot;—— 一种只在真实数据上才暴露的错误。</li><li>细节：ID 是 26 位 Crockford base32（不含 I / L / O / U，避免手抄歧义）。 解析时先做大小写归一化再比较：大小写不同、指向同一个 ID 的引用必须被判成同一个， 否则 <code>supersedes</code> 这类引用会静默断链。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：新增类型时 ID 方案自动跟上（前缀来自分类法）；ID 与类型不一致是机器可判定的红 （<code>ID_PREFIX_MISMATCH</code>）。</li><li><strong>好</strong>：ID 排序 ≈ 创建顺序，跨机器可比。</li><li><strong>代价</strong>：ID 长（前缀 + 26 位），人读不如 <code>dec-7</code> 顺眼。这是为&quot;可离线生成 + 可排序&quot;付的价。</li><li><strong>代价</strong>：ULID 的随机段<strong>不做</strong>同毫秒单调保证。需要严格顺序时用 <code>created</code> + 显式排序键， 不依赖 ID 的字节序。</li><li><strong>残余风险</strong>：前缀一旦被真实数据使用就不能再改（等于改 ID）。这一点由 R2（分类法改动必须走 ADR） 拦住——它拦的不是&quot;改不动&quot;，而是&quot;不许悄悄改&quot;。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

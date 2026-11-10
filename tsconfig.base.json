@@ -15,9 +15,14 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
 
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
+    // 零 build（ADR-0011）：永不 emit，没有任何产物层，也就没有 dist/ 漂移。
+    "noEmit": true,
+    // 导入路径必须带 .ts 后缀：Node 的原生类型擦除直接执行源码。
+    "allowImportingTsExtensions": true,
+    // 只用可擦除语法：enum / namespace / 参数属性 / 装饰器一律红。
+    // 这条约束的执行体不是禁令，而是"CI 里 node 真的会跑它"。
+    "erasableSyntaxOnly": true,
+
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   }

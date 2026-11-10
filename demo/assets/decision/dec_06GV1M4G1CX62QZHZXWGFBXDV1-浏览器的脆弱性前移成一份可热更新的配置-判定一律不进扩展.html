@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>浏览器的脆弱性前移成一份可热更新的配置；判定一律不进扩展 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV1M4G1CX62QZHZXWGFBXDV1</p>
+<h1>浏览器的脆弱性前移成一份可热更新的配置；判定一律不进扩展</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.8</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0030-browser-fragility-becomes-hot-updatable-config.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:选择器配置可远端热更新</code></li>
+<li><code>file://docs/implement2.md#t:平台一改版工具就坏</code></li>
+<li><code>file://docs/implement2.md#t:只做&quot;取用 + 增量采集&quot;</code></li>
+<li><code>file://docs/implement2.md#t:浏览器扩展：只做</code></li>
+<li><code>file://docs/implement2.md#t:让 Claude/Cursor 直接调用你的资产</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>浏览器的脆弱性前移成一份可热更新的配置；判定一律不进扩展</h1>
+<h2>问题</h2>
+<p>S23 的两句话是&quot;只做<strong>取用 + 增量采集</strong>&quot;与&quot;<strong>选择器配置可远端热更新</strong>&quot;。 把它们落在代码里时，有三件事必须先定，否则这个出口要么是个空壳，要么是个洞：</p>
+<ol><li><strong>脆弱性是结构性的。</strong> 这个品类的第一大差评是&quot;平台一改版工具就坏&quot;（占全部评价 16%）， 而插件是所有来源里最脆弱的一环：它依赖 DOM，DOM 是私有实现细节。 所以顺序才是&quot;先做官方导出（平台承诺过的接口），插件放到 Phase 6&quot;。 脆弱性消不掉，只能<strong>前移</strong>：DOM 改版时要改的是<strong>一份配置</strong>， 不是一次扩展发版（发版要过商店审核，那是几天到几周）。</li><li><strong>远端配置是一个执行面。</strong> &quot;远端可热更新&quot;如果等于&quot;远端可以下发代码&quot;， 那就等于&quot;远端可以改你的浏览器&quot;。</li><li><strong>浏览器执行不了本仓库的 TypeScript。</strong> 本仓库零构建（ADR-0011 靠 Node 的原生类型擦除）， 而浏览器没有类型擦除。于是扩展<strong>没法</strong> import <code>@forge/core</code>—— 这直接决定了判定该住在哪。</li></ol>
+<h2>考虑过的选项</h2>
+<ol><li><strong>把判定在扩展里用 JS 抄一份。</strong> 便宜，但从此有两份实现， 而漂移的方向永远是<strong>浏览器那份更宽松</strong>（R5 反对的就是这件事）。</li><li><strong>给扩展加一个打包步骤</strong>（tsc 或 esbuild）。它打破了&quot;零构建&quot;， 而且不解决根本问题：<code>@forge/core</code> 依赖 <code>node:crypto</code> 与 zod， 打进浏览器要么引入一堆 polyfill，要么再切一层包。</li><li>**判定全部留在本机桥（<code>forge serve</code>）**，扩展只做&quot;读 DOM、发请求&quot;。 扩展里没有一行&quot;到底算不算&quot;，引擎仍然是那一份、那份被测试的。</li><li><strong>不做扩展</strong>，只做 MCP。那等于放弃&quot;取用发生在你正在读的页面里&quot;这个场景。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3。</strong> 于是这条流水线是：</p>
+<pre><code>页面 ──(DOM 胶水: 选择器取值 + 相对时间折 ISO)──▶ 扩展
+                                                      │ POST /capture（原文，无键）
+                                                      ▼
+                              forge serve（127.0.0.1 + token）
+                                                      │ 判定全在这里
+                              packages/core/src/selectors.ts
+                                                      │ 算键 / 去重 / 组载荷
+                                                      ▼
+                                              sources/（只追加）</code></pre>
+<p><strong>四条判据</strong>：</p>
+<ol><li><strong>远端配置里没有代码。</strong> <code>SelectorConfig</code> 只有字符串：<code>match</code>、<code>item</code>、<code>fields.*</code>。 解析器不 <code>eval</code>、不 <code>new Function</code>。所以&quot;配置被投毒&quot;的最坏后果是<strong>采不到东西</strong>， 不是&quot;能在页面里跑任意代码&quot;。<strong>这条性质是热更新敢做的前提</strong>， 而且它被测试钉住（扩展的每一个 JS 文件都不许出现动态执行）。</li><li><strong>热更新的方向是确定的</strong>：<code>revision</code> 大的赢，<strong>相同则远端赢</strong>。 相同也让远端赢，是因为本地那份只是&quot;随包发的兜底&quot;，而远端那份是活的—— 反过来会让一次扩展更新<strong>把远端的热修倒退回去</strong>，而倒退是无声的： 选择器还在，采到的东西变少了。</li><li><strong>键由桥派生</strong>，不由浏览器算。浏览器只报原文；<code>captureKeyOf</code>（内容寻址） 与&quot;已经采过的&quot;判定都在桥这一侧，判据是<strong>已有的 sources</strong>（重新解析一遍）， 而不是一份会漂移的本地集合——存一份的结局是有人手删了来源之后， 同一条被采第二次，而&quot;库里多一条重复记录&quot;比多花几十毫秒难查得多。</li><li><strong>桥只绑回环、要 token、网页来源一律 403。</strong> 回环不等于安全： 任何一个网页都能向 <code>http://127.0.0.1:8787</code> 发请求。没有 token 的话， 你在浏览器里打开的任何页面都能读走你整个库。CORS 只回显扩展来源—— token 可能被截屏、被贴进聊天记录，所以两道门都要有。</li></ol>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：扩展里没有判定，&quot;两份实现漂移&quot;这件事在结构上不会发生。 唯一成文的重复是 <code>apps/extension/src/match.js</code> 的&quot;最长前缀赢&quot;（页面侧必须知道 当前 tab 归谁管），而它被<strong>逐条比对</strong>测试钉住：拿一张 URL 表， 让它的输出与 core 的 <code>hostForUrl</code> 一致。漂移的那一刻测试就红。</li><li><strong>好</strong>：<code>forge serve</code> 与 MCP 是两个宿主，但走的是同一份判定 （<code>vault.context()</code> / <code>vault.capture()</code>），所以&quot;命令行看到的和扩展看到的 不一样&quot;不可能发生——两边都由测试逐字节断言与 CLI 相同。</li><li><strong>代价</strong>：<strong>扩展本身没有任何自动化验证</strong>。CI 里没有浏览器， 那几十行 DOM 胶水测不了；能测的只有它的<strong>结构</strong>（清单指向的文件存在、 语法合法、没有 import 工作区、随包的配置能被 core 解析）。 这与 <code>model-http.ts</code> 没被真实端点测过是同一类记账，写在 <code>apps/extension/README.md</code> 的「没做什么」里。</li><li><strong>代价</strong>：多一个常驻进程。它换来的是&quot;判定只有一份&quot;，而那条正是 R5。</li><li><strong>残余风险</strong>：<code>selectors.default.json</code> 里的三条选择器是<strong>示例，不是维护过的配置</strong>。 真正被维护的是远端那一份——这也正是它可热更新的理由。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

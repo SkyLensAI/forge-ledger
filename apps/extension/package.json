@@ -1,0 +1,10 @@
+{
+  "name": "@forge/extension",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "浏览器扩展（MV3）：只做取用 + 增量采集。**它本身是纯 JS、不 import 工作区的包**——浏览器执行不了 TypeScript（ADR-0011），判定一律住在 forge serve 那一侧。下面这个依赖只给测试用：把扩展里那段成文的重复与 @forge/core 的判据逐条比对。",
+  "devDependencies": {
+    "@forge/core": "workspace:*"
+  }
+}

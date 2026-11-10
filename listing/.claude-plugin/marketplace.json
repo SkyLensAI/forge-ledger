@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "description": "资产库（共 44 条：决策 44 条）：把决策、规则与状态编译成带可解析出处的资产库。Skill 让模型按需读全文，MCP 让 Claude / Cursor 直接取用。",
+    "version": "0.0.0"
+  },
+  "name": "forge",
+  "owner": {
+    "name": "forge"
+  },
+  "plugins": [
+    {
+      "category": "productivity",
+      "description": "资产库（共 44 条：决策 44 条）：把决策、规则与状态编译成带可解析出处的资产库。Skill 让模型按需读全文，MCP 让 Claude / Cursor 直接取用。",
+      "keywords": [
+        "knowledge-base",
+        "adr",
+        "provenance",
+        "agents",
+        "context"
+      ],
+      "name": "forge",
+      "source": "./plugins/forge",
+      "version": "0.0.0"
+    }
+  ]
+}

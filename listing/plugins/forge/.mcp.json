@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "forge": {
+      "args": [
+        "--vault",
+        "${CLAUDE_PROJECT_DIR}/data"
+      ],
+      "command": "forge-mcp"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+---
+id: dec_01M6QE3MZA2AX3RJB1EGTGZ7SY
+type: decision
+status: accepted
+created: 2026-11-06
+last_confirmed: 2026-11-06
+supersedes: null
+origin_incident: null
+sources:
+  - "implement2.md#Phase 0 · S3"
+  - "implement1.md#2.3 把「清单」变成「闸门」"
+sensitivity: internal
+confidence: 0.9
+---
+
+# 闸门的权威只来自服务端；本地闸门只负责"尽快失败"

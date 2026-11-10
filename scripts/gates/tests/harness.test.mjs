@@ -8,7 +8,7 @@
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,6 +22,12 @@ function fixtureRoot() {
   const root = mkdtempSync(join(tmpdir(), "forge-harness-"));
   for (const entry of [".claude", ".githooks", join(".github", "workflows"), "AGENTS.md"]) {
     cpSync(join(REAL_ROOT, entry), join(root, entry), { recursive: true });
+  }
+  // 闸门 3 的两个编排入口也要有：harness 会读它们（`G3_EVAL_GATE_MISSING`），
+  // 夹具里缺了就会让**每条**变异用例都顺带多报一个码，把真正要测的那个淹掉。
+  mkdirSync(join(root, "scripts", "gates"), { recursive: true });
+  for (const entry of ["ci.mjs", "evals.mjs"]) {
+    cpSync(join(REAL_ROOT, "scripts", "gates", entry), join(root, "scripts", "gates", entry));
   }
   return root;
 }
@@ -53,6 +59,7 @@ test("空目录：每一道闸门都被判定为缺失（不能静默通过）",
       "G1_AGENT_HOOK_MISSING",
       "G2_GIT_HOOK_MISSING",
       "G3_CI_WORKFLOW_MISSING",
+      "G3_EVAL_GATE_MISSING",
       "G5_RELEASE_WORKFLOW_MISSING",
     ]) {
       assert.ok(found.includes(expected), `缺少 ${expected}，实际：${found.join(", ")}`);
@@ -119,6 +126,28 @@ test("变异：浅克隆（diff 会为空，闸门静默空转）—— 必须�
       text.replace("fetch-depth: 0", "fetch-depth: 1"),
     );
     assert.ok(codes(checkHarness({ root, env: CI_ENV })).includes("G3_SHALLOW_CLONE"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("变异：eval 阈值子闸门被整个删掉 —— 必须变红", () => {
+  const root = fixtureRoot();
+  try {
+    rmSync(join(root, "scripts", "gates", "evals.mjs"), { force: true });
+    assert.ok(codes(checkHarness({ root, env: CI_ENV })).includes("G3_EVAL_GATE_MISSING"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("变异：子闸门还在，但 ci.mjs 不再调用它 —— 必须变红（最省事的绕过方式）", () => {
+  const root = fixtureRoot();
+  try {
+    // 只摘掉那一行调用，文件本身留着——这样"文件存在"的检查会放行，
+    // 只有"它还在被调用吗"这一条能抓到。这正是这条检查存在的理由。
+    mutate(root, join("scripts", "gates", "ci.mjs"), (text) => text.replace('"evals.mjs"', '"assets.mjs"'));
+    assert.ok(codes(checkHarness({ root, env: CI_ENV })).includes("G3_EVAL_GATE_MISSING"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

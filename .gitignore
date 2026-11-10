@@ -17,6 +17,9 @@ data/
 *.log
 .cache/
 
+# 待人工落盘的受保护路径产物（用完即删，不属于仓库）
+handoff/
+
 # 编辑器 / 系统
 .DS_Store
 Thumbs.db

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "about": "评测阈值。**这是地板，不是目标**：它回答「实现是不是坏掉了」，不回答「实现够好了吗」。理由与实测数字见 evals/README.md。",
+  "extraction": {
+    "precision": 0.7,
+    "recall": 0.7,
+    "ratified_by": "allentire",
+    "ratified_at": "2026-11-06",
+    "why": "定在词法基线实测分之下、空实现之上，且留出余量：阈值贴着基线会让一次无关的重构就变红，于是所有人学会无视它。",
+    "thresholds_sha256": "e1829633090cc4f0a1bc7989dc82f2c4ed83e4dd0ef6fcd9077a67cd3d038982"
+  }
+}

@@ -6,19 +6,27 @@
   "type": "module",
   "packageManager": "pnpm@12.16.1",
   "engines": {
-    "node": ">=22"
+    "comment": "ADR-0011：Node 原生类型擦除 + node --test 对 .ts 的稳定支持都要求 >= 24",
+    "node": ">=24"
   },
   "scripts": {
     "prepare": "node scripts/gates/install-hooks.mjs",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test \"scripts/gates/tests/**/*.test.mjs\"",
+    "test": "node --test \"scripts/gates/tests/**/*.test.mjs\" \"packages/*/test/**/*.test.ts\" \"apps/*/test/**/*.test.ts\" \"evals/**/*.test.ts\"",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "cli": "node apps/cli/src/main.ts",
+    "forge": "node apps/cli/src/main.ts",
+    "bootstrap": "node apps/cli/src/main.ts bootstrap",
+    "listing": "node apps/cli/src/main.ts listing --repo --out listing",
+    "demo": "node apps/cli/src/main.ts demo --repo --out demo",
+    "eval": "node evals/runner/main.ts",
     "gate:precommit": "node scripts/gates/pre-commit.mjs",
     "gate:ci": "node scripts/gates/ci.mjs",
     "gate:trusted": "node scripts/gates/trusted-ci.mjs",
     "gate:release": "node scripts/gates/release.mjs",
-    "gate:rehearse": "node scripts/gates/rehearse.mjs"
+    "gate:rehearse": "node scripts/gates/rehearse.mjs",
+    "gate:evals": "node scripts/gates/evals.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

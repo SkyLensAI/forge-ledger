@@ -1,0 +1,400 @@
+{
+  "schema_version": 1,
+  "kind": "extraction",
+  "about": "抽取黄金集：20 条人写的事件 + 人工确认的期望断言。判据与阈值见 evals/README.md。",
+  "review": {
+    "status": "confirmed",
+    "reviewed_by": "allentire",
+    "reviewed_at": "2026-11-06",
+    "method": "逐条读 case.why，核对它指出的 span 里确实记录着这件事；再核对 expected 的 type 与 taxonomy 的写规则一致。",
+    "why_it_matters": "golden 集由 agent 自己写、自己判，就是让模型给自己发合格证——先有尺子的意义会整个消失。所以确认动作留给人，闸门会检查它有没有发生。",
+    "cases_sha256": "cb45f11dd9c33b14b95320618da4c705c4abb5d69d3abde24011b471bb666241"
+  },
+  "cases": [
+    {
+      "id": "ext-001",
+      "about": "一次带理由的取舍 → decision",
+      "span": "file://docs/adr/0013-derived-ids-content-addressed.md#h:派生出来的东西用**内容寻址** ID，人写的东西才用 ULID",
+      "events": [
+        {
+          "key": "conv_cache/msg_0001",
+          "occurred_at": "2026-09-12T08:15:00Z",
+          "actor": "user",
+          "text": "缓存键用内容寻址，不加时间戳。加时间戳的话，同样的输入会产出不同的字节，快照测试当场就废了。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "decision",
+          "key": "conv_cache/msg_0001",
+          "why": "有明确的选择（内容寻址而不是时间戳）和明确的理由（快照测试会废），对应 ADR-0013 的选定。"
+        }
+      ]
+    },
+    {
+      "id": "ext-002",
+      "about": "定下一条全局架构边界 → decision",
+      "span": "file://docs/adr/0001-gate-authority-lives-in-ci.md#t:本地闸门全部可绕过",
+      "events": [
+        {
+          "key": "conv_gate/msg_0101",
+          "occurred_at": "2026-10-01T10:00:00Z",
+          "actor": "user",
+          "text": "本地钩子全部可以被绕过，所以判定只能放在服务端——那是唯一一条我改不到的路径。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "decision",
+          "key": "conv_gate/msg_0101",
+          "why": "「只能放在服务端」是一次定调，并且给了理由；对应 ADR-0001 的选定。"
+        }
+      ]
+    },
+    {
+      "id": "ext-003",
+      "about": "显式的「现在不做」也是决策 → decision",
+      "span": "file://docs/adr/0018-phase2-three-packages-no-emit-package.md#t:在第二个消费者出现之前拆包",
+      "events": [
+        {
+          "key": "conv_pkg/msg_0201",
+          "occurred_at": "2026-10-20T09:30:00Z",
+          "actor": "user",
+          "text": "emit 先不拆成独立的包，等出口多到 emit.ts 真的读不动了再说。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "decision",
+          "key": "conv_pkg/msg_0201",
+          "why": "「先不拆…再说」是一次显式取舍（不做的决定也是决定），对应 ADR-0018 的选定。"
+        }
+      ]
+    },
+    {
+      "id": "ext-004",
+      "about": "定下一条全仓库的格式约定 → decision",
+      "span": "file://docs/adr/0003-force-lf-line-endings.md#h:行尾强制 LF（.gitattributes），在 Phase 0 就定下来",
+      "events": [
+        {
+          "key": "conv_lf/msg_0301",
+          "occurred_at": "2026-10-02T11:00:00Z",
+          "actor": "user",
+          "text": "换行统一按 LF 来，交给 .gitattributes 在 git 侧兜底。CRLF 漂移过一次就够了。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "decision",
+          "key": "conv_lf/msg_0301",
+          "why": "定了一条全局约定并说明了实施位置，对应 ADR-0003。"
+        }
+      ]
+    },
+    {
+      "id": "ext-005",
+      "about": "划层边界并给出判据 → decision",
+      "span": "file://docs/adr/0016-event-ir-is-derived-data.md#t:判据是**可重算性**",
+      "events": [
+        {
+          "key": "conv_index/msg_0401",
+          "occurred_at": "2026-10-24T14:20:00Z",
+          "actor": "user",
+          "text": "事件全部只住 index 层，一条都不进 assets。判据是它们能随时重算——能重算出来的东西不算资产。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "decision",
+          "key": "conv_index/msg_0401",
+          "why": "把事件挡在资产层之外，并给出了可机械判定的判据；对应 ADR-0016 的选定。"
+        }
+      ]
+    },
+    {
+      "id": "ext-006",
+      "about": "在多个选项里选一个并说清切法 → decision",
+      "span": "file://docs/adr/0006-taxonomy-v1-four-asset-types.md#h:分类法 v1 只定 4 种资产：decision / state / event / rule",
+      "events": [
+        {
+          "key": "conv_taxonomy/msg_0501",
+          "occurred_at": "2026-11-06T09:00:00Z",
+          "actor": "user",
+          "text": "第一版分类法就四种：decision / state / event / rule。别一上来就十五种，切法要对得上写规则。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "decision",
+          "key": "conv_taxonomy/msg_0501",
+          "why": "明确选了四种并给出了切法，对应 ADR-0006。"
+        }
+      ]
+    },
+    {
+      "id": "ext-007",
+      "about": "时序上的「现在就做」 → decision",
+      "span": "file://docs/adr/0008-schema-version-and-migration-channel.md#h:front-matter 带 `schema_version`，版本号就是分类法版本；迁移通道现在建、现在用",
+      "events": [
+        {
+          "key": "conv_migrate/msg_0601",
+          "occurred_at": "2026-11-06T09:20:00Z",
+          "actor": "user",
+          "text": "哪怕只有 v1 的空迁移，迁移通道也得现在就建起来，不能等到真要迁移的时候再补。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "decision",
+          "key": "conv_migrate/msg_0601",
+          "why": "「现在就建」是一次时序决定（而不是一条禁止性规则），对应 ADR-0008 的选定。"
+        }
+      ]
+    },
+    {
+      "id": "ext-008",
+      "about": "带禁令的硬约束 → rule",
+      "span": "file://AGENTS.md#h:R1 · 用户数据永不进 git",
+      "events": [
+        {
+          "key": "conv_incident/msg_0701",
+          "occurred_at": "2026-10-03T21:40:12Z",
+          "actor": "user",
+          "text": "用户数据永远不许进 git。一次误提交就是一次信任崩塌，这条没有例外。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "rule",
+          "key": "conv_incident/msg_0701",
+          "why": "一条无例外的禁令，并且指向了它出处的具体事故；对应 AGENTS.md R1。"
+        }
+      ]
+    },
+    {
+      "id": "ext-009",
+      "about": "禁止清单 → rule",
+      "span": "file://AGENTS.md#h:R3 · 不许绕过闸门",
+      "events": [
+        {
+          "key": "conv_incident/msg_0702",
+          "occurred_at": "2026-10-04T09:02:00Z",
+          "actor": "user",
+          "text": "闸门红了要修问题，不是修闸门。--no-verify、强推、改 hooksPath 这些一律不许碰。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "rule",
+          "key": "conv_incident/msg_0702",
+          "why": "列举了具体禁止动作，是 rule 而不是 decision；对应 AGENTS.md R3。"
+        }
+      ]
+    },
+    {
+      "id": "ext-010",
+      "about": "权限边界 → rule",
+      "span": "file://AGENTS.md#h:R2 · schema / taxonomy / 迁移不许 agent 自主改",
+      "events": [
+        {
+          "key": "conv_gate/msg_0102",
+          "occurred_at": "2026-10-01T10:05:00Z",
+          "actor": "user",
+          "text": "schema、taxonomy 还有迁移脚本，不许我们自主改。确需改动就在同一个变更集里配一条 ADR。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "rule",
+          "key": "conv_gate/msg_0102",
+          "why": "划的是「谁能改什么」的权限边界，并给了唯一通道；对应 AGENTS.md R2。"
+        }
+      ]
+    },
+    {
+      "id": "ext-011",
+      "about": "入库的硬门槛 → rule",
+      "span": "file://AGENTS.md#h:R4 · 没有出处的断言不许进 `assets/`",
+      "events": [
+        {
+          "key": "conv_prov/msg_0801",
+          "occurred_at": "2026-10-12T08:40:00Z",
+          "actor": "user",
+          "text": "没有出处的断言一律不许进 assets/。出处是硬约束，不是元数据奢侈品。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "rule",
+          "key": "conv_prov/msg_0801",
+          "why": "一条无例外的入库门槛；对应 AGENTS.md R4。"
+        }
+      ]
+    },
+    {
+      "id": "ext-012",
+      "about": "规定流程必须留下什么 → rule",
+      "span": "file://AGENTS.md#h:R7 · 每个错误变成一条规则或一个回归用例",
+      "events": [
+        {
+          "key": "conv_ratchet/msg_0901",
+          "occurred_at": "2026-10-18T16:00:00Z",
+          "actor": "user",
+          "text": "每修完一个 bug，都要留下一条规则或者一个回归用例。规则不许凭空写，只能从真实错误长出来。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "rule",
+          "key": "conv_ratchet/msg_0901",
+          "why": "规定「必须留下什么」并禁止了另一种写法，是 rule；对应 AGENTS.md R7。"
+        }
+      ]
+    },
+    {
+      "id": "ext-013",
+      "about": "描述当前实现 → state",
+      "span": "file://packages/store/src/indexdb.ts#t:索引层不该再背第三个",
+      "events": [
+        {
+          "key": "conv_store/msg_1001",
+          "occurred_at": "2026-10-22T13:10:00Z",
+          "actor": "user",
+          "text": "索引层目前用的是 Node 自带的 node:sqlite，没有再引第三个依赖。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "state",
+          "key": "conv_store/msg_1001",
+          "why": "「目前用的是…」描述的是现状，不是一次取舍；对应 indexdb.ts 的选定理由。"
+        }
+      ]
+    },
+    {
+      "id": "ext-014",
+      "about": "描述当前状况（含一个数字） → state",
+      "span": "file://docs/gates/bypass-matrix.md#t:真正在服务端生效的是 0 道",
+      "events": [
+        {
+          "key": "conv_gate/msg_0103",
+          "occurred_at": "2026-10-01T10:12:00Z",
+          "actor": "user",
+          "text": "现在服务端真正生效的闸门是 0 道，因为仓库还没有 remote。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "state",
+          "key": "conv_gate/msg_0103",
+          "why": "一句关于「现在是什么样」的事实断言，会有过期的一天；对应 bypass-matrix 的诚实结论。"
+        }
+      ]
+    },
+    {
+      "id": "ext-015",
+      "about": "描述当前做法（不是取舍过程） → state",
+      "span": "file://README.md#t:各跑一遍，字节完全相同",
+      "events": [
+        {
+          "key": "conv_determinism/msg_1101",
+          "occurred_at": "2026-11-01T07:31:20Z",
+          "actor": "user",
+          "text": "emit 的逐字节确定性目前是由两个全新 vault 跑出来的端到端用例守着的。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "state",
+          "key": "conv_determinism/msg_1101",
+          "why": "说的是当前由谁守着，不是一次选择；对应 README 的退出条件一节。"
+        }
+      ]
+    },
+    {
+      "id": "ext-016",
+      "about": "已经发生过的事 → event",
+      "span": "file://evals/fixtures/desensitized-export.json#k:conversations/1/chat_messages/0/text",
+      "events": [
+        {
+          "key": "conv_incident/msg_0101",
+          "occurred_at": "2026-10-03T13:40:12Z",
+          "actor": "user",
+          "text": "线上库里的 data/ 被误提交进了一个分支。撤回本身不复杂，麻烦的是从此所有人都知道闸门可以被绕过。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "event",
+          "key": "conv_incident/msg_0101",
+          "why": "记录一次已经发生的事故，是 append-only 的 event；同一个事故被 ADR-0005 引作 origin_incident。"
+        }
+      ]
+    },
+    {
+      "id": "ext-017",
+      "about": "演练中发生的事 → event",
+      "span": "file://docs/gates/bypass-matrix.md#t:结构错误：被检查者同时是检查者",
+      "events": [
+        {
+          "key": "conv_rehearsal/msg_1201",
+          "occurred_at": "2026-11-05T15:00:00Z",
+          "actor": "user",
+          "text": "第一次演练就把结构错误暴露出来了：CI 当时跑的是工作树里的闸门代码，被检查者同时是检查者。"
+        }
+      ],
+      "expected": [
+        {
+          "type": "event",
+          "key": "conv_rehearsal/msg_1201",
+          "why": "记录演练里发生的事；它不是规则也不是决策，而是一次已经发生的观察。"
+        }
+      ]
+    },
+    {
+      "id": "ext-018",
+      "about": "对已定决策的复述与解释 → 什么都不该抽",
+      "span": "file://docs/adr/0006-taxonomy-v1-four-asset-types.md#t:写规则相同的东西不该是两种类型",
+      "events": [
+        {
+          "key": "conv_cache/msg_0002",
+          "occurred_at": "2026-09-12T08:15:41Z",
+          "actor": "assistant",
+          "text": "内容寻址的直接代价是：内容改一个字，键就变了。对不可变的派生数据来说这是正确行为。"
+        }
+      ],
+      "expected": [],
+      "expected_why": "对上一条决定的后果做解释，没有做出新的选择、没有引入新的事实、也没有给出规则。"
+    },
+    {
+      "id": "ext-019",
+      "about": "提问不是断言 → 什么都不该抽",
+      "span": "file://docs/adr/0006-taxonomy-v1-four-asset-types.md#t:写规则相同的东西不该是两种类型",
+      "events": [
+        {
+          "key": "conv_store/msg_1002",
+          "occurred_at": "2026-10-22T13:11:00Z",
+          "actor": "user",
+          "text": "这个索引层现在用的是 SQLite 还是别的？"
+        }
+      ],
+      "expected": [],
+      "expected_why": "疑问句不含断言：把它记成 state 会在库里留下一条谁也没主张过的「事实」。"
+    },
+    {
+      "id": "ext-020",
+      "about": "寒暄与进度播报 → 什么都不该抽",
+      "span": "file://docs/adr/0006-taxonomy-v1-four-asset-types.md#t:写规则相同的东西不该是两种类型",
+      "events": [
+        {
+          "key": "conv_determinism/msg_1102",
+          "occurred_at": "2026-11-01T07:33:00Z",
+          "actor": "user",
+          "text": "好，那我先去看一下 README 里那段说明，回头再说。"
+        }
+      ],
+      "expected": [],
+      "expected_why": "过程性的话，对不上四种写规则里的任何一种。"
+    }
+  ]
+}

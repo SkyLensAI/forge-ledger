@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>行尾强制 LF（.gitattributes），在 Phase 0 就定下来 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6QE3MZCXNVVEHFZ5Q2F198J</p>
+<h1>行尾强制 LF（.gitattributes），在 Phase 0 就定下来</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0003-force-lf-line-endings.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/directory.md#t:每个出口一个文件，输出必须</code></li>
+<li><code>file://docs/implement2.md#t:输出必须逐字节确定</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>行尾强制 LF（.gitattributes），在 Phase 0 就定下来</h1>
+<h2>问题</h2>
+<p>Phase 2 的退出条件是&quot;两次运行产出<strong>逐字节相同</strong>的 <code>AGENTS.md</code>&quot;（emit 快照测试）。而开发机是 Windows、CI 是 Linux。如果行尾随平台漂移，快照测试会在 CI 上以最难读的方式失败——而且失败原因看起来和&quot;编译逻辑&quot;毫无关系。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>等 Phase 2 遇到问题再修</strong>。届时已经有若干快照基线，重写基线的同时还要判断&quot;哪次差异是真实的行为变化&quot;，成本高且容易掩盖真问题。</li><li>**现在就把 <code>.gitattributes</code> 定死为 <code>* text=auto eol=lf</code>**，并关掉本机的 <code>core.autocrlf</code>。</li></ol>
+<h2>选定</h2>
+<p><strong>选 2。</strong></p>
+<p>这与 Phase 0 的排序原则一致：<strong>回填不了的东西先做</strong>。行尾不是&quot;配置细节&quot;，它是&quot;确定性输出&quot;这条产品承诺的地基——而地基类决定事后重建的代价最高。</p>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：<code>emit</code> 的字节级快照从第一次提交起就是跨平台稳定的。</li><li><strong>好</strong>：二进制文件显式标记为 binary，避免 git 试图做文本转换。</li><li><strong>代价</strong>：Windows 上的编辑器若强行写 CRLF，diff 会出现噪音；依赖编辑器遵守 <code>.gitattributes</code>（主流编辑器都遵守）。</li><li><strong>注意</strong>：本机 <code>core.autocrlf</code> 已设为 <code>false</code>，与 <code>eol=lf</code> 配合。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

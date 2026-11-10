@@ -1,0 +1,58 @@
+---
+schema_version: 1
+id: dec_01M6QGCKYXNFDEANHYXWJF1SPR
+type: decision
+status: accepted
+created: "2026-11-06"
+last_confirmed: "2026-11-06"
+supersedes: null
+origin_incident: null
+sources:
+  - "file://docs/directory.md#t:ID 带类型前缀 + ULID"
+  - "file://docs/directory.md#t:数据目录按 ID 前缀分区"
+  - "file://docs/implement2.md#t:`dec_`/`state_`/`event_`/`rule_` + ULID"
+sensitivity: internal
+confidence: 0.85
+---
+
+# ID 是「类型前缀 + ULID」，前缀由分类法声明，不写在代码里
+
+## 问题
+
+ID 方案属于回填不了的那一类：一旦有真实数据，改 ID 等于改所有引用。
+用 UUIDv4？自增整数？前缀 + ULID？前缀表放在代码常量里，还是放在分类法里？
+
+## 考虑过的选项
+
+1. **UUIDv4**，类型只存在 front-matter 的 `type` 字段里。
+2. **单调自增整数**（数据库分配）。
+3. **`<类型前缀>_<ULID>`**，前缀由 `schema/taxonomy.yaml` 声明，代码只读不写。
+
+## 选定
+
+**选 3。**
+
+- **前缀进 ID，而不是只进字段**：`grep -r "dec_"`、按 ID 前缀分区目录、日志里一眼看出是什么，
+  这三件事都因此成立。类型信息放在两个地方（ID + 字段）比放在一个地方更难丢。
+- **ULID 而不是 UUIDv4**：前 48 位是毫秒时间戳，ID 天然按时序可排序——
+  目录列表、审计日志、导出的 diff 都能直接排序，不需要额外字段参与。
+  （`created` 仍然单独存，因为它会被人工修正，而 ID 不会。）
+- **ULID 而不是自增**：ID 必须在客户端离线生成（本地优先是这个品类的核心偏好），
+  自增需要中心分配，与"没有服务端也要能用"直接冲突。
+- **前缀表放在 `taxonomy.yaml`，不放在代码里**：类型和它的前缀必须一起改。
+  两处维护必然漂移，而漂移的表现是"分类法加了类型、ID 前缀忘了加"——
+  一种只在真实数据上才暴露的错误。
+- 细节：ID 是 26 位 Crockford base32（不含 I / L / O / U，避免手抄歧义）。
+  解析时先做大小写归一化再比较：大小写不同、指向同一个 ID 的引用必须被判成同一个，
+  否则 `supersedes` 这类引用会静默断链。
+
+## 后果
+
+- **好**：新增类型时 ID 方案自动跟上（前缀来自分类法）；ID 与类型不一致是机器可判定的红
+  （`ID_PREFIX_MISMATCH`）。
+- **好**：ID 排序 ≈ 创建顺序，跨机器可比。
+- **代价**：ID 长（前缀 + 26 位），人读不如 `dec-7` 顺眼。这是为"可离线生成 + 可排序"付的价。
+- **代价**：ULID 的随机段**不做**同毫秒单调保证。需要严格顺序时用 `created` + 显式排序键，
+  不依赖 ID 的字节序。
+- **残余风险**：前缀一旦被真实数据使用就不能再改（等于改 ID）。这一点由 R2（分类法改动必须走 ADR）
+  拦住——它拦的不是"改不动"，而是"不许悄悄改"。

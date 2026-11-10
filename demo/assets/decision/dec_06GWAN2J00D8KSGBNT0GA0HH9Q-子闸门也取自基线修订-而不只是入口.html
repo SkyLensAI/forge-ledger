@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>子闸门也取自基线修订，而不只是入口 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GWAN2J00D8KSGBNT0GA0HH9Q</p>
+<h1>子闸门也取自基线修订，而不只是入口</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-10</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-10</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.9</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0043-subgates-also-come-from-base-revision.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/gates/bypass-matrix.md#t:统一修法已经写成 ADR-0043</code></li>
+<li><code>file://scripts/gates/ci.mjs#t:scripts/gates/${script}</code></li>
+<li><code>file://scripts/gates/trusted-ci.mjs#t:以当前仓库为工作目录去判定</code></li>
+<li><code>file://evals/regressions/0001-trusted-judge-does-not-cover-sub-gates.md#t:子闸门是怎么被调起来的</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>子闸门也取自基线修订，而不只是入口</h1>
+<h2>问题</h2>
+<p><code>trusted-ci.mjs</code> 已经解决了<strong>入口</strong>的自证问题：它把基线修订 checkout 到临时 worktree，用基线里的 <code>ci.mjs</code> 判定当前工作树。所以改松 <code>lib/policy.mjs</code> 或 <code>lib/harness.mjs</code> 不能给自己发合格证。</p>
+<p>但 <code>ci.mjs</code> 的第 3 步是：</p>
+<pre><code>spawnSync(&quot;node&quot;, [`scripts/gates/${script}`], { cwd: root })</code></pre>
+<p>它跑的是<strong>工作树里</strong>的 <code>consistency.mjs</code> / <code>assets.mjs</code> / <code>evals.mjs</code>，而这三个 子闸门又 import 工作树里的 <code>packages/core</code>、<code>packages/store</code>、<code>packages/schema</code> 与 <code>evals/runner/*</code>。于是：</p>
+<ul><li>变更集判定与 harness 完整性检查改不动（第 1、2 步取自基线）；</li><li><strong>第 3 步的判定仍然可以被改松</strong>：把 <code>evals/runner/gate.ts</code> 改成永远返回零问题， 或把 <code>judgeLibrary</code> 改成永远返回空，<code>gate:ci</code> 会绿。</li></ul>
+<p>这条缺口在 <code>docs/gates/bypass-matrix.md</code> 的 6.10 里被明确记账。它不是一个 &quot;以后注意&quot;的细节：它让&quot;闸门还拦得住吗&quot;这个问题在第 3 步得到一个假答案。</p>
+<h2>考虑过的选项</h2>
+<ol><li>**把 <code>evals/</code> 与 <code>packages/core</code> 加进 <code>PROTECTED</code>。<strong> 否决。R2 是</strong>流程** 约束（改动需要 ADR），不是执行体。一个人仍然可以在同一次变更里 写一条 ADR、把判定改松，机器不会拦。把清单变长只会训练人绕过流程。</li><li>**在基线 worktree 里重新 <code>pnpm install</code>，整棵代码都取自基线。<strong> 否决作为 </strong>当前**方案：子闸门需要 <code>yaml</code> / <code>zod</code>，安装一次会让每个 PR 多出几分钟， 而且这会把&quot;数据也从基线来&quot;一起带进来——那样 PR 里的新资产/新黄金集不会被判。</li><li><strong>把判定代码与数据根分开：代码取自基线，数据取自当前工作树。</strong> 采纳。</li><li><strong>什么都不做，继续在文档里记缺口。</strong> 否决。这条缺口的形状是&quot;改松判定即可 全绿&quot;，而它每次 CI 都在场——记账不能替代执行体。</li></ol>
+<h2>选定</h2>
+<ul><li><code>trusted-ci.mjs</code> 建立基线 worktree 后，把工作树的 <code>node_modules</code> <strong>接</strong>进去 （junction/symlink，不复制），然后以两组环境变量运行基线 <code>ci.mjs</code>：</li><li><code>FORGE_JUDGE_ROOT</code>：基线 worktree（判定<strong>代码</strong>根）；</li><li><code>FORGE_JUDGE_DATA_ROOT</code>：当前工作树（判定<strong>数据</strong>根）。</li><li><code>ci.mjs</code> 的第 3 步用 <code>join(judgeRoot, &quot;scripts/gates&quot;, script)</code> 启动子闸门， 并把 <code>FORGE_JUDGE_DATA_ROOT</code> 传下去。直接跑 <code>ci.mjs</code>（本地早期反馈）时 <code>judgeRoot === root</code>，行为与以前一致。</li><li>三个子闸门把&quot;代码根&quot;与&quot;数据根&quot;分开：</li><li>import 用 <code>codeRoot = new URL(&quot;../..&quot;, import.meta.url)</code>；</li><li>读资产 / schema / 黄金集 / 阈值用 <code>dataRoot</code>。</li><li>新增 <code>--subgates-only</code>：只跑第 1+2+3 步，跳过 lint/typecheck/test。 它不是为了日常使用，而是为了<strong>验证判定路径本身</strong>能在临时仓库里跑。</li><li>验证器 <code>handoff/verify-gate610.mjs</code> 做三件事：</li></ul>
+<ol><li>未改松时，坏出处资产被可信判定看见；</li><li>改松工作树的 <code>judgeLibrary</code> 后，<strong>不可信</strong>入口会绿（证明缺口真实存在）；</li><li>同一份工作树走 <code>trusted-ci</code> 仍然红（证明修复生效）。</li></ol>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：PR 里改松子闸门判定不再能给自己发合格证。判定者与被检查者的边界 从&quot;入口&quot;延伸到&quot;第 3 步&quot;。</li><li><strong>好</strong>：数据仍然取自 PR。新增资产、黄金集、阈值会被当前这一份判定， 而不是被基线那份旧数据判定。</li><li><strong>代价</strong>：判定代码与依赖可能来自不同修订。依赖是环境，不是判定逻辑； 真正要防的是&quot;改松判定代码&quot;。残余风险是依赖漂移：如果 PR 升级了 <code>zod</code> 而基线代码不兼容，子闸门可能以&quot;加载失败&quot;收场——那是红，不是静默绿。</li><li><strong>代价</strong>：新规则仍然在合并之后才生效（与 ADR-0005 同一条纪律）。这条是 <strong>有意</strong>的：PR 不能用自己新写的规则来判自己。</li><li><strong>残余风险</strong>：<code>ci.mjs</code> 的第 4 步（lint/typecheck/test）仍然跑工作树里的 <code>package.json</code> 脚本；工具链配置本来就不在受保护路径里（bypass-matrix 3.4）。 本 ADR 只关闭第 3 步，不假装关闭第 4 步。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>
