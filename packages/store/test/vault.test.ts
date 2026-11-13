@@ -177,13 +177,22 @@ test("出处解析：没有来源层的宿主报 unavailable ——「无法校�
 
 test("出处解析：file:// 走工作区，找不到就是 unresolved", () => {
   const vault = tempVault();
+  const workspace = mkdtempSync(join(tmpdir(), "forge-workspace-"));
   try {
+    // 自包含的工作区：不依赖本仓库里可能被移动或删除的文档。
+    writeFileSync(
+      join(workspace, "source.md"),
+      "# Release gate\n\nA gate must be a checkpoint, not a checklist.\n",
+      "utf8",
+    );
     const store = openVault(vault.root);
-    const index = store.spanIndex([process.cwd()]);
-    assert.equal(index.lookup("file://docs/implement2.md#t:把闸门写成 checklist").kind, "resolved");
-    assert.equal(index.lookup("file://docs/implement2.md#t:这句话根本不存在于文档里").kind, "unresolved");
-    assert.equal(index.lookup("file://docs/根本没有这个文件.md").kind, "unresolved");
+    const index = store.spanIndex([workspace]);
+    assert.equal(index.lookup("file://source.md#t:A gate must be a checkpoint").kind, "resolved");
+    assert.equal(index.lookup("file://source.md#h:Release gate").kind, "resolved");
+    assert.equal(index.lookup("file://source.md#t:this sentence does not exist").kind, "unresolved");
+    assert.equal(index.lookup("file://missing.md").kind, "unresolved");
   } finally {
+    rmSync(workspace, { recursive: true, force: true });
     vault.cleanup();
   }
 });
@@ -211,5 +220,7 @@ test("仓库里的资产能被读出来：约定即集合（ADR-0012）", async 
   assert.ok(docs.length >= 14, `应该至少读到 14 条 ADR，实际 ${docs.length}`);
   // schema/ 是宪法不是资产：它必须被排除在检索范围外。
   assert.equal(docs.some((doc) => doc.path.startsWith("schema/")), false);
+  // spec/ 是公开规范仓的导出源，不是本仓库的资产库；示例账本不能混进自举计数。
+  assert.equal(docs.some((doc) => doc.path.startsWith("spec/")), false);
   assert.ok(docs.every((doc) => doc.frontMatter.schema_version === SCHEMA_VERSION));
 });
