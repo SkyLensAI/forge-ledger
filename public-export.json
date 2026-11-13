@@ -4,6 +4,7 @@
   "default_out": "dist/forge-spec",
   "entries": [
     { "from": "spec/LICENSE", "to": "LICENSE" },
+    { "from": "spec/gitattributes.txt", "to": ".gitattributes" },
     { "from": "spec/VERSION", "to": "VERSION" },
     { "from": "spec/README.md", "to": "README.md" },
     { "from": "spec/CHANGELOG.md", "to": "CHANGELOG.md" },

@@ -68,6 +68,7 @@ The body headings in the example are literal v1 section names. See
 
 ```
 README.md              this file
+.gitattributes         LF-only checkout rule
 LICENSE                layered license map
 LICENSES/              full license texts (CC0 / CC-BY / AGPL)
 zh/                    Chinese reference translation (informative)
