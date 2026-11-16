@@ -54,11 +54,11 @@ Requires **Node ≥ 24** and **pnpm ≥ 12**.
 git clone https://github.com/SkyLensAI/forge-ledger.git
 cd forge-ledger
 pnpm install
-pnpm forge lint --repo      # 45 typed assets, each checked against its source
+pnpm forge lint --repo      # 46 typed assets, each checked against its source
 pnpm demo:open              # regenerate demo/ from this repo's own library, then open it
 ```
 
-No API key is involved. The repository is its own test corpus: the 45 ADRs in
+No API key is involved. The repository is its own test corpus: the 46 ADRs in
 `docs/adr/` are the assets, and `demo/` is a byte-identical projection of them.
 
 > **Reproducibility invariant.** 同一条命令、两个全新 vault：各跑一遍，字节完全相同。
@@ -118,7 +118,7 @@ the place where a claim, its evidence, and its expiry date are all one object.
 
 Honest accounting is part of the design. The short version:
 
-- **45 ADRs**, **477 tests**, and **10 real regression cases** (8 of them run in
+- **46 ADRs**, **477 tests**, and **10 real regression cases** (8 of them run in
   CI; the other 2 are documented as not automatable).
 - **The demo is generated from this repository's own library**, not from
   invented sample data.

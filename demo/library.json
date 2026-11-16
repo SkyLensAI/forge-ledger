@@ -1,6 +1,24 @@
 {
-  "about": "由 forge demo 从本仓库自己的 45 条资产生成。每一条都带可解析的出处；这里没有编造的样例数据。",
+  "about": "由 forge demo 从本仓库自己的 46 条资产生成。每一条都带可解析的出处；这里没有编造的样例数据。",
   "assets": [
+    {
+      "confidence": 0.9,
+      "created": "2026-11-16",
+      "id": "dec_01JQ0Z7MN1V2W3X4Y5Z6ABCDEG",
+      "last_confirmed": "2026-11-16",
+      "page": "assets/decision/dec_01JQ0Z7MN1V2W3X4Y5Z6ABCDEG-本地钩子必须以可执行模式提交.html",
+      "path": "docs/adr/0046-local-hooks-must-be-executable.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://scripts/gates/rehearse.mjs#t:A1 本地 pre-commit 阻断",
+        "file://.githooks/pre-commit#t:闸门 2 · pre-commit",
+        "file://.github/workflows/ci.yml#t:pnpm gate:rehearse",
+        "file://docs/adr/0001-gate-authority-lives-in-ci.md#t:本地做早期反馈，服务端做权威判定"
+      ],
+      "status": "accepted",
+      "title": "本地钩子必须以可执行模式提交",
+      "type": "decision"
+    },
     {
       "confidence": 0.85,
       "created": "2026-11-06",
@@ -810,11 +828,11 @@
     }
   ],
   "counts": {
-    "decision": 45,
+    "decision": 46,
     "event": 0,
     "rule": 0,
     "state": 0,
-    "total": 45
+    "total": 46
   },
   "kind": "forge-demo",
   "schema_version": 1,

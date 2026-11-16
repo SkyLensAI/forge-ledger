@@ -4,7 +4,7 @@
 
 - 插件名：`forge`
 - 版本：`0.0.0`（默认值，不是一次已发布的版本）
-- 资产：45 条（decision 45）
+- 资产：46 条（decision 46）
 - 入口：`plugins/forge/skills/forge/SKILL.md`
 
 ## 里面有什么

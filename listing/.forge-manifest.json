@@ -52,7 +52,8 @@
     "plugins/forge/skills/forge/references/0042-冲突处理-新建一代状态-supersedes-链-由人给理由-不就地覆盖.md",
     "plugins/forge/skills/forge/references/0043-子闸门也取自基线修订-而不只是入口.md",
     "plugins/forge/skills/forge/references/0044-发布门要检查包结构-而不是只打一个占位.md",
-    "plugins/forge/skills/forge/references/0045-用-gh-pages-分支发布已经生成好的-demo.md"
+    "plugins/forge/skills/forge/references/0045-本地钩子必须以可执行模式提交.md",
+    "plugins/forge/skills/forge/references/0046-用-gh-pages-分支发布已经生成好的-demo.md"
   ],
   "generator": "forge listing",
   "schema_version": 1

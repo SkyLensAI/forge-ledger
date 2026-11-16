@@ -328,10 +328,10 @@ agent 没有、也不会用 `FORGE_GATE_OVERRIDE` 给自己放行（bypass-matri
 
 | 步骤 | 内容 | 状态 |
 |---|---|---|
-| S29 | **自举**：用本项目的 CLI 管本项目的 ADR / 规则 / eval，目标自己产出 30+ ADR | ✅ `forge bootstrap`；**45 条 ADR** |
+| S29 | **自举**：用本项目的 CLI 管本项目的 ADR / 规则 / eval，目标自己产出 30+ ADR | ✅ `forge bootstrap`；**46 条 ADR** |
 | S30 | 团队版**只在出现付费信号后**做：权限、敏感度分级、同步 | ⛔ **按设计未启动**（没有付费信号）；`docs/team/status.json` 的 `payment_signal` 是 `null` |
 | S31 | 上架路径：Skill/MCP 提交 | ⚠ `forge listing` 生成可提交的 **draft** 包；MCP 的发布元数据已准备，但仍是 `private`；**没有提交、没有上架** |
-| S32 | 对外 demo = **你自己的库**，不是编造的样例 | ✅ `forge demo`；`demo/` 从本仓库自己的 45 条 ADR 生成 |
+| S32 | 对外 demo = **你自己的库**，不是编造的样例 | ✅ `forge demo`；`demo/` 从本仓库自己的 46 条 ADR 生成 |
 
 **S29 不是数到 30 就完事。** `forge bootstrap` 一起判六件事：
 ADR ≥ 30、所有资产能过 `judgeLibrary`、`AGENTS.md` 的 8 条种子规则都有出处、
@@ -339,13 +339,13 @@ ADR ≥ 30、所有资产能过 `judgeLibrary`、`AGENTS.md` 的 8 条种子规�
 这六件事同时被 `E15` / `E16` 在每次 CI 里问一遍。报告的实测输出：
 
 ```
-✓ 自举：45 条 ADR（目标 ≥ 30）
-  资产：45 条（decision 45）
+✓ 自举：46 条 ADR（目标 ≥ 30）
+  资产：46 条（decision 46）
   种子规则：8 条（上限 8；每条都有出处）
   尺子：extraction confirmed（allentire）· conflict confirmed（allentire）· 阈值批准 allentire
   团队版：deferred（付费信号：无；缺失能力：权限 / 并发 / 敏感度切分）
-  产物 listing：53 个文件逐字节一致
-  产物 demo：49 个文件逐字节一致
+  产物 listing：54 个文件逐字节一致
+  产物 demo：50 个文件逐字节一致
 ```
 
 **S30 的状态是"还没到时候"，不是"还没做完"。** implement2.md 的原话是
@@ -364,7 +364,7 @@ ADR ≥ 30、所有资产能过 `judgeLibrary`、`AGENTS.md` 的 8 条种子规�
 用 `pnpm -r publish --provenance` 发布。真正按下发布键仍然需要人（凭据、scope、版本）。
 
 **S32 的 demo 没有样例数据入口。** `demo/` 的每一页、每一处出处都来自本仓库自己的
-45 条 ADR；`library.json` 的 `source` 写着 `repo`。所有文本都做 HTML 转义，
+46 条 ADR；`library.json` 的 `source` 写着 `repo`。所有文本都做 HTML 转义，
 页面没有外部脚本 / 样式 / 字体，直接打开 `index.html` 即可，两年后也不需要某个 CDN 还在。
 小型 Markdown 渲染器不覆盖全部 CommonMark（复杂表格原样显示为 `pre`）——
 这是刻意的取舍：不丢内容、不乱执行，比排版与 GitHub 一致更重要（ADR-0042）。

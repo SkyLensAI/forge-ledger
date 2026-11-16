@@ -2,6 +2,7 @@
   "files": [
     ".forge-manifest.json",
     "README.md",
+    "assets/decision/dec_01JQ0Z7MN1V2W3X4Y5Z6ABCDEG-本地钩子必须以可执行模式提交.html",
     "assets/decision/dec_01M6Q2FD002MW3PYGNRES1PGRW-派生出来的东西用-内容寻址-id-人写的东西才用-ulid.html",
     "assets/decision/dec_01M6Q2FD00AX057HVVTGFVQC8M-emit-的确定性靠-消灭输入端的不确定性-不靠-跑两遍比对.html",
     "assets/decision/dec_01M6Q2FD00CQS8ZBPRX44R5C3P-结构化来源用-k-键锚点定位-不用-t-文本片段.html",

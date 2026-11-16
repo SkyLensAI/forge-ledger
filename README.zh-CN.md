@@ -47,11 +47,11 @@ Forge 把每一条都变成机器可判定的失败，而不是一种感觉。
 git clone https://github.com/SkyLensAI/forge-ledger.git
 cd forge-ledger
 pnpm install
-pnpm forge lint --repo      # 审核 45 条带类型的资产，每条都对着来源
+pnpm forge lint --repo      # 审核 46 条带类型的资产，每条都对着来源
 pnpm demo:open              # 从本仓库自己的库重新生成 demo/ 并打开
 ```
 
-全程不需要 API key。这个仓库就是自己的语料：`docs/adr/` 里的 45 条 ADR 是资产，
+全程不需要 API key。这个仓库就是自己的语料：`docs/adr/` 里的 46 条 ADR 是资产，
 `demo/` 是它们逐字节相同的投影。
 
 直接用原生命令也可以：`pnpm forge <命令>`。Windows 上另有
@@ -107,7 +107,7 @@ Forge 不试图替代你的编辑器。它是编辑器下面的账本：
 
 如实记账是设计的一部分。短版本：
 
-- **45 条 ADR**、**477 条测试**、**10 条真实回归**（8 条进 CI，另 2 条明确记为
+- **46 条 ADR**、**477 条测试**、**10 条真实回归**（8 条进 CI，另 2 条明确记为
   无法自动执行）。
 - **demo 从本仓库自己的库生成**，不是编造的样例数据。
 - **模型抽取可以从录像回放**（不需要 key），但**真实端点的抽取质量没有数据**——
