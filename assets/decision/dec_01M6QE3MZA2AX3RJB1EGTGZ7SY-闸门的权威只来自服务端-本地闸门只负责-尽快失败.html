@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>闸门的权威只来自服务端；本地闸门只负责&quot;尽快失败&quot; · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6QE3MZA2AX3RJB1EGTGZ7SY</p>
+<h1>闸门的权威只来自服务端；本地闸门只负责&quot;尽快失败&quot;</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.9</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0001-gate-authority-lives-in-ci.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:agent hook → pre-commit → required status check</code></li>
+<li><code>file://docs/implement1.md#t:定义完成的清单（checklist）会被 agent 跳过</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>闸门的权威只来自服务端；本地闸门只负责&quot;尽快失败&quot;</h1>
+<h2>问题</h2>
+<p>要装五道闸门（agent hook / pre-commit / required status check / branch rule / 发布门），但每一道都有不同的绕过方式：改 hook 配置、<code>--no-verify</code>、管理员豁免、本机手动发布。如果把它们当成&quot;五道平等的防线&quot;，会得到一个危险的错觉——<strong>以为本地绿水等于合规</strong>。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>只装本地钩子</strong>（最快、零配置）。但 agent 或人都能一条 <code>--no-verify</code> 跳过，等于没装。</li><li><strong>只装 CI</strong>。判定可靠，但反馈要等一个 CI 周期，人会在等待中失去耐心，进而开始绕过。</li><li><strong>分层：本地做早期反馈，服务端做权威判定，两层用同一套判定代码。</strong></li></ol>
+<h2>选定</h2>
+<p><strong>选 3。</strong></p>
+<ul><li>判定逻辑只有一份：<code>scripts/gates/lib/policy.mjs</code>（纯函数、零 IO）。闸门 2 与闸门 3 调的是同一个 <code>evaluateChangeset</code>。</li><li><strong>权威只在服务端</strong>：本地闸门全部可绕过，因此它们的存在意义是&quot;不要等到 CI 才知道错&quot;，而不是&quot;拦住&quot;。</li><li>推论：<code>--no-verify</code> 跳过 pre-commit 是可以接受的（它是已知绕过方式），只要 CI 用同一套策略重判一次——这正是它无法被跳过的地方。</li><li>推论：CI 还必须检查<strong>闸门本身是否完整</strong>（<code>scripts/gates/lib/harness.mjs</code>）。否则&quot;删掉检查&quot;就成了最省事的绕过方式。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：本地反馈快，服务端判定硬；绕过本地闸门不会导致不合规的代码进入 main。</li><li><strong>好</strong>：判定代码只有一份，不会出现&quot;本地过了 CI 挂&quot;的漂移。</li><li><strong>代价</strong>：CI 成为单点，必须保持快（当前只有 lint/typecheck/test + 两个纯函数判定）。</li><li><strong>代价</strong>：<code>pnpm install</code> 之前本地闸门是静默失效的（<code>core.hooksPath</code> 未设置）。这一点<strong>不假装解决</strong>，记录在 <code>docs/gates/bypass-matrix.md</code>。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

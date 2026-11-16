@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>冲突判定只出候选与证据，永不落库；&quot;已经确认过&quot;不等于&quot;冲突&quot; · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV4140T0WP918KYT73XYTBW3</p>
+<h1>冲突判定只出候选与证据，永不落库；&quot;已经确认过&quot;不等于&quot;冲突&quot;</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0027-conflicts-are-candidates-never-applied.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:只出候选 + 证据，不落库</code></li>
+<li><code>file://docs/implement2.md#t:进队列且证据正确</code></li>
+<li><code>file://docs/implement1.md#t:冲突永远不自动覆盖</code></li>
+<li><code>file://docs/implement1.md#t:一律进人工队列——这是</code></li>
+<li><code>file://docs/implement2.md#t:冲突判定原则** | 无自动覆盖</code></li>
+<li><code>file://docs/implement1.md#t:必须带证据 span</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>冲突判定只出候选与证据，永不落库；&quot;已经确认过&quot;不等于&quot;冲突&quot;</h1>
+<h2>问题</h2>
+<p>S19 的形状是给定的：<strong>只出候选 + 证据，不落库</strong>。退一步看，这里有三个坑， 每一个都能让&quot;冲突永远进队列&quot;这句话在某一天悄悄失效：</p>
+<ol><li><strong>判定的输出是什么。</strong> 如果判定函数顺手把冲突写进库里（或者返回一个 &quot;建议动作&quot;让调用方应用），那么&quot;谁有权改用户的状态&quot;这个问题的答案， 就变成了&quot;任何能调到这个函数的地方&quot;。而<strong>冲突处理正是这个产品唯一能收费的动作</strong> （implement2.md 把它标成未来的付费点）——把它做成语义判定函数的副作用， 既毁掉信任，也毁掉商业模式。</li><li><strong>证据。</strong> 一条&quot;这两条互相矛盾&quot;的记录，如果不带两侧各自的出处， 人就无法核对它。而无法核对的冲突记录比没有更糟：它会训练人去点&quot;知道了&quot;。</li><li><strong>什么不算冲突。</strong> 新证据说&quot;数据库还是 SQLite&quot;，而库里已有一条同样的 state—— 这不是冲突，是<strong>再确认一次</strong>。把这种情况报成冲突，队列会被正常的重复证据淹掉， 而&quot;队列里全是噪音&quot;与&quot;没有队列&quot;在行为上是同一件事。 这个仓库已经吃过一次同形状的教训：<code>evals/regressions/0003</code>—— 把&quot;已经落盘过&quot;与&quot;被别人改过&quot;当成同一件事，结果是一份落过一次的清单永久报假警。</li></ol>
+<h2>考虑过的选项</h2>
+<ol><li><strong>判定函数直接改库（或调用方拿到结果就应用）。</strong> 最短路径， 也最短地把&quot;不许自动覆盖&quot;这条纪律变成一句注释。implement1.md 反模式 6 说的正是这件事。</li><li><strong>判定返回&quot;冲突 + 建议动作&quot;，由调用方自动应用低风险的那一档</strong> （比如&quot;同一条 state、同一个值&quot;就直接刷新 <code>last_confirmed</code>）。 看起来温和，但它定义了&quot;低风险&quot;这个口子——而口子会被扩大。</li><li><strong>判定只返回候选 + 证据，每一条都必须带两侧的 span，且必须能解析； 不满足的整条丢弃（带理由），不进队列。</strong> 应用只能在人 resolve 时发生（ADR-0028）。</li><li><strong>不做自动检测，只在人处理新候选时提示&quot;好像有一条同题面的旧状态&quot;。</strong> 那等于把队列的存在意义交给人的记性。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3。</strong> 五条判据，逐条都有执行体：</p>
+<ol><li><strong>候选的形状里没有&quot;应用&quot;这一档。</strong> <code>ConflictCandidate</code> 只有 &quot;两侧是什么、依据是什么、证据在哪&quot;，没有任何可执行的东西。 落盘与改写只存在于队列的 <code>resolve</code>（人触发的动作）里。 自证：<code>missingAfterAdoption()</code> —— 采纳模型的提议之后，规则查到的那几条一条都不许少 （模型只能加，不能减）。</li><li><strong>证据必须两侧齐全且可解析。</strong> 每一条候选至少带一条来自&quot;新证据&quot;侧和 一条来自&quot;现有 state&quot;侧的 span，全部要过 <code>parseSpan</code>。 解析不到 → <strong>丢弃整条候选并记账</strong>，而不是&quot;带着坏证据进队列&quot;。 理由与 ADR-0009 同源：腐烂的出处比没有出处更糟——它看起来像证据。</li><li><strong>归一化后完全相同 = 不是冲突。</strong> 同一个题面、同样的内容，只是又被说了一遍—— 这是 <code>refresh</code>（再确认），进报告但不进队列。判据是<strong>归一化后的字节相等</strong>， 不做语义比较：语义相似不构成本判据，&quot;看起来像是同一个意思&quot;正是要交给人的那部分。</li><li><strong>模型只能加，不能减。</strong> 规则查到的冲突不受任何模型输出影响： 模型的输出唯一的作用是<strong>追加</strong>候选（带 <code>basis: &quot;model-proposed&quot;</code>）。 这条在类型层面成立——装配函数只接受两个数组并做并集， 没有任何参数能表达&quot;减掉一条&quot;。</li><li>**只有 <code>state</code> 型实体会产生冲突。** <code>decision</code> 一旦 accepted 不可变（要改是新建 supersedes，那是另一个决策，不是冲突），<code>event</code> 是发生过的事（不能被推翻）， <code>rule</code> 靠 <code>origin_incident</code> 溯源。冲突是&quot;<strong>现在是什么样</strong>发生了变化&quot;这件事的名字。</li></ol>
+<p><strong>闸门里那条检查（Phase 5 的退出条件本身）</strong>：拿一组合成的&quot;新旧状态矛盾&quot;跑完整路径， 要求三件事同时成立——<strong>100% 进队列</strong>、<strong>每条的证据都能解析回仓库里的原文</strong>、 <strong>零条被自动应用</strong>。前两条证明队列在工作，第三条证明它没有越权； 只有前两条时，一个&quot;直接改写状态&quot;的实现也能全绿。</p>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：<code>ConflictCandidate</code> 是纯数据，所以&quot;冲突判定&quot;能在没有文件系统、 没有模型、没有 API key 的情况下测（<code>evals/golden/conflict/</code> 的合成集 + 探针）。</li><li><strong>好</strong>：队列里的每一条都可以被人逐条核对：两侧的 span 都能点开。 这是&quot;证据正确&quot;从一句口号变成一条断言的地方。</li><li><strong>好</strong>：<code>refresh</code> 单列一档之后，队列的信噪比由<strong>归一化相等</strong>这条硬判据保着， 不依赖检测器的调参。重复的证据不会制造工作。</li><li><strong>代价</strong>：保守的判据会漏掉&quot;语义上矛盾但字面上不同&quot;的对子 （&quot;存储层是 SQLite&quot; vs &quot;我们不再用嵌入式数据库了&quot;）。 漏掉的冲突不会进队列——它只能靠模型的追加提议碰上。 已知缺口，写在 <code>docs/handbook/conflicts.md</code>，不假装它被解决了。</li><li><strong>代价</strong>：证据两条齐全的要求会让一部分真实的冲突被丢弃 （现有 state 没有可解析的出处时）。这也是<strong>有意的</strong>：一条无法核对的冲突 会污染人对整个队列的信任，而队列的信任是这个产品最贵的资产。</li><li><strong>残余风险</strong>：判据 3（归一化相等）对<strong>措辞</strong>敏感。同一件事被确认两次、 第二次措辞不同（&quot;用 node:sqlite&quot; vs &quot;用内置的 node:sqlite&quot;），会被报成冲突， 于是人多花一次判断。相比&quot;漏报一次状态被推翻&quot;，这个方向的代价小得多—— 但它确实会给队列带来需要人扫掉的噪音。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

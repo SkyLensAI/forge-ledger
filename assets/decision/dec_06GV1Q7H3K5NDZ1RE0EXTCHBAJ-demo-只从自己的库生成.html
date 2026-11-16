@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>demo 只从自己的库生成 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV1Q7H3K5NDZ1RE0EXTCHBAJ</p>
+<h1>demo 只从自己的库生成</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0042-demo-is-generated-from-our-own-library.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:对外 demo = **你自己的库**，不是编造的样例</code></li>
+<li><code>file://packages/core/src/demo.ts#t:source === &quot;repo&quot; ? &quot;本仓库自己的&quot; : &quot;资产库里的&quot;</code></li>
+<li><code>file://packages/core/src/demo.ts#t:资产正文是人写的，也是模型写的</code></li>
+<li><code>file://packages/core/src/demo.ts#t:页面没有外部依赖：直接打开</code></li>
+<li><code>file://evals/runner/phase8.ts#t:demo 不是从本仓库自己的资产完整生成的</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>demo 只从自己的库生成</h1>
+<h2>问题</h2>
+<p>implement2.md 给 S32 写的是一句很短、但很硬的话：</p>
+<blockquote><p>对外 demo = <strong>你自己的库</strong>，不是编造的样例。</p></blockquote>
+<p>为什么这句话值得一条 ADR：一个手写的 demo 可以展示任何你想要的效果， 但它不证明产品在你的真实数据上跑得通。编造的样例还会带来一个更隐蔽的问题： <strong>它不会腐烂</strong>。真实的库会过期、会有孤儿、会有写了一半的替换； 样例永远干净。用样例做的 demo 在演示时最好看，也最不诚实。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>手写一个漂亮的样例站。</strong> 否决。它展示的是编写者的设计能力， 不是这个产品在真实资产上的输出；而且它会与真实库长期分叉。</li><li>**把 <code>docs/adr/</code> 手工整理成一组演示页面。** 否决。手工整理就是第二份真相： 新增一条 ADR 后 demo 不会跟上，而&quot;demo 少了一条&quot;几乎不会被发现。</li><li><strong>用一条命令从资产库生成静态站，并在 CI 里检查它是否与库一致。</strong> 采纳。</li></ol>
+<h2>选定</h2>
+<ul><li><code>forge demo --out &lt;目录&gt;</code>：</li><li>输入只有资产（<code>--repo</code> 时是仓库自己的 ADR / 资产，否则是一个 vault）；</li><li>输出 <code>index.html</code>、每条资产一页、<code>library.json</code>、<code>README.md</code>；</li><li><strong>没有样例数据入口</strong>。这不是&quot;暂时没做&quot;：没有入口正是 S32 的执行体。</li><li>三条渲染纪律：</li><li><strong>HTML 转义</strong>：标题、正文、出处都按文本处理。资产正文是人写的，也是模型写的； 演示页不该成为执行库内容里的 <code>&lt;script&gt;</code> 的宿主。</li><li><strong>没有外部资源</strong>：不引用 CDN、字体、脚本。直接打开 <code>index.html</code> 即可， 两年后也不需要某个域名还在。</li><li><strong>逐字节确定</strong>：没有时间戳、没有随机、排序键写死（R6 / ADR-0017）。</li><li><code>library.json</code> 的 <code>source</code> 字段写出 <code>repo</code> / <code>vault</code>： 读者能分清&quot;自举演示&quot;与&quot;真实用户库&quot;，不需要靠猜。</li><li><code>E15_EVAL_BOOTSTRAP_DEGRADED</code> 检查：每条资产都有一页、demo 两次生成字节相同、 <code>source === &quot;repo&quot;</code>、总数与库一致；<code>forge bootstrap</code> 还会把 <code>demo/</code> 与库逐字节比对。</li><li>Markdown 渲染器刻意很小：ADR 里实际出现的语法（标题、列表、代码、引用、链接） 都支持；表格原样保留为 <code>pre</code>。渲染不了的语法<strong>显示出来</strong>，而不是悄悄丢掉—— 演示页上的缺失应该看得见。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：对外 demo 与真实库是同一份数据的两份投影。新增一条 ADR、修一处出处， demo 重新生成就会跟上；忘了重新生成，<code>E15</code> 或 <code>forge bootstrap</code> 会报红。</li><li><strong>好</strong>：演示页能在离线环境打开。它不是营销页，是一份能被人翻的真实库。</li><li><strong>代价</strong>：页面比手写 demo 朴素。这个取舍是刻意的：S32 要的是<strong>真实</strong>， 不是好看；而&quot;好看&quot;可以在真实数据上继续做，反过来不成立。</li><li><strong>残余风险</strong>：小型 Markdown 渲染器不覆盖全部 CommonMark；复杂表格会以 原样文本出现。它保证的是&quot;不丢内容、不乱执行&quot;，不是&quot;排版与 GitHub 一致&quot;。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

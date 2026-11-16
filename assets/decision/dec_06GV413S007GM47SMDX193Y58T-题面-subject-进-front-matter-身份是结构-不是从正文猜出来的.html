@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>题面（`subject`）进 front-matter：身份是结构，不是从正文猜出来的 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV413S007GM47SMDX193Y58T</p>
+<h1>题面（`subject`）进 front-matter：身份是结构，不是从正文猜出来的</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0025-subject-is-structure-not-guess.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement1.md#t:判断两条断言是否在说同一件事</code></li>
+<li><code>file://docs/implement1.md#t:判断新事件与现有 state 是否冲突</code></li>
+<li><code>file://docs/implement1.md#t:候选断言 → 归并 / 新建实体</code></li>
+<li><code>file://AGENTS.md#t:信任边界必须写在代码里</code></li>
+<li><code>file://docs/directory.md#t:两者必须一一对应，且在 CI 里比对一致性</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>题面（<code>subject</code>）进 front-matter：身份是结构，不是从正文猜出来的</h1>
+<h2>问题</h2>
+<p>Phase 5 的两件事都建立在一个判断上：<strong>这两条说的是不是同一件事</strong>。 归并（S18）要靠它决定&quot;并入还是新建&quot;，冲突（S19）要靠它决定 &quot;这条新事件是不是在推翻某条已有的 state&quot;。</p>
+<p>模型抽出来的<strong>候选断言</strong>可以带一个题面：抽取器的输出契约里加一个字段就够了。 但<strong>已经落盘的资产</strong>（<code>assets/state/*.md</code>）没有任何字段能表达它说的是哪件事：</p>
+<ul><li><code>id</code> 是 ULID，除&quot;什么时候写的&quot;之外不携带任何语义（ADR-0007）；</li><li><code>sources</code> 指向<strong>证据</strong>，而两条互相矛盾的状态恰恰来自两处<strong>不同</strong>的证据—— 拿证据当身份，冲突永远检测不到；</li><li><code>body</code> 是给人读的自由文本。手写的资产首行是 <code># 标题</code>，而 <code>promote</code> 出来的资产正文是从候选原样搬过来的事件原文——<strong>它连标题都没有</strong>。</li></ul>
+<p>于是在 P5 开工的第一天就撞上一个绕不过去的问题： <strong>身份住在哪里？</strong></p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>从正文猜。</strong> 用首行标题、或正文的前 N 个字符做身份键。 零 schema 改动，最省事。代价是身份随排版漂移：同一件事换一句标题就是两个实体， 而<strong>两个实体意味着不会有冲突被报出来</strong>——失效的方式是静默的。 词法相似度做身份还有第二个问题：它需要调阈值，而阈值会把 &quot;是不是同一件事&quot;变成一个可以拧松的数字。</li></ol>
+<ol><li><strong>把题面塞进正文的约定行。</strong> 比如正文第一行固定写成 <code>题面：数据库的存储层</code>。 对人可见，也不需要动 schema。代价是<strong>第二真相</strong>：题面成了正文的一部分， 而资产审核（<code>judgeAsset</code>）看不到它，一致性闸门看不到它， 任何人都能在编辑器里顺手改掉它而不触发任何检查。 它还会让&quot;正文可以原样复制&quot;这条性质失效——<code>promote</code> 现在原样搬候选正文， 一旦正文里要混进结构化字段，搬的时候就得解析它。</li></ol>
+<ol><li>**front-matter 加一个字段 <code>subject</code>，并让 <code>state</code> 必填。** 身份落在结构层，和 <code>id</code> / <code>sources</code> / <code>last_confirmed</code> 同级： 审核能查、一致性闸门能比对模板、<code>REQUIRED_FIELD_MISSING</code> 能报红。</li></ol>
+<ol><li>**把身份放进 <code>index/</code>（派生层），由 <code>promote</code> 时写入一份 资产 ID → 题面 的映射。<strong> 看起来最&quot;轻&quot;：index 层反正是可重建的。但它</strong>建不起来**——映射的另一半 （题面）只存在于 headers 里，而不在资产里。一份&quot;删掉就重建不出来&quot;的 index 文件，正是 ADR-0015 要拦的东西（派生层一旦存了不可重算的东西， 它就变成了第二份真相）。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3。</strong> <code>subject</code> 是 front-matter 的一个字段：</p>
+<ul><li>**<code>state</code> 必填**（写进 <code>schema/taxonomy.yaml</code> 的 <code>requires_fields</code>，由 <code>REQUIRED_FIELD_MISSING</code> 强制）。判据很直接：<strong>题面缺失 = 这条状态不参与冲突判定</strong>， 而&quot;我确认过的状态不会被任何后续事件挑战&quot;是这个产品最不能出的静默故障。 把它做成必填，&quot;缺失&quot;就是一个能被报出来、能被修的红，而不是一片安静。</li><li>**<code>decision</code> / <code>event</code> / <code>rule</code> 可选。<strong> 归并（S18）对所有类型都有意义 （两条 rule 讲的是同一件事），但</strong>冲突**只发生在 <code>state</code> 上 （implement1.md §3.2 的冲突判定输入就是&quot;新事件 × 现有 state&quot;）。 给所有类型都必填，是在替一个不存在的需求加约束。</li><li><strong>它是可选的加字段，所以不产生 schema 版本变更。</strong> 版本号只有一个（ADR-0008）， 它描述的是<strong>资产格式</strong>；加一个向后兼容的可选字段不改格式—— 缺字段的老资产解析成 <code>null</code>，和 <code>last_confirmed</code> / <code>supersedes</code> 一样。 这不是迁移问题，不需要迁移通道。</li><li><strong>题面不是证据。</strong> 它是一条<strong>索引</strong>，所以它的可信度要求与 <code>sources</code> 完全不同： 出处必须能解析回原文（否则整条资产不许入库），而题面只是&quot;这句话在讲什么&quot;， 由抽取器提出、由代码归一化（NFKC + 折叠空白 + 折叠大小写 + 剥掉包裹标点）。 归一化只能折叠排版，<strong>不能</strong>折叠语义：<code>数据库</code> 与 <code>存储层</code> 是两个题面， 把它们并起来是模型提议与人的事（ADR-0026），不是字符串函数的事。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：<code>assets/state/</code> 里的每一代状态都能被指着说&quot;它讲的是这件事&quot;， 于是&quot;新事件推翻了哪一条旧事实&quot;这个问题第一次有了可判定的答案。</li><li><strong>好</strong>：题面进了受保护路径（<code>schema/taxonomy.yaml</code> + <code>packages/schema</code>）， 所以它不能被 agent 顺手改——而它改了，两边的状态就会开始互相看不见。</li><li><strong>好</strong>：模板一致性检查（<code>C3</code>）会自动要求四份模板都提到新字段， 漏一个就红。这正是&quot;两边必须一一对应&quot;（ADR-0010）该有的摩擦。</li><li><strong>代价</strong>：7 个受保护文件要由人落盘（<code>schema/taxonomy.yaml</code>、四份 <code>schema/asset-types/*.md</code>、<code>packages/schema/src/fields.ts</code>、<code>assets.ts</code>）。 这是 R2 的既定代价。</li><li><strong>代价</strong>：v1 期间写下的 <code>state</code> 资产会因为缺 <code>subject</code> 而报 <code>REQUIRED_FIELD_MISSING</code>。<strong>这是有意的</strong>：它是一条行动指令 （&quot;补上题面，否则这条状态不参与冲突判定&quot;），而不是&quot;格式坏了&quot;。 本仓库自己的资产全是 <code>decision</code>，所以自举路径不受影响。</li><li><strong>残余风险</strong>：题面是自由文本，所以<strong>同义而不同形</strong>的题面会漏并、漏报冲突。 方向是保守的（新建、不报），代价是&quot;同一件事被记成两条&quot;。 缓解是归并的第三条路：模型只对&quot;题面不同但可能是同一件事&quot;的对子<strong>提议</strong>归并， 提议进队列（ADR-0026）——人看一眼就能把它们合起来。</li><li><strong>残余风险</strong>：题面的质量取决于抽取器把它抽成什么样。一个总是给 <code>subject: &quot;系统&quot;</code> 的抽取器会让整个库塌成一个实体，于是每次确认都变成一次冲突。 这条<strong>不进 CI</strong>（它是抽取质量，归尺子），但 <code>forge link</code> 的报告里会打出 &quot;题面最集中的前几条&quot;，让这种塌陷可见。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

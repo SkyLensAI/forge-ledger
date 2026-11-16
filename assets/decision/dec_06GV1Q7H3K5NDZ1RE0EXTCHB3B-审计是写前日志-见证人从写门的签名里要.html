@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>审计是写前日志，见证人从写门的签名里要 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV1Q7H3K5NDZ1RE0EXTCHB3B</p>
+<h1>审计是写前日志，见证人从写门的签名里要</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.8</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0035-audit-is-a-write-ahead-witnessed-log.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:审计日志 + hook 强制执行，**不靠礼貌指令**</code></li>
+<li><code>file://packages/store/src/paths.ts#t:只读、只追加，永不修改、永不删除</code></li>
+<li><code>file://packages/core/src/asset.ts#t:没有出处的一行不许进 assets/</code></li>
+<li><code>file://docs/handbook/gates.md#t:**修问题，不要修闸门。**</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>审计是写前日志，见证人从写门的签名里要</h1>
+<h2>问题</h2>
+<p>implement2.md 给 S27 写的是&quot;审计日志 + hook 强制执行，<strong>不靠礼貌指令</strong>&quot;。三个问题：</p>
+<ol><li><strong>&quot;hook&quot; 指哪一个？</strong> 这个仓库有五道闸门，但它们挂在 <strong>git</strong> 上—— 而用户库在 <code>data/</code> 里，<strong>不在 git 里</strong>（R1：用户数据永不进 git）。 也就是说，对一个真实的用户来说，&quot;把审计挂到 pre-commit 上&quot;这件事<strong>根本不存在</strong>。</li><li><strong>审计记什么？</strong> 全记会把日志灌满（每次 <code>compile</code> 都写几十条派生写入）， 而<strong>被刷屏的日志等于没有日志</strong>。</li><li><strong>怎么保证&quot;记了&quot;？</strong> 如果 <code>writeAuthored</code> 与 <code>audit.append</code> 是两个可以被拆开的调用， 那就又回到了&quot;记得写&quot;——而 R8 说的正是这件事。</li></ol>
+<h2>考虑过的选项</h2>
+<p><strong>关于强制点：</strong></p>
+<ol><li><strong>挂到 git hook 上。</strong> 对用户库无效（它不在 git 里）。对<strong>本仓库</strong>倒是可以， 但那管的是开发流程，不是产品行为——implement2.md 给 P7 写的&quot;审计完整性&quot;是产品侧的。</li><li>**在 MCP / <code>forge serve</code> 这些宿主里各记一遍。** 三个宿主三份实现， 而漂移的方向永远是&quot;某个宿主漏记&quot;。这正是 <code>packages/core</code> 存在的理由。</li><li><strong>把审计条目做成写门的</strong>必填参数**：<code>writeAuthored(doc, draft)</code>。<strong> 采纳。没有见证人，就</strong>没有第二条写路径可调**——这不是&quot;记得写&quot;，是签名。</li></ol>
+<p><strong>关于记什么：</strong></p>
+<ol><li><strong>全记（含派生的索引写入）。</strong> 否决：<code>compile</code> 会写几十条， 真出事时那一条会被淹掉。</li><li><strong>只记</strong>不可重建<strong>的写入</strong>：来源追加、候选落盘、人工确认、冲突判决、重新确认。 采纳。判据与三层存储的判据是同一条（ADR-0015）：<strong>能重算的东西不需要记账</strong>。</li></ol>
+<p><strong>关于误记与漏记之间怎么选：</strong></p>
+<ol><li><strong>写盘成功之后再记审计。</strong> 崩在两步之间会留下&quot;改了但没记&quot;—— 那是<strong>漏记</strong>，而漏记的那条资产从此没有主人，且没人知道它存在。</li><li><strong>先记审计，再写盘</strong>（写前日志）。崩在两步之间会留下&quot;记了但没改成&quot;—— 那是<strong>多记</strong>，看得见（<code>AUDIT_DANGLING_SUBJECT</code> 会把它报出来）。 两个方向的代价不对称，采纳 7。</li></ol>
+<p><strong>关于链：</strong></p>
+<ol><li><strong>一个 append-only 的文件就够了。</strong> 否决：append-only 是<strong>约定</strong>。 有人删掉一条、调换两条、把某条的理由改一句话，这三种在纯文本日志里都看不出来—— 而它们恰好是审计唯一要防的事。</li><li><strong>哈希链 + 逐条验证。</strong> 采纳。链把&quot;没人动过&quot;从一句承诺变成一次可重算的检查。 哈希<strong>不包含它自己</strong>（一个哈希不能包含它自己，这是定义）；这一条踩过坑， 见 <code>evals/regressions/0006</code>。</li></ol>
+<h2>选定</h2>
+<ul><li>日志住在 <code>&lt;vault&gt;/audit/audit.jsonl</code>：<strong>一行一条</strong>、只追加、键排序、无时间戳之外的随机。 用 JSONL 不用 SQLite：审计要能被 <code>grep</code>、被编辑器打开、被 <code>git diff</code>—— 索引层可以重建，审计不行，而不可重建的东西不该锁在二进制里。</li><li>条目 = <code>{seq, at, actor, kind, subject, detail, prev, hash}</code>。 <code>seq</code> 连续、<code>prev</code> 接前一条的 <code>hash</code>、<code>at</code> 不许倒流。</li><li><strong>写前日志</strong>：先 <code>audit.append</code>，再写文件。多记看得见，漏记看不见。</li><li>强制点在 <code>packages/store</code> 的<strong>唯一</strong>写门：<code>writeAuthored(doc, draft)</code>。 第二个参数是必填的审计条目，运行时还会再问一遍（类型不是边界）。 顺手**删掉了 <code>writeDerived</code>**：它的调用点是零，而一个没人用的写门摆在 没有见证人的那一侧，就是在等某一天有人用它绕开审计。</li><li>时钟在 <code>openVault(root, {now})</code> 注入（默认 <code>Date.now</code>）：审计条目的时刻是<strong>输入</strong>， 于是&quot;冻住时间跑两次得到同样的字节&quot;在测试里是一行代码。</li></ul>
+<p><strong>必须写下来的边界</strong>（不假装堵住了）：</p>
+<ul><li><strong>审计挡不住直接改文件系统。</strong> 文件系统不会问&quot;你记了吗&quot;。 所以审计做的是让这种写入在健康检查里被看见（<code>AUDIT_UNATTRIBUTED_ASSET</code>）， 而不是&quot;强制每一次写入&quot;。这是记账。</li><li><strong>同时写没有锁</strong>：两个进程同时跑 <code>promote</code> 会读到同一个链尾。 链的验证会把它报出来，但不会阻止它。单人本地工具可以接受，团队版（Phase 8）加锁。</li><li><strong>链断掉之后整份日志都不再可信</strong>，包括看起来没问题的条目。 修法是恢复备份或写下&quot;这一段不可追溯&quot;，<strong>不是</strong>手工调 <code>seq</code> 或重算 <code>hash</code>—— 那是改历史。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：&quot;不靠礼貌指令&quot;有了执行体：探针每次 CI 都试一遍&quot;不给见证人直接写资产&quot;， 要求它抛；再删一行、改一行、换两行，要求三次都被抓住（<code>E12</code>）。</li><li><strong>好</strong>：用户库第一次有了&quot;这条是谁、什么时候、凭什么变成这样的&quot;这个问题的答案—— 而这句话正是 <code>directory.md</code> 说的那种&quot;别人抄不走的部分&quot;。</li><li><strong>代价</strong>：每一次写入多一次文件追加与一次全日志读取（<code>append</code> 现读链尾， 不缓存——缓存与被审计的东西住在同一个进程里，改日志的人只要重启一次进程， 缓存就替他把链接回去了）。</li><li><strong>代价</strong>：审计文件会持续增长，而且<strong>没有轮转</strong>。轮转要解决&quot;轮转点之前的链怎么办&quot;， 而那是一个新问题；在日志长到难用之前不引入它。记在这里。</li><li><strong>残余风险</strong>：<code>detail</code> 只收字符串字典。这是为了日志能被 <code>grep</code> 与被打印， 但它意味着结构化的事实（比如一次判决的全部参数）必须被摊平——摊平会有信息损失， 损失的那部分由队列记录与资产本身承担。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

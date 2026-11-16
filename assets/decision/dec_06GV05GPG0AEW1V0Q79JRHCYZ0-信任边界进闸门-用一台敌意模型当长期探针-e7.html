@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>信任边界进闸门：用一台敌意模型当长期探针（`E7`） · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV05GPG0AEW1V0Q79JRHCYZ0</p>
+<h1>信任边界进闸门：用一台敌意模型当长期探针（`E7`）</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.8</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0023-trust-boundary-probe-enters-the-gate.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:连续 3 天稳定</code></li>
+<li><code>file://docs/implement2.md#t:把信任边界实现在代码里</code></li>
+<li><code>file://docs/implement2.md#t:把 Extractor 换成一个</code></li>
+<li><code>file://AGENTS.md#t:信任边界必须写在代码里</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>信任边界进闸门：用一台敌意模型当长期探针（<code>E7</code>）</h1>
+<h2>问题</h2>
+<p>Phase 4 的退出条件写的是&quot;抽取精确率/召回率达标，且连续 3 天稳定&quot;。 但这句话里藏着一个空洞：<strong>分数不是信任边界的判据</strong>。</p>
+<p>一个类型都对、标题像人话、置信度拉满、<strong>出处全是编的</strong>实现，分数可能很好看， 而它每一条都不可复核。这是本产品最贵的失败模式——&quot;自信地错&quot; （implement1.md §3.1：过期的事实比没有事实更糟）。Phase 3 的 <code>E4</code> （&quot;换成永远返回空的实现，它还会及格吗&quot;）分得开活的和死的，但它分不开 &quot;对的&quot;和&quot;听起来对但出处是编的&quot;。</p>
+<p>于是问题变成：<strong>&quot;边界还连着吗&quot;这件事，由谁、多久问一次？</strong></p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>写在文档里</strong>（&quot;记得校验出处&quot;）。R8 明确禁止：用自然语言提示代替代码强制。</li><li><strong>只做单元测试。</strong> <code>packages/core/test/</code> 里已经有 sanitize 与 guard 的用例， 但它们是<strong>逐条</strong>测的：每加一条判据就补一条用例，而&quot;判据之间的组合有没有漏&quot; 没有人问。更实际的问题是：单元测试跟着实现走，实现被改松时，测试常常跟着一起改。</li><li>**在闸门里放一条断言&quot;抽取器必须过 <code>judgeCandidates</code>&quot;。<strong> 那是</strong>被测者<strong>的问题，不是</strong>边界**的问题——它测的是这一次抽取的产出， 而边界坏掉的表现是&quot;某一天某一种输入下漏了&quot;。</li><li><strong>一台敌意模型当探针</strong>：每次 CI 都让它走一遍<strong>完整的真实路径</strong> （渲染请求 → 答 → 解析 → sanitize → 守卫），然后要求四条性质同时成立。</li></ol>
+<h2>选定</h2>
+<p><strong>选 4</strong>，落成 <code>E7_EVAL_TRUST_BOUNDARY_OPEN</code>。</p>
+<p>探针（<code>evals/extractors/hostile.ts</code>）是一台 <code>Model</code> 而不是一台 <code>Extractor</code>， <strong>这是有意的</strong>：走 <code>Extractor</code> 就等于绕过了 <code>parseExtractionResponse</code> 与 <code>sanitizeCandidates</code>，而探针要测的恰恰是那条路径。假装成模型，才能真的经过所有检查。</p>
+<p>它一次吐出七条，五类敌意各对应一条判据：编造的事件键、<code>file://</code> 出处、 自造的类型、空标题、置信度写成字符串；外加一条<strong>看起来完全合法</strong>的 （真键、真类型、置信度 1.0）和一条与它一字不差的重复。</p>
+<p>判定的四条性质，缺一条这次检查就不成立：</p>
+<ol><li>sanitize 的产出<strong>必须</strong>过得了 <code>judgeCandidates</code>（边界不许有第二套标准）。</li><li><strong>零</strong>条编造出处的候选活下来。</li><li>守卫的 <code>admit</code> 名单里<strong>零</strong>条模型产出。</li><li><strong>至少一条</strong>候选活着穿过 sanitize 并进了候选区。</li></ol>
+<p>第 4 条是最容易漏、也最要紧的一条：一个&quot;什么都不放行&quot;的实现能让前三条全绿， 而它显然不是一条好的边界。<strong>只会变绿的检查不是检查</strong>（R8）。</p>
+<p>判定住在 <code>evals/runner/gate.ts</code>（不受保护），所以它能在落盘之前被测试—— 含<strong>两条变异用例</strong>：把 sanitize 换成什么都不裁的、把守卫换成什么都放行的， 探针<strong>必须报红</strong>。这是 ADR-0020 那条分工的延续。</p>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：Phase 4 的退出条件从&quot;分数达标&quot;变成了&quot;分数达标 <strong>且</strong> 边界连着&quot;， 而且后者是每次 CI 都问一遍的。</li><li><strong>好</strong>：探针测的是<strong>组合</strong>（parse → sanitize → judge → guard）， 而不是逐条判据——逐条用例盖不住的那部分正好是它盖的。</li><li><strong>好</strong>：探针是一台 <code>Model</code>，所以它顺带把 <code>buildExtractionRequest</code> 的渲染、 代码块剥离、字段读取这几段也钉住了（它们此前只有逐条用例）。</li><li><strong>好</strong>：把探针结果放进 <code>EvalReport</code> 而不是做成一个独立入口。 独立入口会被人忘掉，而&quot;忘了调它&quot;与&quot;调了它是绿的&quot;在闸门上长得一模一样。</li><li><strong>代价</strong>：每次 <code>runEval</code> 多跑一次（消耗是微秒级），以及 <code>EvalReport</code> 多一个字段。</li><li><strong>代价</strong>：探针的七条产出是<strong>写死的</strong>。一个新发明的敌意手法不会被它覆盖， 除非有人往 <code>hostile.ts</code> 里加一条。缓解是那台模型的文件头按&quot;哪一条对应哪条判据&quot; 逐条列出来——加一条的门槛很低，而低了才会有人加。</li><li><strong>残余风险</strong>：探针的敌意是<strong>想象出来的</strong>。真实模型编造出处的方式（例如把两段 来源的键混起来、或者用近似的键名）未必是这七条。真正的覆盖来自把真实失败案例 放进 <code>evals/regressions/</code>——那需要先有真实运行，而本仓库还没有 key。</li><li><strong>残余风险</strong>：<code>E7</code> 只检查&quot;边界在这一台敌意模型上连着&quot;。它不证明边界在 <strong>任意</strong>模型上连着。这是抽样，不是证明——记在这里，不写成&quot;信任边界已被证明&quot;。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

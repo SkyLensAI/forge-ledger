@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>资产库 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<header class="hero">
+<p class="eyebrow">forge · demo</p>
+<h1>资产库</h1>
+<p class="lead">由 forge demo 从本仓库自己的 45 条资产生成。每一条都带可解析的出处；这里没有编造的样例数据。</p>
+<p class="notice">数据源：本仓库自己的 ADR / 资产 · 共 45 条 · 无外部脚本、无外部样式</p>
+</header>
+<main>
+<section class="counts">
+<div class="count"><span>decision</span><strong>45</strong></div>
+<div class="count"><span>state</span><strong>0</strong></div>
+<div class="count"><span>event</span><strong>0</strong></div>
+<div class="count"><span>rule</span><strong>0</strong></div>
+</section>
+<section>
+<h2>decision <span class="muted">45</span></h2>
+<ul class="assets">
+<li><a href="assets/decision/dec_01M6Q2FD002MW3PYGNRES1PGRW-派生出来的东西用-内容寻址-id-人写的东西才用-ulid.html">派生出来的东西用<strong>内容寻址</strong> ID，人写的东西才用 ULID</a><span class="meta">accepted · 2026-11-06 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_01M6Q2FD00AX057HVVTGFVQC8M-emit-的确定性靠-消灭输入端的不确定性-不靠-跑两遍比对.html">emit 的确定性靠&quot;消灭输入端的不确定性&quot;，不靠&quot;跑两遍比对&quot;</a><span class="meta">accepted · 2026-11-06 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_01M6Q2FD00CQS8ZBPRX44R5C3P-结构化来源用-k-键锚点定位-不用-t-文本片段.html">结构化来源用 `#k:` 键锚点定位，不用 `#t:` 文本片段</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_01M6Q2FD00GRZFQ6K3F6KPGA03-store-三层是三条-权限规则-由-api-形状强制-不靠自觉.html">store 三层是三条<strong>权限规则</strong>，由 API 形状强制，不靠自觉</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_01M6Q2FD00NVKBVBH80QD63VSX-事件-ir-是-派生数据-住在-index-不是资产.html">事件 IR 是<strong>派生数据</strong>，住在 `index/`，不是资产</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_01M6Q2FD00P3EVALGATE000000-eval-阈值接进闸门-3-判定住在-evals-闸门脚本只是薄壳.html">eval 阈值接进闸门 3；判定住在 `evals/`，闸门脚本只是薄壳</a><span class="meta">accepted · 2026-11-06 · 6 处出处</span></li>
+<li><a href="assets/decision/dec_01M6Q2FD00Y6MM10J4YRMSYM2Q-v0-v1-迁移分两半-机械的归迁移-语义的归人.html">v0→v1 迁移分两半：机械的归迁移，语义的归人</a><span class="meta">accepted · 2026-11-06 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_01M6Q2FD00Z52A681X6FHS62G7-phase-2-只建三个包-编译与投影逻辑落-packages-core-不为-emit-单开包.html">Phase 2 只建三个包：编译与投影逻辑落 `packages/core`，不为 emit 单开包</a><span class="meta">accepted · 2026-11-06 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_01M6QE3MZA2AX3RJB1EGTGZ7SY-闸门的权威只来自服务端-本地闸门只负责-尽快失败.html">闸门的权威只来自服务端；本地闸门只负责&quot;尽快失败&quot;</a><span class="meta">accepted · 2026-11-06 · 2 处出处</span></li>
+<li><a href="assets/decision/dec_01M6QE3MZBQ94WCYD1ZATQN3KP-本地钩子用-core-hookspath-裸脚本-不引入-husky-lint-staged.html">本地钩子用 core.hooksPath + 裸脚本，不引入 husky / lint-staged</a><span class="meta">accepted · 2026-11-06 · 2 处出处</span></li>
+<li><a href="assets/decision/dec_01M6QE3MZCXNVVEHFZ5Q2F198J-行尾强制-lf-gitattributes-在-phase-0-就定下来.html">行尾强制 LF（.gitattributes），在 Phase 0 就定下来</a><span class="meta">accepted · 2026-11-06 · 2 处出处</span></li>
+<li><a href="assets/decision/dec_01M6QE3MZDZ9JE8EFMW27VAVKT-phase-0-不预建-packages-与-apps-脚手架跟着需求长.html">Phase 0 不预建 `packages/` 与 `apps/`：脚手架跟着需求长</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_01M6QE6A1F7ZK2NQ0T8H4WY3VB-闸门代码取自基线修订-不取自被检查的工作树.html">闸门代码取自基线修订，不取自被检查的工作树</a><span class="meta">accepted · 2026-11-06 · 2 处出处</span></li>
+<li><a href="assets/decision/dec_01M6QGCKYWGDFKGD5J54CTNGZX-分类法-v1-只定-4-种资产-decision-state-event-rule.html">分类法 v1 只定 4 种资产：decision / state / event / rule</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_01M6QGCKYXNFDEANHYXWJF1SPR-id-是-类型前缀-ulid-前缀由分类法声明-不写在代码里.html">ID 是「类型前缀 + ULID」，前缀由分类法声明，不写在代码里</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_01M6QGCKYYJCGQNQYSRXMM35HW-front-matter-带-schema-version-版本号就是分类法版本-迁移通道现在建-现在用.html">front-matter 带 `schema_version`，版本号就是分类法版本；迁移通道现在建、现在用</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_01M6QGCKYZDMT05VEV396CG75P-出处是-带-scheme-的-span-判定是纯函数-io-在边缘-不可解析与没有出处分开报.html">出处是「带 scheme 的 span」：判定是纯函数，IO 在边缘；不可解析与没有出处分开报</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_01M6QGCKZ0K58JW6B7TYNM9X5Q-schema-与-packages-schema-一一对应-必须变成机器可判定的红.html">「schema/ 与 packages/schema 一一对应」必须变成机器可判定的红</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_01M6QGCKZ15QPTV67AZ839ZQ40-零-build-ts-由-node-原生类型擦除直接执行-包只发布源码.html">零 build：TS 由 Node 原生类型擦除直接执行，包只发布源码</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_01M6QGCKZ2Q8K348RJ1T59CZV4-资产集合的判据是-带-front-matter-的-markdown-仓库里的第一批资产是-adr.html">资产集合的判据是「带 front-matter 的 markdown」；仓库里的第一批资产是 ADR</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_06GV05GPG015QD6E4X09KWRCCP-模型是一台-可注入的同步-model-真实调用在边缘-评测对着录像跑.html">模型是一台<strong>可注入的同步</strong> `Model`：真实调用在边缘，评测对着录像跑</a><span class="meta">accepted · 2026-11-06 · 5 处出处</span></li>
+<li><a href="assets/decision/dec_06GV05GPG05T9ZGQE24Y6F2NNV-模型产出永不直接进-assets-一条不可配置的判据-加一条候选区.html">模型产出永不直接进 `assets/`：一条不可配置的判据，加一条候选区</a><span class="meta">accepted · 2026-11-06 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_06GV05GPG0AEW1V0Q79JRHCYZ0-信任边界进闸门-用一台敌意模型当长期探针-e7.html">信任边界进闸门：用一台敌意模型当长期探针（`E7`）</a><span class="meta">accepted · 2026-11-06 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_06GV05GPG0F3EM59RCE7B3Q805-没有-key-时-s17-的基准报告只能是-协议-可测证据-不能是一组分数.html">没有 key 时，S17 的基准报告只能是&quot;协议 + 可测证据&quot;，不能是一组分数</a><span class="meta">accepted · 2026-11-06 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1A5F888TPGPM7XJWH09JKP-同一个值-的判据要剥掉模板骨架-章节标题不是内容.html">&quot;同一个值&quot;的判据要剥掉模板骨架：章节标题不是内容</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1M4G181B659Z0SJ2P8FAZH-取用是确定性的-打分可解释-预算硬上限-不许预加载-可判定.html">取用是确定性的：打分可解释、预算硬上限、&quot;不许预加载&quot;可判定</a><span class="meta">accepted · 2026-11-06 · 6 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1M4G1CA298WMATFJRQRCB1-多出口是投影-不是第二个真相-导出的-eval-不许自称-已确认.html">多出口是投影，不是第二个真相；导出的 eval 不许自称&quot;已确认&quot;</a><span class="meta">accepted · 2026-11-06 · 5 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1M4G1CX62QZHZXWGFBXDV1-浏览器的脆弱性前移成一份可热更新的配置-判定一律不进扩展.html">浏览器的脆弱性前移成一份可热更新的配置；判定一律不进扩展</a><span class="meta">accepted · 2026-11-06 · 5 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1P5C685NDZ1RE0EXTCHB1C-闸门码的抽取正则要认多位数-否则新码可以绕过-c4.html">闸门码的抽取正则要认多位数，否则新码可以绕过 C4</a><span class="meta">accepted · 2026-11-06 · 3 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB2A-健康检查判四类腐烂-但不给库打健康分.html">健康检查判四类腐烂，但不给库打健康分</a><span class="meta">accepted · 2026-11-06 · 5 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB3B-审计是写前日志-见证人从写门的签名里要.html">审计是写前日志，见证人从写门的签名里要</a><span class="meta">accepted · 2026-11-06 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB4C-新鲜度任务只能问-不能自己答.html">新鲜度任务只能问，不能自己答</a><span class="meta">accepted · 2026-11-06 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB5D-周报是与健康报告同源的另一份投影-没有日志就说没有日志.html">周报是与健康报告同源的另一份投影，没有日志就说没有日志</a><span class="meta">accepted · 2026-11-06 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB6E-规模探针是退出条件的结构性替身-不是退出条件本身.html">规模探针是退出条件的结构性替身，不是退出条件本身</a><span class="meta">accepted · 2026-11-06 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB7F-自举是一条命令-不是一张进度表.html">自举是一条命令，不是一张进度表</a><span class="meta">accepted · 2026-11-06 · 5 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB8G-团队版由付费信号闸门-不由路线图解锁.html">团队版由付费信号闸门，不由路线图解锁</a><span class="meta">accepted · 2026-11-06 · 5 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHB9H-上架包是-draft-代码不替人按提交按钮.html">上架包是 draft，代码不替人按提交按钮</a><span class="meta">accepted · 2026-11-06 · 5 处出处</span></li>
+<li><a href="assets/decision/dec_06GV1Q7H3K5NDZ1RE0EXTCHBAJ-demo-只从自己的库生成.html">demo 只从自己的库生成</a><span class="meta">accepted · 2026-11-06 · 5 处出处</span></li>
+<li><a href="assets/decision/dec_06GV413S007GM47SMDX193Y58T-题面-subject-进-front-matter-身份是结构-不是从正文猜出来的.html">题面（`subject`）进 front-matter：身份是结构，不是从正文猜出来的</a><span class="meta">accepted · 2026-11-06 · 5 处出处</span></li>
+<li><a href="assets/decision/dec_06GV413WX0PE51K4GYG9J7DXFP-归并-规则先判-模型只提议-拿不准就新建.html">归并：规则先判，模型只提议；拿不准就新建</a><span class="meta">accepted · 2026-11-06 · 5 处出处</span></li>
+<li><a href="assets/decision/dec_06GV4140T0WP918KYT73XYTBW3-冲突判定只出候选与证据-永不落库-已经确认过-不等于-冲突.html">冲突判定只出候选与证据，永不落库；&quot;已经确认过&quot;不等于&quot;冲突&quot;</a><span class="meta">accepted · 2026-11-06 · 6 处出处</span></li>
+<li><a href="assets/decision/dec_06GV4144Q0KFCB8JCHWY78TN3J-冲突处理-新建一代状态-supersedes-链-由人给理由-不就地覆盖.html">冲突处理：新建一代状态 + `supersedes` 链，由人给理由；不就地覆盖</a><span class="meta">accepted · 2026-11-06 · 6 处出处</span></li>
+<li><a href="assets/decision/dec_06GWAN2J00D8KSGBNT0GA0HH9Q-子闸门也取自基线修订-而不只是入口.html">子闸门也取自基线修订，而不只是入口</a><span class="meta">accepted · 2026-11-10 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_06GWAN2J00V8MGMMYQRM7FVRR2-发布门要检查包结构-而不是只打一个占位.html">发布门要检查包结构，而不是只打一个占位</a><span class="meta">accepted · 2026-11-10 · 4 处出处</span></li>
+<li><a href="assets/decision/dec_06GY8AT36MSF331D4QYBVV3Q0D-用-gh-pages-分支发布已经生成好的-demo.html">用 gh-pages 分支发布已经生成好的 demo</a><span class="meta">accepted · 2026-11-16 · 4 处出处</span></li>
+</ul>
+</section>
+<section>
+<h2>state <span class="muted">0</span></h2>
+<p class="muted">（暂无）</p>
+</section>
+<section>
+<h2>event <span class="muted">0</span></h2>
+<p class="muted">（暂无）</p>
+</section>
+<section>
+<h2>rule <span class="muted">0</span></h2>
+<p class="muted">（暂无）</p>
+</section>
+</main>
+<footer>由 <code>forge demo</code> 生成。重新生成会逐字节覆盖本页。</footer>
+</body>
+</html>

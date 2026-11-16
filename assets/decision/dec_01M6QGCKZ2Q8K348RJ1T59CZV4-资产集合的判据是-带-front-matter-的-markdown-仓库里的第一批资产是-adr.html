@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>资产集合的判据是「带 front-matter 的 markdown」；仓库里的第一批资产是 ADR · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6QGCKZ2Q8K348RJ1T59CZV4</p>
+<h1>资产集合的判据是「带 front-matter 的 markdown」；仓库里的第一批资产是 ADR</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0012-assets-are-frontmatter-markdown.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement1.md#t:你不需要编 demo 数据，你的开发历史就是数据</code></li>
+<li><code>file://docs/implement1.md#t:用本项目的 lint 检查本项目自己的 harness 有没有腐化</code></li>
+<li><code>file://docs/directory.md#t:在代码库里它通常是空的</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>资产集合的判据是「带 front-matter 的 markdown」；仓库里的第一批资产是 ADR</h1>
+<h2>问题</h2>
+<p>出处闸门要检查&quot;所有入库资产&quot;。但 <code>data/</code> 被 gitignore（R1），CI 里看不到任何用户资产。 那么 CI 到底检查什么？资产集合怎么定义，才能既不漏、又不依赖&quot;记得登记&quot;？</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>只校验一个专门的样例目录</strong>（如 <code>evals/fixtures/</code>）。</li><li><strong>维护一份资产清单文件</strong>，每个资产都要登记。</li><li><strong>约定即集合</strong>：仓库里任何带 YAML front-matter 的 markdown 都是资产，必须过闸门； <code>schema/</code> 除外（那是宪法，不是资产）。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3。</strong></p>
+<ul><li>选 2 的问题不是麻烦，而是<strong>它会漏</strong>：漏登记的资产不受任何检查， 而且没有任何信号提示它漏了。&quot;忘记登记&quot;是一种静默失败，静默失败不是闸门。</li><li>选 1 会把闸门降级成&quot;样例测试&quot;：真实资产反而没人检查，而它们正是最该被检查的。</li><li>因此第一批被检查的资产天然是 <code>docs/adr/*.md</code>。这不是顺手，而是这个项目唯一可行的冷启动路径： <strong>开发历史本身就是第一批数据</strong>——本仓库的 ADR 既是开发副产物，也是产品要卖的那类资产。</li><li>检索范围排除：<code>schema/</code>（宪法）、<code>data/</code>（用户数据）、<code>node_modules/</code>、<code>dist/</code>、<code>.git/</code>、<code>.turbo/</code>。 除此之外，<strong>加了 front-matter 就等于自愿被闸门管</strong>。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：自举闭环成立——本项目的每条 ADR 都被同一套出处规则约束， 写错 span 会被自己的闸门拦下（ADR-0009 的 origin_incident 就是这么发现的）。</li><li><strong>好</strong>：Phase 2 的 emitter 产出（<code>AGENTS.md</code>）不带 front-matter，因此不会被误判为资产。 &quot;带 front-matter&quot;这个判据同时区分了<strong>资产</strong>与<strong>投影</strong>——投影可以被重新生成，资产不行。</li><li><strong>代价</strong>：给任何 markdown 加 front-matter 都会立刻引入完整形状要求 （id / type / status / created / sources …）。想只加个 <code>tags:</code> 的人会被闸门拦下。 这是有意的：半吊子的 front-matter 比没有更难查。</li><li><strong>代价</strong>：CI 看不到用户数据 → 用户库的校验只能靠 CLI（Phase 2）。 两处必须是<strong>同一份纯函数</strong>（<code>packages/core</code>），否则会出现&quot;本地过、CI 挂&quot;的漂移。</li><li><strong>残余风险</strong>：<code>docs/</code> 里的设计文档（<code>implement1.md</code> 等）没有 front-matter，因此不受出处约束。 它们在这个体系里的角色是<strong>证据（source）</strong>而不是资产——这个区分是本 ADR 成立的前提， 一旦有人给设计文档加上 front-matter，前提就变了（闸门会立刻要求它自带出处）。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

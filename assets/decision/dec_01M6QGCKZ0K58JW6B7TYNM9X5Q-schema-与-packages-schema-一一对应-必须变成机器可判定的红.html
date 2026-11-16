@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>「schema/ 与 packages/schema 一一对应」必须变成机器可判定的红 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6QGCKZ0K58JW6B7TYNM9X5Q</p>
+<h1>「schema/ 与 packages/schema 一一对应」必须变成机器可判定的红</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0010-doc-code-consistency-is-machine-checked.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/directory.md#t:两者必须一一对应，且在 CI 里比对一致性</code></li>
+<li><code>file://docs/implement1.md#t:把信任边界实现在代码里，而不是写在提示词里</code></li>
+<li><code>file://AGENTS.md#t:信任边界必须写在代码里</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>「schema/ 与 packages/schema 一一对应」必须变成机器可判定的红</h1>
+<h2>问题</h2>
+<p><code>directory.md</code> 要求人读的 <code>schema/</code> 与代码侧的 <code>packages/schema</code> 一一对应，并且&quot;在 CI 里比对一致性&quot;。 但&quot;一致性&quot;如果只由人评审，它就会像所有 checklist 一样被跳过（反模式 4）。 具体哪些一致性是<strong>机器能判定</strong>的？</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>只校验 YAML 能被代码解析</strong>（结构一致）。</li><li><strong>结构一致 + 可列举的漂移检查</strong>：每个违规码必须出现在 <code>schema/provenance.md</code>； 每个 ID 前缀必须出现在 <code>schema/ids.md</code>；每个 <code>requires_fields</code> 必须是代码已知字段； 每个类型的模板必须真的包含它的必填字段与必填章节；新鲜度只许挂在 <code>state</code> 型上。</li><li><strong>文档由代码生成</strong>（<code>provenance.md</code> 直接从码表渲染出来，单一来源）。</li></ol>
+<h2>选定</h2>
+<p><strong>选 2。</strong></p>
+<ul><li>选 3 看起来最彻底，但它把文档降级成产物。这两份文档要讲清<strong>为什么</strong>有这条规则 （为什么不可解析和没有出处要分开报、为什么外部证据要先落 source 层）—— 那是码表生成不出来的，而&quot;为什么&quot;正是这个产品要卖的东西。</li><li>选 2 检查的是<strong>漂移</strong>，不是正确性。漂移是这两份文档唯一会犯的错： 代码加了码忘了写文档、文档写了前缀分类法里没有、模板漏了必填项。 把它变成红，比&quot;约定要同步更新&quot;这种自然语言提示强（反模式 2）。</li><li>一致性判据自己也要被文档化：一致性检查的码必须出现在 <code>docs/handbook/gates.md</code>。 检查者无人审查，就会变成下一个&quot;看起来在保护你&quot;的东西。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：改代码忘改文档 → CI 红；改文档忘改代码 → CI 红。 &quot;两者必须一一对应&quot;这句话第一次有了执行体，而不是一句设计意图。</li><li><strong>好</strong>：判据可列举、可测试，每条检查都有正反用例。</li><li><strong>代价</strong>：加一个违规码要同时改 3 处（码表、<code>provenance.md</code>、测试）。这是有意的耦合—— 码是代码与人之间的契约，契约本来就不该能单方面改。</li><li><strong>代价</strong>：检查只要求&quot;文档里提到过&quot;，不校验解释得对不对。机器判不了的那一层留给评审， 并且<strong>明确记为不覆盖</strong>，不假装它被保证了。</li><li><strong>残余风险</strong>：可列举的检查覆盖不到语义漂移（文档把某条规则解释反了）。 缓解是 R2：<code>schema/</code> 的改动必须配 ADR，而 ADR 是给人看的。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

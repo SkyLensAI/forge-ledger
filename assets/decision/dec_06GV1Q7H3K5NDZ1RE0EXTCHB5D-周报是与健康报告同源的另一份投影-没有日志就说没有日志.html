@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>周报是与健康报告同源的另一份投影，没有日志就说没有日志 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV1Q7H3K5NDZ1RE0EXTCHB5D</p>
+<h1>周报是与健康报告同源的另一份投影，没有日志就说没有日志</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.8</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0037-weekly-report-is-another-projection.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:健康报告 → 周报</code></li>
+<li><code>file://packages/core/src/emit.ts#t:截断长度是常量，而且**截断必须说出来**</code></li>
+<li><code>file://docs/implement2.md#t:输出必须逐字节确定</code></li>
+<li><code>file://evals/README.md#t:阈值是地板，不是目标</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>周报是与健康报告同源的另一份投影，没有日志就说没有日志</h1>
+<h2>问题</h2>
+<p>implement2.md 给 S28 写的是&quot;健康报告 → 周报（让你&#39;想订阅&#39;的理由）&quot;。 这句话里藏着一个歧义：<strong>周报是不是&quot;把健康报告再发一遍&quot;？</strong></p>
+<p>如果是，它没有存在的理由——同一个东西发两次，第二次就不看了。所以它必须是 <strong>另一份投影</strong>：回答一个健康报告回答不了的问题。</p>
+<p>另一个问题是措辞。周报里有一节&quot;这一周谁动了库&quot;，而那份数据来自审计日志。 <strong>当审计日志不存在时</strong>（老库、或者一次都没经过 forge），这一节该写什么？</p>
+<h2>考虑过的选项</h2>
+<p><strong>周报的骨架：</strong></p>
+<ol><li><strong>健康报告的快照 + 一句&quot;本周无变化&quot;。</strong> 否决。这一节会让读者得出 &quot;这一周我的库很安静&quot;这个结论，而那正是最危险的一种错觉。</li><li><strong>只有审计（这一周改了什么）。</strong> 否决。那样它回答不了&quot;值得看一眼吗&quot;—— 一个人不会为了&quot;这周改了两条&quot;去订阅什么。</li><li><strong>差异 + 快照 + 待办</strong>：这一周库变成了什么样（健康计数）+ 这一周谁动了它（审计明细）+ 需要你回答的问题（到期清单）。 采纳。三者缺一：只有差异就不知道基线，只有快照就不知道变化，没有待办就不知道做什么。</li></ol>
+<p><strong>关于&quot;没有审计日志&quot;时怎么写：</strong></p>
+<ol><li><strong>空一节，或者写&quot;无记录&quot;。</strong> 否决：一句&quot;无记录&quot;会被读成&quot;这一周没有写入&quot;。 <strong>没有账本</strong>与<strong>账本是空的</strong>是两件事，而把前者渲染成后者， 就是用一份空报告替一份缺失的账本背书。</li><li><strong>明确写出&quot;这不等于这一周什么都没发生&quot;，并解释审计只覆盖经过 forge 的写入。</strong> 采纳。<code>vault.weekly()</code> 因此返回 <code>audit: AuditEntry[] | null</code>—— <code>null</code> 是&quot;没有日志&quot;，<code>[]</code> 是&quot;日志存在但窗口里没有条目&quot;，<strong>两者在措辞上必须分开</strong>。</li></ol>
+<p><strong>关于确定性：</strong></p>
+<ol><li><strong>用&quot;生成时间&quot;当基准日。</strong> 否决。同一周的周报要能被重印（发给别人、 贴进 issue、放进邮件），而带时间戳的产出每天都不同，于是它只能被读一次。</li><li><strong>窗口与基准日都是输入</strong>（<code>--today</code> / <code>--days</code>），报告里没有&quot;生成时间&quot;。 采纳。与 <code>emit</code> 的纪律是同一条（ADR-0017）：<strong>产出必须逐字节确定</strong>。</li></ol>
+<h2>选定</h2>
+<ul><li>周报 = <code>renderWeeklyReport({report, audit, weekStart, weekEnd})</code>， 与健康报告共享同一份判定（<code>runHealth</code>），所以&quot;命令行看到的&quot; 与&quot;周报里写的&quot;不可能是两个答案。</li><li>窗口默认 7 天（<code>today</code> 往前数 6 天），<code>--days</code> 可调，上限 366。</li><li><code>audit === null</code>（没有日志文件）与 <code>audit.length === 0</code>（窗口内没有条目） 在报告里是<strong>两段不同的话</strong>。</li><li>报告里<strong>没有时间戳</strong>，只有窗口（<code># 资产库 · 周报（2026-10-31 → 2026-11-06）</code>）。 于是同一周的周报可以重印，字节相同——这一条由测试与探针各验证一遍。</li><li>截断必须说出来：明细最多 20 条（周报正文 5 条），并写出&quot;窗口内共 N 条&quot;。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：&quot;想订阅的理由&quot;变成了一句可核对的话：<strong>这一周库变成了什么样、 谁动了它、你要回答什么</strong>。它不是营销文案，是一份能 diff 的读数。</li><li><strong>好</strong>：<code>audit</code> 的 <code>null</code> / <code>[]</code> 之分让&quot;周报很安静&quot;这件事不可能被误读—— 这一条踩过一次（第一版把两者都渲染成&quot;这一周没有写入&quot;）， 现在由 <code>packages/store/test/audit.test.ts</code> 与探针各钉一遍。</li><li><strong>代价</strong>：周报的&quot;这一周&quot;是自然日窗口，不是&quot;上次周报到现在&quot;。 补发或跳过一次会重叠/留空——窗口写在标题上，所以看得出来，但不会被纠正。</li><li><strong>代价</strong>：它依赖审计覆盖了全部写入。审计覆盖不到的部分（有人直接改文件） 只会以 <code>AUDIT_UNATTRIBUTED_ASSET</code> 的形式出现在健康检查那一节里—— 周报不重复渲染它，因为同一件事在两处说两遍会让读者以为是两个问题。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

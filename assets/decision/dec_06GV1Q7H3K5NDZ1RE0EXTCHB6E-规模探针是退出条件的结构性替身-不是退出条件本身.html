@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>规模探针是退出条件的结构性替身，不是退出条件本身 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV1Q7H3K5NDZ1RE0EXTCHB6E</p>
+<h1>规模探针是退出条件的结构性替身，不是退出条件本身</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.75</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0038-scale-probe-is-a-structural-stand-in.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:库里涨到 **500–1000 条事实仍然可用**</code></li>
+<li><code>file://docs/implement2.md#t:这是唯一重要的北极星</code></li>
+<li><code>file://evals/runner/maintenance.ts#t:它证明的是机器不会崩、边界不会松、信号不会淹</code></li>
+<li><code>file://packages/core/src/health.ts#t:**不给库打健康分。**</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>规模探针是退出条件的结构性替身，不是退出条件本身</h1>
+<h2>问题</h2>
+<p>implement2.md 给 P7 写的退出条件是：</p>
+<blockquote><p>库里涨到 <strong>500–1000 条事实仍然可用</strong>——这是公认的家酿大脑漂移阈值 [14]。</p></blockquote>
+<p>这句话是这一章里<strong>最不能靠代码证明</strong>的一条。&quot;仍然可用&quot;是一个关于人的判断： 检索得到的那一条是不是真的答了问题、过期的那些有没有被及时看见、 孤儿有没有变成噪音。任何自动化测试都不能替人回答它。</p>
+<p>但&quot;不能证明&quot;不等于&quot;什么都做不了&quot;。两个选项：</p>
+<ol><li>什么都不做，在 README 里写一句&quot;未达成&quot;——诚实的记账，但留下了没有见证人的风险；</li><li>把这句话<strong>拆成几件能被证伪的事</strong>，让它们在 CI 里每次跑一遍。</li></ol>
+<h2>考虑过的选项</h2>
+<p><strong>关于做什么：</strong></p>
+<ol><li><strong>造 1000 条语料，量&quot;检索质量&quot;。</strong> 否决：语料是合成的， 没有&quot;正确答案&quot;可对，量出来的分数是自娱自乐。</li><li><strong>只量性能（跑得多快、内存多少）。</strong> 否决：性能不是这个退出条件的瓶颈—— 1000 条对词法检索来说微不足道。真正会随规模退化的是<strong>信号</strong>： 一处腐烂混在 1000 条好数据里，还看得见吗？</li><li><strong>量三件能被证伪的事：确定性、信号、边界。</strong> 采纳。</li></ol>
+<p><strong>关于这三件事各自怎么判：</strong></p>
+<ul><li><strong>确定性</strong>：同一份 1000 条语料跑两次健康检查与报告渲染，字节必须相同。 规模是&quot;隐式顺序&quot;最喜欢藏身的地方——<code>Object.keys</code>、<code>readdir</code>、Map 的插入顺序 在小语料上碰巧稳定，在大语料上开始分叉。</li><li><strong>信号</strong>：在 1000 条好数据里埋<strong>一处</strong>腐烂（&quot;替换写了一半&quot;），必须被找到。 这是&quot;被淹没的清单等于没有清单&quot;那条纪律的规模版。</li><li><strong>边界</strong>：干净语料上仍然零发现（一个&quot;见到什么都报&quot;的实现能让信号检查全绿）。</li></ul>
+<p><strong>关于样本大小：</strong></p>
+<ol><li><strong>用完整的 1000。</strong> 采纳。500–1000 是 [14] 给的量级，用下限的一半去测 等于在测另一个问题。1102 条语料的生成与判定在毫秒级——这不是一个需要优化的成本。</li></ol>
+<h2>选定</h2>
+<ul><li><code>evals/runner/maintenance.ts</code> 的 <code>runScaleProbe()</code>：造 1002 条语料 （三类资产共享同一处出处），埋一处&quot;替换写了一半&quot;，要求：</li><li>健康报告两次字节相同；</li><li>那处腐烂被找到；</li><li>干净语料（同一次运行里的其它部分）不产生噪音。</li><li>闸门码 <code>E14_EVAL_SCALE_DEGRADED</code>，判定在 <code>evals/runner/gate.ts</code> （与其它探针同一条分工：判定住在能被测试的那一侧）。</li><li><strong>它不证明&quot;仍然可用&quot;。</strong> README 里 P7 的退出条件那一行会<strong>一直</strong>写着&quot;未达成&quot;。 探针证明的是&quot;还能用&quot;这句话的<strong>地基</strong>：机器不崩、产出可复现、信号不被淹。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：退出条件从一句愿望变成三条可执行的读数。它们红了的时候， &quot;库已经不能用了&quot;这句话至少有一个明确的起点。</li><li><strong>好</strong>：确定性在规模上第一次被真的问过。ADR-0017 说&quot;排序键显式写死&quot;， 而 1000 条的语料是那句话的检验场。</li><li><strong>代价</strong>：CI 多几百毫秒。语料是纯内存构造的（不落盘），所以它的成本与 &quot;读一次仓库&quot;同级。</li><li><strong>残余风险</strong>：合成语料的形状是<strong>我自己挑的</strong>（三类资产、共享一处出处、 每个题面只出现一次）。真实库的长尾（同一题面几十条、来源上千份）不在它的覆盖里。 换句话说：它防的是&quot;机器在规模上退化&quot;，防不了&quot;真实库的形状让判据失效&quot;。 后者只能靠真实使用来发现——而那正好就是退出条件本身。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

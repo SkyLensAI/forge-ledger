@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>发布门要检查包结构，而不是只打一个占位 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GWAN2J00V8MGMMYQRM7FVRR2</p>
+<h1>发布门要检查包结构，而不是只打一个占位</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-10</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-10</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.9</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0044-release-preflight-before-publish.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://listing/SUBMISSION.md#t:成为一个真正可安装的命令</code></li>
+<li><code>file://STATUS.md#t:一个真正可安装的</code></li>
+<li><code>file://docs/gates/bypass-matrix.md#t:闸门 5 · 发布门</code></li>
+<li><code>file://docs/adr/0041-listing-is-a-draft-not-a-submission.md#t:需要账号、仓库 URL、一个真正可安装的</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>发布门要检查包结构，而不是只打一个占位</h1>
+<h2>问题</h2>
+<p><code>release.yml</code> 的发布步骤一直是一句占位：</p>
+<pre><code class="language-yaml">- name: publish (placeholder)
+  run: echo &quot;Phase 0：发布门只做判定，产物发布在 Phase 2 接入&quot;</code></pre>
+<p>而 <code>release.mjs</code> 的头部还写着&quot;provenance / emit / eval 尚未覆盖&quot;。这两句话在 Phase 1–8 都落盘之后已经<strong>不是事实</strong>：<code>gate:ci</code> 会跑那些检查。但更实际的问题是： 即使 <code>gate:ci</code> 全绿，<code>pnpm publish</code> 仍然可能发出一个<strong>装不上</strong>的包——</p>
+<ul><li><code>@forge/mcp</code> 依赖 <code>@forge/core</code> / <code>@forge/schema</code> / <code>@forge/store</code>， 而这些包如果还是 <code>private</code>，npm 上装不到依赖；</li><li>版本还是 <code>0.0.0</code>，它是&quot;尚未发布&quot;的占位，不是一次发布；</li><li>没有 <code>files</code> 的包会把测试与临时文件一起发出去；</li><li>没有 <code>publishConfig.access</code> / <code>engines.node</code> 的包会在 registry 上表现不一致。</li></ul>
+<p>这些都不是 <code>gate:ci</code> 的职责，也不该混进那个已经很长的大闸门。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>继续保留占位。</strong> 否决。上架包（S31）已经生成了一个指向 <code>forge-mcp</code> 的 可提交 draft；如果发布路径永远不接，那份 draft 就永远只是形状正确。</li><li>**让人在笔记本上 <code>pnpm publish</code>。** 否决。那会让闸门 5 的&quot;发布只能从 CI 发出&quot; 变成一句口号；凭据与可追溯性也一起消失。</li><li>**在 <code>release.mjs</code> 里顺手把包结构也判了。** 否决。<code>release.mjs</code> 已经负责 CI/tag/变更集三个问题；再塞进&quot;哪些包能发&quot;会让它的失败原因变模糊。</li><li>**加一个发布前检查脚本，加在 <code>gate:release</code> 之后、<code>publish</code> 之前。** 采纳。</li></ol>
+<h2>选定</h2>
+<ul><li>新增 <code>scripts/gates/release-preflight.mjs</code>，只回答&quot;现在这批 package.json 能不能被 <code>pnpm -r publish</code> 正确发出去&quot;：</li><li>版本不是 <code>0.0.0</code>；</li><li><code>@forge/mcp</code> 不是 <code>private</code>；</li><li>每个可发布包的 <code>@forge/*</code> 依赖也可发布（否则 npm 上装不到）；</li><li>每个可发布包有 <code>engines.node &gt;= 24</code>、<code>files</code>、<code>publishConfig.access</code>；</li><li><code>@forge/extension</code> 仍然是 <code>private</code>（浏览器扩展不通过 npm 分发）；</li><li><code>NPM_TOKEN</code> / <code>FORGE_NPM_TOKEN</code> 存在（本地演练用 <code>--allow-missing-token</code>）。</li><li><code>release.mjs</code> 增加一条：<code>version === &quot;0.0.0&quot;</code> 直接红。占位版本不是一次发布。</li><li><code>release.yml</code>：</li><li><code>setup-node</code> 配 <code>registry-url: https://registry.npmjs.org</code>；</li><li>在 <code>gate:release</code> 之后跑 <code>release-preflight.mjs</code>；</li><li>用 <code>pnpm -r publish --access public --provenance --no-git-checks</code> 发布；</li><li><code>NODE_AUTH_TOKEN</code> 取自 <code>secrets.NPM_TOKEN</code>。</li><li>**哪些包去掉 <code>private</code> 是人的决定。** 本 ADR 只把&quot;去掉之后依赖链是否完整&quot; 变成机器判定；它不替人决定 scope、版本号、registry 凭据。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：发布不会再发出一个依赖缺失或元数据不全的包；失败发生在 publish 之前， 而不是在用户 <code>npm install</code> 的时候。</li><li><strong>好</strong>：<code>release.mjs</code> 的注释回到事实：provenance / emit / eval 由 <code>gate:ci</code> 覆盖，本脚本不重复写第二份。</li><li><strong>代价</strong>：真正发布仍然需要人：npm scope 所有权、<code>NPM_TOKEN</code>、版本号、 以及把要发布的包从 <code>private</code> 改成可发布。这些是账号与商业决定，不是代码。</li><li><strong>残余风险</strong>：preflight 只检查结构，不检查包在安装后的行为；没有发布后的 smoke test，也没有自动回滚。<code>@forge/mcp</code> 的 <code>.ts</code> 源码依赖 Node 原生类型擦除 （ADR-0011），所以 Node 下限必须随包声明——preflight 能检查声明，不能检查 用户的 Node 版本。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

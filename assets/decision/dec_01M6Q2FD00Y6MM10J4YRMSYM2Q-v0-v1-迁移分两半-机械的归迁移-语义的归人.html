@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>v0→v1 迁移分两半：机械的归迁移，语义的归人 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6Q2FD00Y6MM10J4YRMSYM2Q</p>
+<h1>v0→v1 迁移分两半：机械的归迁移，语义的归人</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.9</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0019-migration-splits-mechanical-from-semantic.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/adr/0008-schema-version-and-migration-channel.md#t:迁移只在被已有资产触发时才被真正验证</code></li>
+<li><code>file://docs/adr/0009-provenance-is-scheme-span.md#t:出处写了，但没有任何东西能校验它</code></li>
+<li><code>file://docs/implement2.md#t:迁移通道（哪怕只有 v1 的空迁移，通道必须先建）</code></li>
+<li><code>file://docs/implement2.md#t:迁移成本随数据量线性增长</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>v0→v1 迁移分两半：机械的归迁移，语义的归人</h1>
+<h2>问题</h2>
+<p>ADR-0008 说迁移通道的回归用例不是假数据，而是仓库里那 5 条写在 schema 之前的 ADR （缺 <code>schema_version</code>，<code>sources</code> 是 v0 的自由写法）。</p>
+<p>真去迁它们的时候，一条界线浮出来了：<strong>其中一部分能用规则转，另一部分不能。</strong></p>
+<ul><li>能转：<code>缺 schema_version</code> → 补 <code>1</code>；<code>implement2.md#Phase 0 · S3</code> → <code>file://docs/implement2.md#t:Phase 0 · S3</code>。</li><li>不能转：<code>scripts/gates/rehearse.mjs#场景 A</code>。那个锚点归一化后只有 <strong>4 个字符</strong>， 在任何文档里都能命中——把它转成一个 <code>#t:</code> 会得到一个&quot;能过闸门&quot;的 span， 但它什么也没定位到。</li><li>更不能转：ADR-0005 的 <code>origin_incident</code> 是一整句自由文本 （&quot;Phase 0 演练场景 A：删掉 policy.mjs 后 CI 不是判定为红，而是崩溃&quot;）。 它<strong>描述了</strong>一次真实事故，但它不是一个能解析的位置。</li></ul>
+<h2>考虑过的选项</h2>
+<ol><li><strong>让迁移&quot;尽力而为&quot;</strong>：转不了的按路径猜一个最近的位置写进去。</li><li><strong>让迁移只做能做的，转不了的保留原样并记 note</strong>，由人重指。</li><li><strong>先把设计文档改到能被 v0 锚点命中</strong>（在 <code>implement2.md</code> 里加上 <code>## Phase 0 · S3</code> 这样的标题），这样机械转换就全都成立。</li></ol>
+<h2>选定</h2>
+<p><strong>选 2。</strong></p>
+<ul><li>选 1 是这里唯一真正危险的选项：它产出的<strong>假出处能过闸门</strong>。 ADR-0009 的立论就是&quot;腐烂的出处比没有出处更糟——它看起来像证据&quot;， 而这个选项会<strong>批量制造</strong>这种腐烂，还带着&quot;迁移已完成&quot;的背书。</li><li>选 3 看着很聪明，其实是<strong>让证据去迁就引用</strong>：为了让 <code>#h:Phase 0 · S3</code> 命中， 得往设计文档里塞一堆为引用服务的标题。文档的形状会开始被引用格式牵着走， 而下一次改文档的人不会知道那些标题是&quot;为了别人能引用&quot;而存在的。 <strong>引用应当指向文档里本来就有的东西。</strong></li><li>所以 <code>migrateV0ToV1</code> 返回 <code>{text, notes}</code>：<code>notes</code> 就是&quot;这一条我转不了， 需要一个知道那份文档的人来指&quot;。空的 notes 才代表机械部分全部完成。</li><li>落地的分工是：<strong>迁移代码负责机械部分</strong>（可测试、幂等、有 fixture 回归）， <strong>人负责语义部分</strong>（这次是重指 5 条 ADR 的 10 条出处 + 1 条 origin_incident）。 两部分都在同一个变更集里，diff 上分得清哪条是机器写的、哪条是人写的。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：迁移是纯函数、可测试、幂等（重复跑不会产生第二个 <code>schema_version</code>）。</li><li><strong>好</strong>：<code>notes</code> 让&quot;迁移跑完了&quot;和&quot;迁移跑完了但有 3 处要人看&quot;是两种不同的输出。 这是 ADR-0009 那条&quot;无法校验 ≠ 校验通过&quot;的同一条原则，用在迁移上。</li><li><strong>代价</strong>：迁移的第一次真实使用就需要人工介入，所以&quot;迁移是全自动的&quot;这个期待 从一开始就不成立。这是<strong>如实反映</strong>：资产格式的变更里，总有一部分是语义的。</li><li><strong>代价</strong>：那 5 条 ADR 的 diff 里混着机器和人的改动。缓解是 ADR-0008 已经写下的规则—— 区间只能机械变换，语义修正在迁移之外单独发生，且这一次被记在这里。</li><li><strong>残余风险</strong>：<code>notes</code> 是给人看的字符串，没有强制力。一次&quot;人没看 note 就提交&quot;的迁移 会退化成选 1。缓解：迁移<strong>不在</strong>闸门或 CI 里自动跑（那是&quot;顺手兼容&quot;的温床）， 它是显式命令，输出直接打到终端。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

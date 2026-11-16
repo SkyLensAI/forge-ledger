@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>事件 IR 是**派生数据**，住在 `index/`，不是资产 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6Q2FD00NVKBVBH80QD63VSX</p>
+<h1>事件 IR 是<strong>派生数据</strong>，住在 `index/`，不是资产</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.8</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0016-event-ir-is-derived-data.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement1.md#t:原始来源 → 规范化事件 IR</code></li>
+<li><code>file://docs/implement2.md#t:为什么来源选导出而不是插件</code></li>
+<li><code>file://docs/directory.md#t:索引、向量、摘要缓存都该在</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>事件 IR 是<strong>派生数据</strong>，住在 <code>index/</code>，不是资产</h1>
+<h2>问题</h2>
+<p>S9 的交付物写的是&quot;事件 IR&quot;。那么它放在哪一层？</p>
+<p>直觉答案是 <code>assets/</code>——毕竟它是编译的产物。但这个直觉会坏事： 一份 137 条消息的导出会变成 137 条&quot;资产&quot;，而资产库的定义是 &quot;用户会去读、去审、去引用、去维护的东西&quot;。没有人会维护一条聊天消息。</p>
+<h2>考虑过的选项</h2>
+<ol><li>**事件 IR 落 <code>assets/event/</code>**：与 <code>event</code> 是不需要判断的类型（ADR-0006）这一条很自洽。</li><li>**事件 IR 只存在于 <code>index/</code>（或内存里）**：它是 sources 的纯函数， 能随时重算——而&quot;能重新算出来的东西都不该被当成资产&quot;。</li><li><strong>两者都写</strong>：<code>index/</code> 存全部，<code>assets/</code> 存&quot;值得留下的那些&quot;。 但&quot;值得&quot;是一个判断，而 v0 没有判断（没有模型）。</li></ol>
+<h2>选定</h2>
+<p><strong>选 2，并对&quot;资产&quot;的判据做一次明确收窄。</strong></p>
+<ul><li>判据是<strong>可重算性</strong>：<code>sources</code> + 连接器 ⟹ 事件 IR，逐字节可复现。 凡满足这条的都不进资产层（<code>directory.md</code> 原则 2）。 这条判据是纯机械的，不需要谁来&quot;判断值不值得&quot;——这正是 Phase 2 需要的性质。</li><li>选 1 的真正问题是<strong>它会把闸门的注意力稀释掉</strong>。资产是要过出处闸门的； 137 条自动生成的事件全部通过（它们的出处当然是对的）， 于是闸门的输出里 137 条噪音盖住 1 条真问题。 <strong>闸门信噪比是它的生命线</strong>——这是 Phase 3 才写明的东西，但在这里就得让路。</li><li><code>event</code> 类型本身<strong>没有取消</strong>：它仍然是 4 种类型之一（ADR-0006）。 Phase 4 的 Extractor 会产出<strong>它认为值得记住的事件</strong>（&quot;发布了 v1.2&quot;、&quot;线上事故 X&quot;）， 那些是不可重算的（含判断），进 <code>assets/event/</code>。 也就是说：**v0 的 <code>assets/event/</code> 是空的，而这不是缺陷，是分工。**</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：<code>forge compile</code> 对 <code>index/</code> 是<strong>重建</strong>而不是&quot;增量维护&quot;—— 删掉 index 目录再跑一次，结果完全一样（有一张回归用例守着这件事）。</li><li><strong>好</strong>：资产的计数是有意义的（用户能读完），闸门的输出也是。</li><li><strong>好</strong>：一条 1000 条消息的导出不会把库撑爆，而检索（Phase 6）照样能用 index 里的事件。</li><li><strong>代价</strong>：<code>event</code> 类型在 v0 没有任何 <code>assets/</code> 实例，于是这条类型的分支<strong>只能靠测试覆盖</strong>， 不能靠在真实库里跑一遍。这是&quot;先有确定性骨架&quot;阶段的典型代价。</li><li><strong>代价</strong>：用户看不到&quot;我导入了什么&quot;的资产清单，只有 <code>INDEX.md</code> 里的计数。 缓解是 <code>forge compile</code> 的报告会打印来源数、事件数、丢弃数。</li><li><strong>残余风险</strong>：如果 Phase 4 的 Extractor 把大量内容都判成 <code>event</code>， 选 2 划出的那条线就会被它自己越过去。到那时要重新问一次 &quot;哪些事件值得进资产层&quot;——那是棘轮的一次正常转动，不是这个 ADR 被推翻。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

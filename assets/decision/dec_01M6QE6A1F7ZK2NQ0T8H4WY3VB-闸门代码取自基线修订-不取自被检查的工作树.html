@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>闸门代码取自基线修订，不取自被检查的工作树 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6QE6A1F7ZK2NQ0T8H4WY3VB</p>
+<h1>闸门代码取自基线修订，不取自被检查的工作树</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.9</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0005-gate-code-from-base-revision.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://scripts/gates/rehearse.mjs#t:A4 CI（闸门 3·可信版）用基线规则判定</code></li>
+<li><code>file://docs/implement1.md#t:定义完成的清单（checklist）会被 agent 跳过</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>闸门代码取自基线修订，不取自被检查的工作树</h1>
+<h2>问题</h2>
+<p>演练场景 A（&quot;删掉一处校验&quot;）暴露了一个结构错误，而不是一个 bug：</p>
+<p>CI 直接运行工作树里的 <code>ci.mjs</code> 时，<strong>被检查的东西同时是检查者</strong>。删掉 <code>policy.mjs</code> 之后， CI 的输出不是&quot;R2 违规&quot;，而是一段 <code>ERR_MODULE_NOT_FOUND</code> 堆栈。</p>
+<p>崩溃还算好的结果。真正危险的是另一种改法：把 <code>evaluateChangeset</code> 改成永远返回 <code>{ ok: true }</code>——闸门会<strong>兴高采烈地报绿</strong>。一个能给自己发合格证的闸门不是闸门。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>加一条&quot;不许改闸门代码&quot;的规则</strong>（写进 AGENTS.md / 靠评审）。这正是本项目的反模式 2： 用自然语言提示代替代码强制。</li><li><strong>在 CI 里对闸门文件做哈希比对</strong>，发现改动就报警。能发现，但规则仍然由被检查的那份代码执行， 而且合法改动（带 ADR 的规则演进）会被无差别拦截。</li><li><strong>判定者来自基线修订</strong>：把 base commit checkout 到临时 worktree，用<strong>那里的</strong> <code>ci.mjs</code> 判定<strong>当前工作树</strong>的内容。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3</strong>，实现为 <code>scripts/gates/trusted-ci.mjs</code>（只依赖 node 内建模块）：</p>
+<ul><li><code>git worktree add --detach &lt;tmp&gt; &lt;base&gt;</code> → 拿到基线的闸门实现</li><li>以当前仓库为 cwd 执行 <code>&lt;tmp&gt;/scripts/gates/ci.mjs</code> → ESM 的 import 相对<strong>脚本自身</strong>解析， 所以规则来自基线、内容来自工作树</li><li>退出码原样透传；拿不到基线时<strong>显式报警</strong>再退回工作树版本（可见的降级，不静默）</li></ul>
+<p><strong>有意的副作用：新规则在合并之后才生效。</strong> PR 里的规则改动不会被自己的新规则判绿—— &quot;不能自己给自己发合格证&quot;这条纪律，对闸门本身也成立。</p>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：删掉或改松闸门代码 → 判定仍然由旧规则执行 → R2 违规照常报红（演练 A4/D2）。</li><li><strong>好</strong>：把&quot;闸门是否完整&quot;变成可执行断言，而不是一句评审意见。</li><li><strong>好</strong>：与 <code>ci.yml</code> 里保留的 <code>pnpm gate:ci</code> 形成双跑——两者都绿才算绿。</li><li><strong>代价</strong>：每次 CI 多一次 worktree 建立（本地实测 &lt; 1s）；CI 必须 <code>fetch-depth: 0</code>。</li><li><strong>残余风险</strong>：PR 仍可重写 <code>.github/workflows/ci.yml</code> 让这个检查不被调用。 缓解：harness 完整性检查（同样由基线版本执行）要求 workflow 里必须存在 <code>gates</code> job 与 <code>gate:trusted</code> 调用；且分支保护把 required check 名字钉死为 <code>gates</code>， 改名会让 PR 永远处于 pending 而无法合并。见 <code>docs/gates/bypass-matrix.md</code> 3.1/3.2/3.7。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

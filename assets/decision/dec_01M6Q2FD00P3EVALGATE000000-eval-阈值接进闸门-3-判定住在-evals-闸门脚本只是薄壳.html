@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>eval 阈值接进闸门 3；判定住在 `evals/`，闸门脚本只是薄壳 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6Q2FD00P3EVALGATE000000</p>
+<h1>eval 阈值接进闸门 3；判定住在 `evals/`，闸门脚本只是薄壳</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0020-eval-thresholds-are-a-gate.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:先有尺子，再接模型</code></li>
+<li><code>file://docs/implement2.md#t:把 Extractor 换成一个</code></li>
+<li><code>file://docs/implement1.md#t:没有 eval 就说</code></li>
+<li><code>file://docs/implement1.md#t:绿灯只说明你写的检查通过了</code></li>
+<li><code>file://docs/implement1.md#t:这些是纯确定性断言，不靠模型判断</code></li>
+<li><code>file://AGENTS.md#t:用自然语言提示代替代码强制</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>eval 阈值接进闸门 3；判定住在 <code>evals/</code>，闸门脚本只是薄壳</h1>
+<h2>问题</h2>
+<p>Phase 3 的交付物是三样：eval runner + 20 条人工确认的黄金集（S12）、 不变量测试（S13）、<strong>CI 接阈值，红了不许合</strong>（S14）。 退出条件写得很具体：<strong>把 Extractor 换成一个&quot;永远返回空&quot;的假实现，CI 必须变红。</strong></p>
+<p>要落这三样，必须动 <code>scripts/gates/</code>（受保护路径，R2/R3）。而这里有两个不显然的问题：</p>
+<ol><li><strong>判定写在哪儿？</strong> <code>assets.mjs</code> / <code>consistency.mjs</code> 的先例是&quot;判定住 <code>packages/core</code>， 宿主只做编排&quot;。但 eval 闸门的判定不属于产品逻辑——它是<strong>闸门的</strong>判定。 塞进 <code>packages/core</code> 会让产品包里长出一段只有 CI 用得到的东西。</li><li><strong>谁来测这段判定？</strong> 闸门本体是受保护路径，agent 写不了，只能由人落盘。 如果判定写在闸门脚本里，那它要等落盘之后才第一次被执行—— <strong>&quot;闸门第一次运行&quot;就发生在它生效的那一刻，那不是演练，那是赌博。</strong> 这个仓库恰好有一条明文纪律反对这件事（Phase 0 的洞是靠演练发现的，不是靠读代码）。</li></ol>
+<h2>考虑过的选项</h2>
+<ol><li>**判定写在 <code>scripts/gates/evals.mjs</code> 里**（和 <code>assets.mjs</code> 一样厚）。 简单，但它在落盘之前一行都跑不到；而且它把&quot;判定&quot;和&quot;受保护&quot;绑在一起， 于是每次调阈值语义都要走一遍人工落盘。</li><li>**判定塞进 <code>packages/core</code>**。能测，但产品包里会长出一段 &quot;只有 CI 关心&quot;的逻辑，而 core 的定位是&quot;零 IO 的编译与维护引擎&quot;（R5）。</li><li>**判定住 <code>evals/runner/gate.ts</code>（不受保护），<code>scripts/gates/evals.mjs</code> 只做薄壳** （读 node_modules、跑 runner、调判定、设退出码）。</li><li><strong>干脆不要这道闸门</strong>，只把 eval runner 留着让人手动跑。 这正是 implement1.md 反模式 3（&quot;没有 eval 就说效果不错&quot;）的近亲—— 一条不接进任何强制通道的尺子，等于一条没人看的报告。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3。</strong></p>
+<ul><li><strong>判定的归属由&quot;谁能测它&quot;决定，而不是由&quot;它看起来像什么&quot;决定。</strong> 把判定放在不受保护的 <code>evals/runner/gate.ts</code>，它就和其他所有代码一样， 在落盘之前就能被 <code>pnpm test</code> 跑、被变异用例钉住。 薄壳里只剩下编排与退出码——那部分<strong>必须</strong>等落盘才能验，而它是十行。 这不是把闸门藏到不受保护的地方：薄壳一旦被删，<code>G3_EVAL_GATE_MISSING</code> 会红（见下）。</li><li><strong>判定的码表跟着判定走。</strong> <code>E1</code>–<code>E6</code> 定义在 <code>evals/runner/gate.ts</code>， 而一致性检查（C4）扫的也是这份文件——扫&quot;判定实际所在的那份&quot;， 不是扫薄壳。薄壳里没有码可扫。</li><li><strong>阈值是地板，不是目标。</strong> 它回答&quot;实现是不是坏掉了&quot;，不回答&quot;实现够好了吗&quot;。 把它当目标是这个项目最舒服的死法：一个刚好卡在阈值上的实现， 配上一群以为自己在被保护的人（implement1.md §2.3）。 所以 <code>evals/thresholds.json</code> 里写死了这句话，实测数字写在 <code>evals/README.md</code>。</li><li><strong>golden 集与阈值都必须</strong>被人工确认<strong>，而且由闸门检查。</strong> 这不是形式主义：golden 集由 agent 自己写、自己判，就是让模型给自己发合格证， &quot;先有尺子&quot;的意义会整个消失。implement2.md 的人机分工表把 P3 的&quot;人必须做&quot; 明确写成&quot;<strong>阈值与 golden 集</strong>&quot;。所以闸门里有两条检查（<code>E2</code> / <code>E6</code>）专门盯这件事。</li><li><strong>确认绑在内容指纹上，不绑在文件名上。</strong> 只查&quot;有没有人点过头&quot;，留下的是一张能盖在任何后续改动上的橡皮图章—— 包括&quot;agent 事后往 golden 集里塞一条恰好让当前实现变准的用例&quot;。 所以 <code>review.cases_sha256</code> 与 <code>extraction.thresholds_sha256</code> 记的是<strong>被确认那一份</strong>的 规范化 JSON 哈希，闸门比对的是<strong>当前</strong>这一份。改一个字节就要重新确认。 用规范化（键递归排序）而不是原样 <code>JSON.stringify</code>：纯排版改动不该让确认失效， 否则只会训练人闭着眼睛重签——那比不签更糟。这与来源层的&quot;内容寻址&quot;是同一条思路 （ADR-0013）：<strong>承诺绑在字节上，不绑在名字上。</strong></li><li>**&quot;尺子还睁着眼吗&quot;是一条独立的检查（<code>E4</code>）。** 阈值可以被慢慢调松、runner 可以被改得永远算满分，而这两种改动都会让 &quot;分数够不够&quot;继续绿。<code>E4</code> 不依赖任何分数：它直接问 &quot;把实现换成永远返回空的那个，它还会及格吗&quot;。这是 Phase 3 的退出条件本身， 写成了一条每次 CI 都跑的检查——<strong>退出条件不该只被验证一次</strong>。</li><li>**子闸门需要自己的防拆检查（<code>G3_EVAL_GATE_MISSING</code>）。** 删掉 <code>evals.mjs</code>、或者留着文件但从 <code>ci.mjs</code> 的清单里摘掉它， 不会让任何<strong>别的东西</strong>变红：lint 照样绿、快照照样绿、测试照样绿。 于是&quot;绿灯&quot;重新退回成&quot;代码看起来还行&quot;的意思，而&quot;需求被满足了吗&quot;重新无人回答—— 这正是 implement1.md §2.3 那句话说的失败模式。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：闸门的判定在落盘前就被 24 条用例钉住了（含 3 条边界： 空实现及格、召回率恰好等于阈值、只差一点点）。</li><li><strong>好</strong>：两处&quot;尺子自己的问题&quot;（<code>E5</code> 用例指不回原文、<code>E4</code> 尺子瞎了） 与&quot;被测量者的问题&quot;（<code>E1</code> 分数不够）分开报。混在一起会得到一份 &quot;分数很难看&quot;的报告，而人从那份报告里读不出该去修什么。</li><li><strong>好</strong>：不变量（S13）每条都配了反例。一条只会变绿的不变量， 与&quot;记得加出处&quot;这种礼貌指令没有区别（R8）。</li><li><strong>好</strong>：dogfooding 立刻见效——尺子第一次跑就抓到了<strong>黄金集自己</strong>的两处缺陷 （一条 <code>#t:</code> 锚点只有 7 字符、一条 <code>#k:</code> 指错了 JSON 路径）。 这正是&quot;先审尺子自己&quot;这一步该有的产出。</li><li><strong>代价</strong>：<code>scripts/gates/</code> 与 <code>schema/provenance.md</code> 共 5 个文件由人落盘 （<code>handoff/</code>，一条命令）。这是 R2/R3 的既定代价，不是这次的额外开销。</li><li><strong>代价</strong>：阈值目前只能区分&quot;比一个词法基线还差&quot;与&quot;不比它差&quot;。 它<strong>测不出</strong>&quot;够不够好&quot;——那是 Phase 4（S17）拿基准报告定的事。 这条限制写在 <code>evals/README.md</code> 的第一段，不留给读者自己发现。</li><li><strong>残余风险</strong>：<code>E2</code>/<code>E6</code> 检查的是&quot;有人对<strong>这一份内容</strong>签过字&quot;，不是&quot;那个人真的读了&quot;。 指纹绑得住&quot;改了什么&quot;，绑不住&quot;签的人走没走心&quot;。 这与所有评审类闸门一样，最终落在一个人的判断上。缓解是让确认变便宜—— 每条用例的 <code>why</code> 一行、判据是一个能点开核对到原文的 span。 <strong>一次&quot;没看就签&quot;的确认会让尺子退化</strong>，而这次的缓解只是降低它的概率。</li><li><strong>残余风险</strong>：词法基线的分数（精确率 0.882 / 召回率 0.882）是在 <strong>同一批人写的</strong>用例上量出来的。它足以当前置地板，但不能被读成&quot;抽取质量已达 88%&quot;。 Phase 4 引入真实 trace 反向造的回归集（<code>evals/regressions/</code>）才是对这个数字的检验。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

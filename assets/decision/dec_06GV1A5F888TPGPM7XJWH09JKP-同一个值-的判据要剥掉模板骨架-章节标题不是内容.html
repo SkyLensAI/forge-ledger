@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>&quot;同一个值&quot;的判据要剥掉模板骨架：章节标题不是内容 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV1A5F888TPGPM7XJWH09JKP</p>
+<h1>&quot;同一个值&quot;的判据要剥掉模板骨架：章节标题不是内容</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.8</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0032-value-comparison-strips-template-headings.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement1.md#t:过期的事实比没有事实更糟</code></li>
+<li><code>file://docs/implement1.md#t:也是你唯一能收订阅费的动作</code></li>
+<li><code>file://docs/handbook/conflicts.md#t:归一化相等 = 再确认；证据两侧齐全且可解析</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>&quot;同一个值&quot;的判据要剥掉模板骨架：章节标题不是内容</h1>
+<h2>问题</h2>
+<p>ADR-0027 的判据 3 写的是：<strong>归一化后完全相同 = 不是冲突，是再确认</strong>。 它靠&quot;归一化后的字节相等&quot;把正常的重复证据挡在队列外面。</p>
+<p>问题出在&quot;归一化&quot;这个词上：它当初只折叠了空白与行尾，而<strong>两侧的形状本来就不一样</strong>。</p>
+<ul><li>资产那一侧：<code>## 当前状态\n\n两周一个版本。</code>。 <code>## 当前状态</code> 是分类法强制的章节（<code>REQUIRED_SECTIONS.state = [&quot;当前状态&quot;]</code>）， 每一条 state 都带着它，它是模板的骨架。</li><li>候选那一侧：<code>两周一个版本。</code>。模型抽出来的是一句话，没有理由带标题。</li></ul>
+<p>于是&quot;同一条事实被再说一遍&quot;会<strong>每一次都被判成内容不同</strong>，也就每一次都进队列。 判据 3 在纸面上成立、在行为上失效——而它失效的方向恰好是最贵的那一边： 队列被正常的重复证据淹掉，人开始成批点过， <strong>真的矛盾就藏在那一堆真真假假的条目里</strong>（<code>evals/regressions/0003</code> 是同一个形状： 把两种不同的情况当成一种，于是一条判据永久报假警）。</p>
+<p>这个缺口一直到 Phase 5 的端到端用例能真正跑起来之后才暴露： 之前它被&quot;schema 里还没有 <code>subject</code>&quot;挡在前面，测试红在一个更早的地方 （见 <code>evals/regressions/0005</code>）。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>在候选那一侧补标题</strong>（让抽取器把 <code>## 当前状态</code> 也吐出来）。 这等于把&quot;资产长什么样&quot;写进提示词，而 R8 说的正是不要这么干： 提示词不是强制。换一个抽取器、换一次措辞，它就会失效， 而失效的表现是&quot;队列里突然多出一批看起来合理的冲突&quot;。</li><li><strong>在资产那一侧削掉标题</strong>（把 <code>## 当前状态</code> 从正文里删掉，值就是一句话）。 那会让 <code>REQUIRED_SECTIONS</code> 永远报红，或者逼着分类法放弃章节要求。 骨架被删掉之后，人读资产时就失去了&quot;这一段讲的是什么&quot;的提示。</li><li><strong>比较时剥掉行首的 ATX 标题</strong>（两侧对称地剥）。判据是<strong>一条能指着说的语法规则</strong>： <code>^\s{0,3}#{1,6}(\s|$)</code>。它不猜&quot;这句话像不像标题&quot;，所以它可以被人复核。</li><li><strong>改用语义比较或相似度阈值。</strong> 那就把&quot;是不是同一个值&quot;变成一个可以拧松的数字， 而拧松它的后果是<strong>真的矛盾被当成再确认</strong>——这个产品最贵的失败模式。 选项 4 从来不是备选，写在这里是为了说明它为什么不是。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3。</strong> <code>normalizeValue</code> 在折叠空白之前先剥掉行首的 ATX 标题行（<code>packages/core/src/conflict.ts</code>）。</p>
+<p>三条理由：</p>
+<ol><li><strong>它是对称的。</strong> 同一段文字，剥不剥标题，两侧得到的处理完全一样。 任何&quot;只在某一侧做&quot;的归一化都会重新变成&quot;谁抽出来的&quot;决定&quot;算不算同一个值&quot;。</li><li><strong>它是可复核的。</strong> 判据是一条正则，不是一次判断。人对着两条记录说 &quot;这两句是不是同一句话&quot;时，得到的答案与代码一致。</li><li><strong>它没有把判据交给模型。</strong> 这与 ADR-0027 的判据 4 是同一条纪律： 模型只能追加候选，不能决定&quot;什么算同一个值&quot;。</li></ol>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：判据 3 从&quot;纸面成立&quot;变成&quot;行为成立&quot;。再确认不会进队列， 队列的信噪比由一条硬判据保着。</li><li><strong>好</strong>：这条修法顺带覆盖了所有类型（decision/rule 的正文同样带模板章节）， 不需要按类型写第二份判据。</li><li><strong>代价</strong>：正文里的三级以上标题（<code>### …</code>）也会被剥掉。 于是一份&quot;用 <code>###</code> 分小节写状态&quot;的资产，它的值会比写作者以为的更扁平： <code>### A\n甲\n### B\n乙</code> 与 <code>### B\n乙\n### A\n甲</code> 会被判成同一个值。</li><li><strong>残余风险</strong>：把这条也做成语义判断（&quot;只剥模板要求的那些章节&quot;）会让判据与 分类法耦合，而分类法要能独立演进。所以这里选了便宜的、粗糙的那一边， 并把它记在这里——<strong>残余风险要写出来，而不是等它被撞上</strong>（ADR-0027 的同一个做法）。</li><li><strong>回归</strong>：<code>packages/core/test/conflict.test.ts</code> 里那条&quot;标题不同、正文相同&quot;的用例 钉住这条判据；<code>evals/regressions/0005</code> 记这次是怎么被发现的。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

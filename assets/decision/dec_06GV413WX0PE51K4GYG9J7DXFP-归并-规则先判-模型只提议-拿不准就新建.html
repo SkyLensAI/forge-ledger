@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>归并：规则先判，模型只提议；拿不准就新建 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV413WX0PE51K4GYG9J7DXFP</p>
+<h1>归并：规则先判，模型只提议；拿不准就新建</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0026-linker-rules-first-model-proposes.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:规则优先，LLM 只判</code></li>
+<li><code>file://docs/implement1.md#t:判断两条断言是否在说同一件事</code></li>
+<li><code>file://docs/implement1.md#t:让运行时的 agent 自动覆盖用户已有的状态</code></li>
+<li><code>file://docs/adr/0025-subject-is-structure-not-guess.md#t:它是一条**索引**，所以它的可信度</code></li>
+<li><code>file://AGENTS.md#t:信任边界必须写在代码里</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>归并：规则先判，模型只提议；拿不准就新建</h1>
+<h2>问题</h2>
+<p>S18 的判据只有一句：<strong>规则优先，LLM 只判&quot;这两条是不是同一件事&quot;；不确定就新建，别乱并。</strong> 难点在于把它写成两件互不越权的事——而&quot;谁说了算&quot;这个问题在归并上比在抽取上更尖锐：</p>
+<p>抽取判错了，代价是候选区里多一条垃圾（人还能拒）。<strong>归并判错了，代价是把两条 本来分开的事实合成一条</strong>：证据混在一起、正文互相覆盖，而<strong>没有任何东西会因此变红</strong>。 它是本产品最安静的失败模式。</p>
+<p>还有一条不能丢的性质：<strong>归并是&quot;分组&quot;，不是&quot;覆盖&quot;。</strong> 把一条候选并进一个已有实体， 不该改写那个实体的任何一个字节——改写是&quot;冲突处理&quot;（S19/S20）的事， 而那条路上有人。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>全交给模型判。</strong> 让 LLM 对每一对候选说&quot;是不是同一件事&quot;，是同一件事就并。 最省事，也最危险：模型说&quot;是&quot;的代价是不可逆的合并， 而一个总是说&quot;是&quot;的模型能让整个库塌成一个实体——它还很难被发现， 因为合并后的库看起来&quot;更干净&quot;。</li><li><strong>全靠规则（题面归一化相等 + 证据相同）。</strong> 完全可解释、可复现， 但必然漏：模型抽出来的题面是自由文本，<code>数据库的存储层</code> 与 <code>存储层选型</code> 说的是同一件事，字符串函数看不出来。</li><li><strong>规则优先 + 模型提议，两条路都不许改写任何东西。</strong> 规则能证的（同一处证据、同一个归一化题面）→ 直接<strong>链接</strong>到同一个实体； 模型认为可能是同一件事的 → <strong>提议</strong>，进冲突/归并队列等人确认。</li><li><strong>干脆不归并</strong>，每条候选都新建一个实体。零风险，但库里会长出 同一件事的十几条记录，而&quot;这件事现在是什么样&quot;变成一个检索问题而不是一条断言。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3。</strong> 三条路，各有各的判定者和各自的落点：</p>
+<pre class="table">| 判据 | 谁判 | 结论 | 落点 |
+|---|---|---|---|
+| 证据完全相同（同类型 + 同一组 span） | 代码（确定性） | 同一件事 | 直接链接 |
+| 归一化题面相同（`&lt;类型&gt;#&lt;题面&gt;`） | 代码（确定性） | 同一个实体 | 直接链接 |
+| 题面不同，但**可能**是同一件事 | 模型（提议） | 拿不准 | 队列，等人 |
+| 其余 | —— | **新建** | 直接新建 |</pre>
+<p>四条设计决定：</p>
+<ol><li><strong>题面键带上类型。</strong> <code>state#数据库的存储层</code> 与 <code>event#数据库的存储层</code> 不是同一个实体——写规则不同的东西不该被并到一起（ADR-0006 的同一条理由： 切法按写规则）。把类型并进键里，这条边界就由键的形状保证，不靠调用方记得。</li><li><strong>归一化只折叠排版。</strong> NFKC、折叠空白、折叠大小写、剥掉包裹的标点、 限长 60 字符（超了不是题面，是一句话）。<strong>不做同义词</strong>： <code>数据库</code> 与 <code>存储层</code> 归一化之后仍是两个键，它们要并起来得走模型提议那条路。 这条限制让&quot;直接链接&quot;这件事永远可以被一个字符串函数复核。</li><li><strong>模型的提议永远只是提议。</strong> 提议的输出类型里<strong>没有</strong>&quot;已应用&quot;这一档， 它也进不了 <code>links</code> 名单——自证函数 <code>proposedMergesApplied()</code> 会在有模型提议 混进直接链接时返回非空（<code>packages/core/test/link.test.ts</code> 里有一条变异用例钉住它）。 为什么不给模型一个&quot;高置信度就直接并&quot;的口子：那个口子的阈值会被调， 而&quot;并错了&quot;是不可逆的——与 ADR-0022 不给守卫留&quot;模型可以直接入库&quot;的旋钮是同一条理由。</li><li><strong>&quot;拿不准&quot;的默认方向是新建，而不是并。</strong> 归并的假阴性只是库里多一条， 假阳性是两条事实被压成一条而且看不出来。两个方向的代价不对称， 所以默认值取便宜的那一边。</li></ol>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：归并的每一条结论都能被指着解释：要么&quot;同一处证据&quot;，要么&quot;同一个归一化题面&quot;, 要么&quot;模型提的，人在队列里点了头&quot;。没有第四种。</li><li><strong>好</strong>：<code>forge link</code> 在没有任何模型的情况下也能跑，而且<strong>能跑出结果</strong>—— 同一处证据被抽两次、题面一模一样的候选会被并成一个实体。 这是&quot;无 API key 也能跑通全链路&quot;（implement1.md §4）在 P5 这一环的兑现。</li><li><strong>好</strong>：链接不改写任何字节，所以归并的 bug 最坏情况是&quot;实体分得太细&quot;， 而不是&quot;某条事实被悄悄改写&quot;。数据被改写只发生在两处：<code>promote</code>（人触发） 与冲突的 resolve（人触发）。</li><li><strong>代价</strong>：模型提议要人工过一遍队列。这是<strong>有意的成本</strong>， 它也正是&quot;维护型产品&quot;愿意付费的那个动作（implement2.md 把冲突队列标成收费点）。</li><li><strong>代价</strong>：同义题面会漏并，于是同一个实体可能同时存在两条 <code>state</code>—— 而它们之间的&quot;矛盾&quot;也不会被报出来（因为题面键不同，两条都不是彼此的候选）。 这条缺口写在 <code>docs/handbook/conflicts.md</code> 里，不假装它被解决了。</li><li><strong>残余风险</strong>：归一化折叠了大小写，于是 <code>Postgres</code> 与 <code>postgres</code> 是同一个题面。 折叠的理由是&quot;同一件事的两种写法&quot;，风险是&quot;确实靠大小写区分的两个东西&quot; （比如两个同名但不同的环境）会被并起来。这一条<strong>没有额外代价</strong>： 归并不落盘任何东西（它是每次运行现算的一张视图，像索引层一样可重建）， 并错了只影响这一次报告里的分组，库里一个字节都没动。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>
