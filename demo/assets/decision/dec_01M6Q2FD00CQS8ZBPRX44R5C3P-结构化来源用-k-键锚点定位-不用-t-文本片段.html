@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>结构化来源用 `#k:` 键锚点定位，不用 `#t:` 文本片段 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6Q2FD00CQS8ZBPRX44R5C3P</p>
+<h1>结构化来源用 `#k:` 键锚点定位，不用 `#t:` 文本片段</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.8</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0014-structured-sources-use-key-anchors.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/adr/0009-provenance-is-scheme-span.md#t:真正需要精确定位的场景</code></li>
+<li><code>file://docs/implement2.md#t:为什么来源选导出而不是插件</code></li>
+<li><code>file://docs/adr/0009-provenance-is-scheme-span.md#t:腐烂的出处比没有出处更糟</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>结构化来源用 <code>#k:</code> 键锚点定位，不用 <code>#t:</code> 文本片段</h1>
+<h2>问题</h2>
+<p>ADR-0009 给了三种锚点：<code>#h:</code> 标题、<code>#t:</code> 原文片段、<code>#L:</code> 行区间，并留了一句： &quot;真正需要精确定位的场景要等 <code>src://</code> + <code>#L</code> 区间与 source 层的字节偏移。&quot;</p>
+<p>Phase 2 的第一个来源是<strong>官方导出（JSON）</strong>。于是问题立刻具体化了： 一条事件要指回&quot;导出文件里的那一条消息&quot;，用哪种锚点？</p>
+<ul><li><code>#L:</code> 要行号。JSON 的行号取决于序列化方式（缩进、键顺序）， 而来源层是<strong>原样的原始字节</strong>——我们不允许为了行号去重新序列化它（那就改写了证据）。</li><li><code>#t:</code> 要一段原文。而 JSON 把引号、反斜杠、换行转义成 <code>\&quot;</code> <code>\\</code> <code>\n</code>： 同一句话在&quot;原文&quot;和&quot;原始字节&quot;里是两个不同的字符串。 更糟的是它会<strong>偶尔命中</strong>（标点少的句子转义后没变），于是失败模式是间歇性的。</li></ul>
+<h2>考虑过的选项</h2>
+<ol><li>**用 <code>#L:</code> 行区间**：依赖序列化方式，等于把出处绑在&quot;文件恰好怎么排版&quot;上。</li><li>**用 <code>#t:</code> 文本片段**：在 JSON 上因为转义而脆断，且失败是间歇的——最坏的失败模式。</li><li>**只写 <code>src://&lt;来源 id&gt;</code><strong>（不带锚点）：语法上合法（ADR-0009 允许省略锚点）， 能过闸门。但它等于说&quot;这条断言来自那份文件&quot;——在那份文件有 137 条消息时， 这不是证据，是</strong>看起来像证据**。</li><li>**加第四种锚点 <code>#k:&lt;键路径&gt;</code><strong>：指向来源里的一条记录，由</strong>连接器自己**解析。</li></ol>
+<h2>选定</h2>
+<p><strong>选 4。</strong></p>
+<ul><li>选 3 是这里最危险的一个，因为它<strong>能过闸门</strong>。ADR-0009 立论的全部理由是 &quot;腐烂的出处比没有出处更糟&quot;——一条无法定位的原文级引用正是这种腐烂： 它让人以为证据被保存了。</li><li><code>#k:</code> 的判据分成两半，和 ADR-0009 的分工一致： <strong>语法</strong>由纯函数判（键路径长什么样），<strong>命中</strong>由来源层判（那个键在不在）。</li><li>命中判定<strong>复用连接器</strong>（<code>connector.parse(text).records.some(r =&gt; r.key === key)</code>）， 不写第二份实现。两份实现对同一份文件的判断必然漂移， 而漂移的方向永远是&quot;校验那份更宽松&quot;——R8 说的信任边界必须只有一份。</li><li>键路径用<strong>语义键</strong>（<code>conv_01/msg_03</code>）而不是数组下标（<code>conversations/0/messages/2</code>）： 下标是&quot;文件恰好怎么排&quot;的投影，语义键是&quot;这条消息是谁&quot;的投影。 来源不可变，两者在 v0 都能解析；但语义键在人类排查时能直接读懂。</li><li><code>#k:</code> 只对 <code>src://</code> 有意义。<code>file://</code> 上的 <code>#k:</code> 也实现了（按 JSON 键走）， 因为&quot;指向工作区里某个 JSON 的某个字段&quot;是同一个需求， 而让两种 scheme 支持不同的锚点集合只会制造特例。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：出处从&quot;整份文件&quot;精确到&quot;那一条消息&quot;，闸门第一次能对<strong>导出类来源</strong>判红。</li><li><strong>好</strong>：连接器换了、来源重导了，只要键还在，引用就还在——引用绑定的是语义标识，不是排版。</li><li><strong>好</strong>：<code>#k:</code> 的错误信息可以很具体（&quot;来源里没有键 <code>conv_01/msg_03</code>——它可能被改写过了&quot;）， 而 <code>#t:</code> 命中不了时只能说&quot;找不到片段&quot;。</li><li><strong>代价</strong>：<code>schema/provenance.md</code> 与 ADR-0009 的锚点集合从 3 种变成 4 种， 两份文档 + 码表 + 测试要一起改（这正是 ADR-0010 要的那种有意的耦合）。</li><li><strong>代价</strong>：<code>src://</code> 的 <code>#h:</code> / <code>#t:</code> / <code>#L:</code> 锚点在 v0 返回 <code>unavailable</code> 而不是硬猜： 它们要读原始字节并按文本匹配，而 v0 的来源层只保证&quot;键存在&quot;。<strong>明确记账，不假装支持。</strong></li><li><strong>残余风险</strong>：键路径的稳定性是连接器作者的义务，不是代码能强制的。 一个用随机值当键的连接器会让所有引用在重导后失效——<code>#k:</code> 会把这件事<strong>暴露</strong>出来（判红）， 但拦不住它发生。等出现第二个连接器时，把&quot;键必须来自导出内容&quot;写进契约。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

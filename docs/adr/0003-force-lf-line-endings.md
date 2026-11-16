@@ -1,4 +1,5 @@
 ---
+schema_version: 1
 id: dec_01M6QE3MZCXNVVEHFZ5Q2F198J
 type: decision
 status: accepted
@@ -7,8 +8,8 @@ last_confirmed: 2026-11-06
 supersedes: null
 origin_incident: null
 sources:
-  - "directory.md#三、逐个目录说明（packages/emit）"
-  - "implement2.md#Phase 2 · S10"
+  - "file://docs/directory.md#t:每个出口一个文件，输出必须"
+  - "file://docs/implement2.md#t:输出必须逐字节确定"
 sensitivity: internal
 confidence: 0.85
 ---

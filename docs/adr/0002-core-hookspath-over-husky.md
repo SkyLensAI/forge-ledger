@@ -1,4 +1,5 @@
 ---
+schema_version: 1
 id: dec_01M6QE3MZBQ94WCYD1ZATQN3KP
 type: decision
 status: accepted
@@ -7,8 +8,8 @@ last_confirmed: 2026-11-06
 supersedes: null
 origin_incident: null
 sources:
-  - "implement2.md#Phase 0 · S1"
-  - "directory.md#八、命名与迁移纪律"
+  - "file://docs/implement2.md#t:建仓 + 工具链"
+  - "file://docs/directory.md#h:八、命名与迁移纪律（三条硬规矩）"
 sensitivity: internal
 confidence: 0.75
 ---

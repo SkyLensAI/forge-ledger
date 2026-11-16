@@ -1,14 +1,15 @@
 ---
+schema_version: 1
 id: dec_01M6QE6A1F7ZK2NQ0T8H4WY3VB
 type: decision
 status: accepted
 created: 2026-11-06
 last_confirmed: 2026-11-06
 supersedes: null
-origin_incident: "Phase 0 演练场景 A：删掉 scripts/gates/lib/policy.mjs 后，CI 不是判定为红，而是 ERR_MODULE_NOT_FOUND 崩溃"
+origin_incident: "file://scripts/gates/rehearse.mjs#t:A3 CI（闸门 3·不可信版）连判定都跑不起来"
 sources:
-  - "scripts/gates/rehearse.mjs#场景 A"
-  - "implement1.md#2.3 把「清单」变成「闸门」"
+  - "file://scripts/gates/rehearse.mjs#t:A4 CI（闸门 3·可信版）用基线规则判定"
+  - "file://docs/implement1.md#t:定义完成的清单（checklist）会被 agent 跳过"
 sensitivity: internal
 confidence: 0.9
 ---

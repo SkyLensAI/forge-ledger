@@ -1,0 +1,28 @@
+{
+  "name": "@forge/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "forge 命令行：compile / lint / emit —— 可在 CI 里跑",
+  "engines": {
+    "node": ">=24"
+  },
+  "bin": {
+    "forge": "./src/main.ts"
+  },
+  "exports": {
+    ".": "./src/main.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@forge/core": "workspace:*",
+    "@forge/ingest": "workspace:*",
+    "@forge/schema": "workspace:*",
+    "@forge/store": "workspace:*"
+  }
+}

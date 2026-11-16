@@ -1,0 +1,93 @@
+---
+schema_version: 1
+id: dec_06GWAN2J00D8KSGBNT0GA0HH9Q
+type: decision
+status: accepted
+created: "2026-11-10"
+last_confirmed: "2026-11-10"
+supersedes: null
+origin_incident: "file://docs/gates/bypass-matrix.md#t:统一修法已经写成 ADR-0043"
+sources:
+  - "file://docs/gates/bypass-matrix.md#t:统一修法已经写成 ADR-0043"
+  - "file://scripts/gates/ci.mjs#t:scripts/gates/${script}"
+  - "file://scripts/gates/trusted-ci.mjs#t:以当前仓库为工作目录去判定"
+  - "file://evals/regressions/0001-trusted-judge-does-not-cover-sub-gates.md#t:子闸门是怎么被调起来的"
+sensitivity: internal
+confidence: 0.9
+---
+
+# 子闸门也取自基线修订，而不只是入口
+
+## 问题
+
+`trusted-ci.mjs` 已经解决了**入口**的自证问题：它把基线修订 checkout 到临时
+worktree，用基线里的 `ci.mjs` 判定当前工作树。所以改松 `lib/policy.mjs` 或
+`lib/harness.mjs` 不能给自己发合格证。
+
+但 `ci.mjs` 的第 3 步是：
+
+```
+spawnSync("node", [`scripts/gates/${script}`], { cwd: root })
+```
+
+它跑的是**工作树里**的 `consistency.mjs` / `assets.mjs` / `evals.mjs`，而这三个
+子闸门又 import 工作树里的 `packages/core`、`packages/store`、`packages/schema`
+与 `evals/runner/*`。于是：
+
+- 变更集判定与 harness 完整性检查改不动（第 1、2 步取自基线）；
+- **第 3 步的判定仍然可以被改松**：把 `evals/runner/gate.ts` 改成永远返回零问题，
+  或把 `judgeLibrary` 改成永远返回空，`gate:ci` 会绿。
+
+这条缺口在 `docs/gates/bypass-matrix.md` 的 6.10 里被明确记账。它不是一个
+"以后注意"的细节：它让"闸门还拦得住吗"这个问题在第 3 步得到一个假答案。
+
+## 考虑过的选项
+
+1. **把 `evals/` 与 `packages/core` 加进 `PROTECTED`。** 否决。R2 是**流程**
+   约束（改动需要 ADR），不是执行体。一个人仍然可以在同一次变更里
+   写一条 ADR、把判定改松，机器不会拦。把清单变长只会训练人绕过流程。
+2. **在基线 worktree 里重新 `pnpm install`，整棵代码都取自基线。** 否决作为
+   **当前**方案：子闸门需要 `yaml` / `zod`，安装一次会让每个 PR 多出几分钟，
+   而且这会把"数据也从基线来"一起带进来——那样 PR 里的新资产/新黄金集不会被判。
+3. **把判定代码与数据根分开：代码取自基线，数据取自当前工作树。** 采纳。
+4. **什么都不做，继续在文档里记缺口。** 否决。这条缺口的形状是"改松判定即可
+   全绿"，而它每次 CI 都在场——记账不能替代执行体。
+
+## 选定
+
+- `trusted-ci.mjs` 建立基线 worktree 后，把工作树的 `node_modules` **接**进去
+  （junction/symlink，不复制），然后以两组环境变量运行基线 `ci.mjs`：
+  - `FORGE_JUDGE_ROOT`：基线 worktree（判定**代码**根）；
+  - `FORGE_JUDGE_DATA_ROOT`：当前工作树（判定**数据**根）。
+- `ci.mjs` 的第 3 步用 `join(judgeRoot, "scripts/gates", script)` 启动子闸门，
+  并把 `FORGE_JUDGE_DATA_ROOT` 传下去。直接跑 `ci.mjs`（本地早期反馈）时
+  `judgeRoot === root`，行为与以前一致。
+- 三个子闸门把"代码根"与"数据根"分开：
+  - import 用 `codeRoot = new URL("../..", import.meta.url)`；
+  - 读资产 / schema / 黄金集 / 阈值用 `dataRoot`。
+- 新增 `--subgates-only`：只跑第 1+2+3 步，跳过 lint/typecheck/test。
+  它不是为了日常使用，而是为了**验证判定路径本身**能在临时仓库里跑。
+- 验证器 `handoff/verify-gate610.mjs` 做三件事：
+  1. 未改松时，坏出处资产被可信判定看见；
+  2. 改松工作树的 `judgeLibrary` 后，**不可信**入口会绿（证明缺口真实存在）；
+  3. 同一份工作树走 `trusted-ci` 仍然红（证明修复生效）。
+
+**落盘状态**：本 ADR 已由人落盘（`node handoff/apply.mjs --yes`），`handoff/` 已删除。
+落盘前的三步验证器是一次性的；它的判据现在由
+`evals/regressions/regressions.test.ts` 的 0001 长期执行——删掉
+`FORGE_JUDGE_ROOT` / `FORGE_JUDGE_DATA_ROOT` 的分工，回归立刻红。
+
+## 后果
+
+- **好**：PR 里改松子闸门判定不再能给自己发合格证。判定者与被检查者的边界
+  从"入口"延伸到"第 3 步"。
+- **好**：数据仍然取自 PR。新增资产、黄金集、阈值会被当前这一份判定，
+  而不是被基线那份旧数据判定。
+- **代价**：判定代码与依赖可能来自不同修订。依赖是环境，不是判定逻辑；
+  真正要防的是"改松判定代码"。残余风险是依赖漂移：如果 PR 升级了
+  `zod` 而基线代码不兼容，子闸门可能以"加载失败"收场——那是红，不是静默绿。
+- **代价**：新规则仍然在合并之后才生效（与 ADR-0005 同一条纪律）。这条是
+  **有意**的：PR 不能用自己新写的规则来判自己。
+- **残余风险**：`ci.mjs` 的第 4 步（lint/typecheck/test）仍然跑工作树里的
+  `package.json` 脚本；工具链配置本来就不在受保护路径里（bypass-matrix 3.4）。
+  本 ADR 只关闭第 3 步，不假装关闭第 4 步。

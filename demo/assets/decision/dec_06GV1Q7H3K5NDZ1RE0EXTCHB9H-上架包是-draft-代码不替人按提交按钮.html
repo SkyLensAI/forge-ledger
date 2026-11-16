@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>上架包是 draft，代码不替人按提交按钮 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV1Q7H3K5NDZ1RE0EXTCHB9H</p>
+<h1>上架包是 draft，代码不替人按提交按钮</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0041-listing-is-a-draft-not-a-submission.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:上架路径：Skill/MCP 提交，借平台分发与已承诺预算结算</code></li>
+<li><code>file://packages/core/src/distribution.ts#t:status: &quot;draft&quot;</code></li>
+<li><code>file://packages/core/src/distribution.ts#t:published: false</code></li>
+<li><code>file://packages/core/src/distribution.ts#t:直接复用 `emitSkill`：Skill 出口只有一个真相</code></li>
+<li><code>file://packages/core/src/distribution.ts#t:上架需要人：账号、仓库 URL、一个真正可安装的</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>上架包是 draft，代码不替人按提交按钮</h1>
+<h2>问题</h2>
+<p>implement2.md 给 S31 写的是&quot;上架路径&quot;，交付物是&quot;市场条目&quot;。这半句话里 藏着一个容易做错的区分：</p>
+<ul><li><strong>生成一份条目</strong>是代码能做的；</li><li><strong>提交、审核、上架</strong>是代码不能做的：需要账号、仓库 URL、一个真正可安装的 包、平台审核，以及有人对隐私与支持渠道负责。</li></ul>
+<p>如果把两者混成&quot;跑一条命令就上架了&quot;，产物会自称 <code>published</code>， 而下一个人会以为最花时间的那一步已经完成。这正是本仓库反复记账的那类失败 （<code>evals/regressions/0003</code> / <code>0005</code>）：一份说&quot;已经完成&quot;的文档，比一份说&quot;还没做&quot;的 文档更危险。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>完成平台提交，把&quot;上架成功&quot;写进 README。</strong> 否决。这需要本仓库之外的 账号与审核，agent 做不了；写出来就是编造。</li><li>**手写一份 <code>plugin.json</code> / <code>marketplace.json</code> 提交进仓库。** 否决。手写清单 会和资产库漂移，而对外清单是最不该有第二份真相的地方。</li><li><strong>用同一批资产生成一份可提交的 draft 包，并把未完成项列成人的清单。</strong> 采纳。</li></ol>
+<h2>选定</h2>
+<ul><li><code>forge listing --out &lt;目录&gt;</code> 生成：</li><li><code>.claude-plugin/marketplace.json</code>（市场条目）</li><li><code>plugins/&lt;name&gt;/.claude-plugin/plugin.json</code>（插件清单）</li><li><code>plugins/&lt;name&gt;/.mcp.json</code>（MCP 配置）</li><li><code>plugins/&lt;name&gt;/skills/&lt;name&gt;/SKILL.md</code> + <code>references/</code></li><li><code>manifest.json</code>（<code>status: &quot;draft&quot;</code>、<code>published: false</code>、计数与未完成项）</li><li><code>README.md</code> / <code>SUBMISSION.md</code>（人怎么把它变成已上架）</li><li>Skill 出口**直接复用 <code>emitSkill</code>**：上架包只是换了一个路径前缀， 不在分发路径上再写一份渲染器。渲染器有两份，<code>SKILL.md</code> 与 <code>references/</code> 就会在某个边界用例上悄悄分叉。</li><li>MCP 配置在 <code>.mcp.json</code> 与 plugin 清单里各出现一次，但由<strong>同一个对象</strong>生成， 所以它们不会漂移；手工维护两份才会。</li><li>产物逐字节确定：没有时间戳、没有随机、JSON 走 <code>stableJson</code>、路径排序显式。</li><li><strong>不编造</strong> repository / homepage / author。生成器没有这些输入，就先留空； <code>SUBMISSION.md</code> 把它们列为必须由人完成的项。</li><li>版本默认 <code>0.0.0</code>。它不是一次已发布的版本号，只是&quot;尚未发布&quot;的诚实写法。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：S31 的交付物从一句&quot;我们会提交&quot;变成一份可提交、可 diff、可重生成的 草稿；<code>forge bootstrap</code> 与 <code>E15</code> 会检查它与库是否逐字节一致。</li><li><strong>好</strong>：<code>published: false</code> 是结构性的，不是一句提醒。想把它改成 <code>true</code>， 必须有人改 <code>manifest.json</code> 并留下上架证据；代码不会替人改。</li><li><strong>代价</strong>：生成器不能替人完成真正花时间的那部分：把 <code>@forge/mcp</code> 发布成 可安装的包、填仓库元数据、过平台审核。<code>SUBMISSION.md</code> 把它们写得很清楚。</li><li><strong>残余风险</strong>：平台条目格式会变。<code>marketplace.json</code> 与 <code>plugin.json</code> 的形状 绑定当前约定；格式变化时，<code>forge listing</code> 需要跟着改，而 <code>E15</code> 只能保证 &quot;本仓库内部的产物与库一致&quot;，保证不了&quot;平台仍然接受这个形状&quot;。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

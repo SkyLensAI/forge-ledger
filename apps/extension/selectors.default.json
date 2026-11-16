@@ -1,0 +1,39 @@
+{
+  "config_version": 1,
+  "revision": 1,
+  "updated_at": "2026-11-06",
+  "_about": "随包发的兜底选择器配置。远端那一份（forge serve --selectors <URL>）revision 更大时用它。字段含义见 packages/core/src/selectors.ts。",
+  "hosts": [
+    {
+      "match": "https://chatgpt.com/",
+      "label": "ChatGPT",
+      "list": "main",
+      "item": "[data-message-author-role]",
+      "fields": {
+        "text": "[data-message-author-role]",
+        "author": "[data-message-author-role]"
+      }
+    },
+    {
+      "match": "https://claude.ai/",
+      "label": "Claude",
+      "list": "main",
+      "item": "[data-testid='user-message'], .font-claude-message",
+      "fields": {
+        "text": "div",
+        "author": "span"
+      }
+    },
+    {
+      "match": "https://github.com/",
+      "label": "GitHub PR",
+      "list": "#discussion_bucket",
+      "item": ".js-comment-container",
+      "fields": {
+        "text": ".comment-body",
+        "author": ".author",
+        "time": "relative-time"
+      }
+    }
+  ]
+}

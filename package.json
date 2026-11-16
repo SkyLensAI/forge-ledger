@@ -2,29 +2,64 @@
   "name": "forge",
   "version": "0.0.0",
   "private": true,
-  "description": "把痕迹编译成资产 —— 会话/文档/PR 编译为带类型、带出处、可维护的资产库",
+  "description": "Local-first ledger for AI context: typed, provenance-backed assets that CI keeps from rotting.",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SkyLensAI/forge-ledger.git"
+  },
+  "homepage": "https://skylensai.github.io/forge-ledger/",
+  "bugs": {
+    "url": "https://github.com/SkyLensAI/forge-ledger/issues"
+  },
+  "keywords": [
+    "provenance",
+    "local-first",
+    "mcp",
+    "model-context-protocol",
+    "context-engineering",
+    "agent-memory",
+    "knowledge-base",
+    "adr",
+    "deterministic",
+    "cli"
+  ],
   "type": "module",
   "packageManager": "pnpm@12.16.1",
   "engines": {
-    "node": ">=22"
+    "comment": "ADR-0011：Node 原生类型擦除 + node --test 对 .ts 的稳定支持都要求 >= 24",
+    "node": ">=24"
   },
   "scripts": {
     "prepare": "node scripts/gates/install-hooks.mjs",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test \"scripts/gates/tests/**/*.test.mjs\"",
+    "test": "node --test \"scripts/gates/tests/**/*.test.mjs\" \"packages/*/test/**/*.test.ts\" \"apps/*/test/**/*.test.ts\" \"evals/**/*.test.ts\"",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "cli": "tsx apps/cli/src/main.ts",
+    "forge": "tsx apps/cli/src/main.ts",
+    "mcp": "tsx apps/mcp/src/main.ts",
+    "mcp:smoke": "node scripts/mcp-smoke.mjs",
+    "bootstrap": "tsx apps/cli/src/main.ts bootstrap",
+    "listing": "tsx apps/cli/src/main.ts listing --repo --out listing",
+    "demo": "tsx apps/cli/src/main.ts demo --repo --out demo",
+    "demo:open": "tsx apps/cli/src/main.ts demo --repo --out demo && node scripts/open-demo.mjs",
+    "demo:30s": "node scripts/demo-30s.mjs",
+    "demo:publish": "node scripts/publish-demo.mjs",
+    "eval": "node --import tsx evals/runner/main.ts",
     "gate:precommit": "node scripts/gates/pre-commit.mjs",
     "gate:ci": "node scripts/gates/ci.mjs",
     "gate:trusted": "node scripts/gates/trusted-ci.mjs",
     "gate:release": "node scripts/gates/release.mjs",
-    "gate:rehearse": "node scripts/gates/rehearse.mjs"
+    "gate:rehearse": "node scripts/gates/rehearse.mjs",
+    "gate:evals": "node scripts/gates/evals.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.6",
     "eslint": "^10.14.0",
     "globals": "^17.14.0",
+    "tsx": "^4.23.15",
     "turbo": "^2.11.10",
     "typescript": "^7.0.2"
   }

@@ -1,0 +1,83 @@
+{
+  "export_version": 1,
+  "exported_by": "desensitized-fixture",
+  "note": "脱敏样例：内容全部是编造的，不来自任何真实会话。它的作用是让 S9/S11 有确定的输入——真实导出进不了 git（R1）。",
+  "conversations": [
+    {
+      "id": "conv_cache",
+      "title": "缓存失效策略",
+      "messages": [
+        {
+          "id": "msg_0001",
+          "sender": "user",
+          "created_at": "2026-09-12T08:15:00Z",
+          "text": "我们决定把索引层的缓存设成内容寻址的键，而不是加时间戳。理由是时间戳会让同样的输入产出不同的字节，快照测试就废了。"
+        },
+        {
+          "id": "msg_0002",
+          "sender": "assistant",
+          "created_at": "2026-09-12T08:15:41Z",
+          "text": "内容寻址的直接代价是：内容改一个字，键就变了。对不可变的派生数据这是正确行为。"
+        },
+        {
+          "id": "msg_0003",
+          "sender": "user",
+          "create_time": 1786000000,
+          "text": "那就先按这个走。等真的出现需要就地编辑的场景再说——那时候应该是一次显式迁移。"
+        },
+        {
+          "id": "msg_0004",
+          "sender": "user",
+          "text": "这条消息故意缺时间戳：fixture 要能覆盖\"连接器丢弃并记账\"这条路径，而不是只喂合法数据。"
+        }
+      ]
+    },
+    {
+      "id": "conv_incident",
+      "title": "一次误提交",
+      "chat_messages": [
+        {
+          "uuid": "msg_0101",
+          "author": { "role": "user" },
+          "created_at": "2026-10-03T21:40:12.123456+08:00",
+          "text": "线上库里的 data/ 被误提交进了一个分支。撤回本身不复杂，麻烦的是：从此所有人都知道闸门可以被绕过。"
+        },
+        {
+          "uuid": "msg_0102",
+          "author": { "role": "assistant" },
+          "created_at": "2026-10-03T13:41:00Z",
+          "content": {
+            "parts": [
+              "如果一次误提交就是一次信任崩塌，那它就不该靠评审来拦。",
+              "要把它变成一条机器判定：user data 前缀 + gitignore + CI 检查。"
+            ]
+          }
+        },
+        {
+          "uuid": "msg_0103",
+          "author": { "role": "user" },
+          "created_at": "2026-10-04T09:02:00Z",
+          "text": "同意。规则只能从真实错误长出来——这次踩的坑进 AGENTS.md 的 R1。"
+        }
+      ]
+    },
+    {
+      "id": "conv_determinism",
+      "title": "确定性",
+      "messages": [
+        {
+          "id": "msg_0201",
+          "sender": "unknown_sender_typo",
+          "created_at": "2026-11-01T07:30:00Z",
+          "text": "act 认不出的发送者要落到 unknown，不能丢——丢了就变成\"这条没人说过\"。"
+        },
+        {
+          "id": "msg_0202",
+          "sender": "user",
+          "created_at": "2026-11-01T07:31:20Z",
+          "text": "输出的排序键必须显式写死。readdir 的顺序不是契约，Object.keys 的顺序也不是。"
+        }
+      ]
+    }
+  ]
+}

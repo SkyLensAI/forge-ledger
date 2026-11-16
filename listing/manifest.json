@@ -1,0 +1,22 @@
+{
+  "assets": {
+    "decision": 46,
+    "event": 0,
+    "rule": 0,
+    "state": 0,
+    "total": 46
+  },
+  "generated_by": "forge listing",
+  "kind": "marketplace-entry",
+  "mcp": {
+    "command": "forge-mcp",
+    "vault": "data"
+  },
+  "name": "forge",
+  "note": "draft 是生成器的输出，不是待办事项的省略。只有人能把它变成 published：注册账号、发布包、通过平台审核。",
+  "published": false,
+  "schema_version": 1,
+  "skill": "plugins/forge/skills/forge/SKILL.md",
+  "status": "draft",
+  "version": "0.0.0"
+}

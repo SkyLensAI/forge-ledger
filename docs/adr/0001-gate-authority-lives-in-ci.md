@@ -1,4 +1,5 @@
 ---
+schema_version: 1
 id: dec_01M6QE3MZA2AX3RJB1EGTGZ7SY
 type: decision
 status: accepted
@@ -7,8 +8,8 @@ last_confirmed: 2026-11-06
 supersedes: null
 origin_incident: null
 sources:
-  - "implement2.md#Phase 0 · S3"
-  - "implement1.md#2.3 把「清单」变成「闸门」"
+  - "file://docs/implement2.md#t:agent hook → pre-commit → required status check"
+  - "file://docs/implement1.md#t:定义完成的清单（checklist）会被 agent 跳过"
 sensitivity: internal
 confidence: 0.9
 ---

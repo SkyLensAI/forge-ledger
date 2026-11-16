@@ -46,9 +46,15 @@
 | 1.3 | hook 进程读不到 stdin / JSON 非法 | **是**（fail-open） | 有意为之：基础设施故障不该卡死整个会话 | stderr 留痕；闸门 3 兜底 | 静默失效，只能靠日志发现 |
 | 1.4 | `FORGE_GATE_OVERRIDE="理由"` | **是**（显式） | 人给的逃生舱，Phase 1 立宪时必需 | 只对人有效：agent 要设置它得先跑 shell，而 shell 本身受 B 类规则约束；CI 侧受保护路径仍需 ADR | 人滥用逃生舱 |
 | 1.5 | 用 Bash 写文件（绕过 Edit/Write 判定） | **部分** | Bash 的 `command` 只匹配到 B1–B4 模式 | B4 覆盖了对受保护路径的 `rm`；但 `node -e "fs.writeFileSync(...)"` 未被拦 | **已知缺口**：任意 shell 写文件不受路径判定约束 |
+| 1.6 | **反向的错**：B4 按**子串**匹配路径，于是误报 | 不适用（它拦错了东西） | `evaluateBashCommand` 用的是 `command.includes("schema")` 这类子串判定，而受保护清单里恰好有 `schema` | 换一种写法（glob、先 cd、用 Python 脚本） | **已知误报**：一条只是**提到**受保护路径的命令会被拦下，哪怕删除目标在别处（Phase 4 实测：删 `handoff/` 下一个文件名里含该子串的载荷，报 `B4_DELETE_PROTECTED`） |
 
 > 1.5 是这道闸门最真实的缺口。**它不能靠继续加正则解决**——正则拦不住任意的 shell。
 > 正确的补法在 Phase 7（审计日志 + hook 强制执行，S27），而不是在这里堆模式。
+>
+> 1.6 是同一个设计选择的另一面：子串匹配**宁可误报也不漏报**，
+> 因为漏报的代价是"受保护路径被删掉而没人看见"。误报的代价是换一种写法。
+> 这个取舍是**有意的**，但它必须被写下来——否则第一个撞上它的人会以为是 bug，
+> 然后开始怀疑整套判定（Phase 4 撞上它时的经过记在 `handoff/README.md` 里）。
 
 ### 闸门 2 · pre-commit（`.githooks/pre-commit`）
 
@@ -103,17 +109,76 @@
 
 ---
 
-## 二、Phase 0 尚未覆盖的检查（不假装存在）
+## 二、Phase 1–8 接上的检查（以及它们各自的洞）
 
-这几条是后续阶段的闸门，**现在没有实现，所以不要以为它们在保护你**：
+| 检查 | 归属 | 接在哪儿 | 状态 |
+|---|---|---|---|
+| provenance 完整性（无出处不许入库） | P1 / S6 | `scripts/gates/assets.mjs` → `gate:ci` | ✅ 已接（ADR-0012 的"约定即集合"） |
+| `schema/`（人读）与 `packages/schema`（代码）一致性 | P1 / S7 | `scripts/gates/consistency.mjs` → `gate:ci` | ✅ 已接（ADR-0010） |
+| emit 逐字节确定性快照 | P2 / S10 | `apps/cli/test/e2e.test.ts`（两个全新 vault → 同样的字节） | ✅ 已接（ADR-0017） |
+| eval 阈值（**抽取**） | P3 / S12–S14 | `scripts/gates/evals.mjs` → `gate:ci` | ✅ 已接（ADR-0020） |
+| 不变量（出处完整率 / state 日期 / `INDEX.md` / emit 确定性） | P3 / S13 | `evals/invariants/invariants.test.ts` → `pnpm test` | ✅ 已接；**每条都配了反例**，否则它只是一条会变绿的断言 |
+| eval 阈值（归并 / 冲突） | P5 / S18–S19 | `evals/runner/conflict.ts` → `E8`/`E9`（`scripts/gates/evals.mjs` 的宿主） | ✅ 已接；判定住在 `evals/runner/gate.ts`，探针每次 CI 都跑 |
+| 审计日志完整性 | P7 / S27 | `evals/runner/maintenance.ts` → `E12`（同一宿主） | ✅ 已接；写入路径 / 链破坏 / 无见证人写入三项一起判 |
+| 维护与规模探针 | P7 / S25–S28 | `evals/runner/maintenance.ts` → `E13`/`E14` | ✅ 已接；健康检查分得开干净与腐烂，1000 条下仍确定 |
+| 取用预算与预加载 | P6 / S21 | `evals/runner/retrieval.ts` → `E10`/`E11` | ✅ 已接；预算与"绝不预加载"分开判 |
+| 自举与团队版闸门 | P8 / S29–S32 | `evals/runner/phase8.ts` → `E15`/`E16` | ✅ 已接；`deferred` 不报红，"没信号却开了能力"才红 |
 
-| 未覆盖 | 归属 | 接上的判据 |
-|---|---|---|
-| provenance 完整性（无出处不许入库） | P1 / S6 | 缺 span 的样例资产被 CI 明确拒绝 |
-| `schema/`（人读）与 `packages/schema`（代码）一致性 | P1 / S7 | 一致性检查通过 |
-| emit 逐字节确定性快照 | P2 / S10 | 两次运行产出相同 `AGENTS.md` |
-| eval 阈值（抽取/归并/冲突） | P3 / S12–S14 | "永远返回空"的假 Extractor 会让 CI 变红 |
-| 审计日志完整性 | P7 / S27 | 见 1.5 的缺口 |
+### 新接的三项各自的绕过方式
+
+| # | 绕过方式 | 成功？ | 为什么 | 缓解 | 残余风险 |
+|---|---|---|---|---|---|
+| 6.1 | 删掉 `node_modules` 再跑 `gate:ci --guard-only` | **是**（降级） | 三个子闸门都要 `yaml`/`zod` 才能跑（ADR-0011） | 完整模式的 `gate:ci` 与 CI 都会先 `pnpm install`；子闸门会打印「本次没查」而不是安静返回绿 | 本机可能长期看不到资产/一致性/阈值判定而无感知 |
+| 6.2 | 资产闸门在 CI 里对 `src://` 报 `PROV_SCHEME_UNAVAILABLE` | **不适用** | CI 看不到 `data/`（R1），所以用户资产的出处**只能在用户机器上校验** | `forge lint` 用同一份纯函数；`unavailable` 与 `resolved` 是两种输出 | 用户不跑 `forge lint` 就等于没校验 |
+| 6.3 | 给 `readRepoAssets` 加一条排除目录，把资产藏起来 | **是**（需 ADR） | 排除表是代码 | `packages/store` 不在受保护路径里——**这是本清单里最该注意的一条** | 藏起来的资产不受任何检查，也不发信号 |
+| 6.4 | 让 `checkTaxonomyAgainstCode` 只检查一部分 | **是**（需 ADR） | 检查表是代码 | 同上；且 `schema/` 的改动本身受 R2 约束 | 同 6.3 |
+| 6.5 | 把 fixture 改成 `.md` 并让资产闸门报红，然后放宽闸门 | **是** | 修闸门比修数据便宜 | 评审；`C3_TEMPLATE_INCOMPLETE` 之类的码会指向具体的文档 | 见 3.3「有 ADR 的放水仍是放水」 |
+| 6.6 | 把阈值调到刚好让当前实现过 | **是**（需填 `ratified_by`） | `evals/thresholds.json` 是普通文件 | `E2`/`E6` 盯"有没有人确认过"；`E4` 与阈值无关——阈值降到 0 时空实现也会及格，`E4` 立刻变红 | 阈值被调到"高于空实现、但低于真实水平"时不会响 |
+| 6.7 | 改 golden 集的期望值（让实现显得更准） | **是** | 用例是数据 | 每条用例必须带一个能解析到仓库原文的 `span`（`E5`）——改期望就得同时改得动它所引用的那份文档；且确认状态会退回 `proposed`，要人重签 | 有人"顺手重签"，见 ADR-0020 的残余风险 |
+| 6.8 | 删掉 `scripts/gates/evals.mjs`，或留着文件但从 `ci.mjs` 的清单里摘掉它 | 否 | — | `G3_EVAL_GATE_MISSING`（harness 完整性检查）**由基线修订执行** | 无 |
+| 6.9 | 把 `evals/extractors/null.ts` 改成会返回正确答案的实现 | **是** | 它是普通文件 | 那等于承认退出条件可以被伪造——但它要留下 diff | **已知缺口**：没有机器判定"空实现真的是空的"；靠评审看 diff |
+| 6.10 | 把 `evals/runner/run.ts` / `gate.ts` 改成永远返回满分 | **否（ADR-0043 已落盘）** | 子闸门的 import 走 `FORGE_JUDGE_ROOT`（基线），数据读 `FORGE_JUDGE_DATA_ROOT`（当前工作树） | **ADR-0043**：判定代码与数据根分离；`trusted-ci` 传两个根 | 无。第 4 步的 lint/typecheck/test 仍跑工作树脚本，见 3.4 |
+
+### 6.10 的准确描述（修正一处过度承诺）
+
+`gate:trusted`（ADR-0005）把**基线修订**的 `ci.mjs` 拿来判定当前工作树，所以
+**变更集判定**（`lib/policy.mjs`）与 **harness 完整性检查**（`lib/harness.mjs`）
+确实来自基线——被检查者改不到。
+
+但 `ci.mjs` 的第 3 步是 `spawnSync("node", ["scripts/gates/<子闸门>"], { cwd: root })`，
+`root` 是**当前工作树**。所以：
+
+- `consistency.mjs` / `assets.mjs` / `evals.mjs` 这三个子闸门来自**工作树**；
+- 它们 import 的 `packages/core`、`packages/store`、`packages/schema`、`evals/runner/*`
+  也全部来自**工作树**。
+
+于是"改松判定"这条绕法在**第 1、2 步过不了**，在**第 3 步过得去**。
+本清单早先的 6.3 / 6.4 把缓解写成了"判定也在基线修订里跑一遍"——那句话对第 1、2 步成立，
+对第 3 步**不成立**。这条修正在这里，因为在被发现之前，它一直是一条过度承诺。
+
+**Phase 7 加的三个探针（`E12`–`E14`，判定在 `evals/runner/maintenance.ts`）继承同一个缺口**：
+把 `maintenance.ts` 改成永远全绿、或者把 `gate.ts` 里那三段判定删掉，
+`pnpm gate:ci` 的第 3 步不会红。它们防的是"改动引入的退化"，不是"有人蓄意改探针"——
+后者要靠人 review 这个 PR，以及下面那条更根本的记账：
+
+**Phase 8 的两个探针（`E15`–`E16`，探针在 `evals/runner/phase8.ts`）同样继承这个缺口。**
+`forge bootstrap` 跑的是工作树里的同一批判定，所以它也不是权威——
+权威仍然是 CI 的第 3 步，而第 3 步的判定模块同样来自工作树。两个入口给出同一个答案，
+但**都不防蓄意改判定**。这条缺口没有因为多了一条命令而变小。
+
+**统一修法已经写成 ADR-0043**：`trusted-ci.mjs` 建立基线 worktree 后，把
+`FORGE_JUDGE_ROOT`（判定代码根）与 `FORGE_JUDGE_DATA_ROOT`（当前工作树）传给基线
+`ci.mjs`；三个子闸门的 import 走 `codeRoot`，读资产 / schema / 黄金集 / 阈值走
+`dataRoot`。依赖用 junction 接进基线 worktree，不重新安装。
+
+- **当前状态**：ADR-0043 已由人落盘，`pnpm check` / `gate:ci` / `gate:trusted` 均已重跑；
+  **6.10 已关闭**。落盘前的三步验证器 `handoff/verify-gate610.mjs` 已随 `handoff/`
+  删除，判据由 `evals/regressions/regressions.test.ts` 的 0001 长期执行。
+- **代价**：基线判定代码与工作树依赖可能来自不同修订；新规则仍然在合并之后才生效；
+  `ci.mjs` 第 4 步（lint/typecheck/test）仍跑工作树里的 `package.json` 脚本（3.4）。
+- **验证**：0001 现在断言修复仍在——`ci.mjs` / `trusted-ci.mjs` / 三个子闸门
+  都保留 `FORGE_JUDGE_ROOT` / `FORGE_JUDGE_DATA_ROOT` 的分工；删掉它们，回归立刻红。
+- **审计**：0001 的正文已经改成"后来怎么修好的"，不再把这条写成未修缺口。
 
 ---
 
@@ -123,7 +188,7 @@
 |---|---|---|
 | 1 agent hook | `.claude/settings.json` + `agent-guard.mjs` | 已配置；判定逻辑有测试覆盖（8 条）。**宿主是否加载项目级 settings 取决于宿主**（见 1.2） |
 | 2 pre-commit | `.githooks/pre-commit`（`core.hooksPath`） | 已生效并实测拦截 |
-| 3 required status check | `.github/workflows/ci.yml` | workflow 已就位（可信判定 + 本地判定 + 演练三步）；**服务端 branch protection 需建 remote 后执行脚本** |
+| 3 required status check | `.github/workflows/ci.yml` | workflow 已就位（可信判定 + 本地判定 + 演练三步），完整模式还会跑 schema 一致性与资产出处；**服务端 branch protection 需建 remote 后执行脚本** |
 | 4 branch rule | `setup-branch-protection.sh` | 脚本已就位；**未应用**（无 remote） |
 | 5 发布门 | `.github/workflows/release.yml` | workflow 已就位；environment reviewer **未配置** |
 

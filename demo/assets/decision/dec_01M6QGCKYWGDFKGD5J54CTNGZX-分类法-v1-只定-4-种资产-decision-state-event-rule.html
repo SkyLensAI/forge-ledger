@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>分类法 v1 只定 4 种资产：decision / state / event / rule · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6QGCKYWGDFKGD5J54CTNGZX</p>
+<h1>分类法 v1 只定 4 种资产：decision / state / event / rule</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.9</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0006-taxonomy-v1-four-asset-types.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:只定 4 种资产</code></li>
+<li><code>file://docs/implement2.md#t:别一上来 15 种</code></li>
+<li><code>file://docs/directory.md#t:schema 是宪法</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>分类法 v1 只定 4 种资产：decision / state / event / rule</h1>
+<h2>问题</h2>
+<p>分类法是 schema 的核心，也是产品的元资产 E1。<code>directory.md</code> 的示例 taxonomy 列了 7 种 （decision / state / event / rule / spec / sop / eval_case）。第一版照抄它，还是只定最小的完备集？</p>
+<h2>考虑过的选项</h2>
+<ol><li>**照抄 <code>directory.md</code> 的 7 种**：文档已经有了，看起来&quot;一步到位&quot;。</li><li>**只定 4 种：<code>decision</code> / <code>state</code> / <code>event</code> / <code>rule</code>**。</li><li>**只定 2 种（<code>state</code> / <code>event</code>）**，其余靠 front-matter 字段表达。</li></ol>
+<h2>选定</h2>
+<p><strong>选 2。</strong></p>
+<ul><li>这 4 种是按<strong>写规则的完备划分</strong>切的，不是按业务域：<code>event</code> 只追加、<code>state</code> 就地替换（必须带日期）、 <code>decision</code> 一旦 accepted 不可变、<code>rule</code> 就地替换且必须绑一个 <code>origin_incident</code>。 每种类型对应一种<strong>不同的写规则</strong>；写规则相同的东西不该是两种类型。</li><li><code>spec</code> / <code>sop</code> / <code>eval_case</code> 的写规则分别是 <code>state</code> / <code>state</code> / <code>event</code> 的特例， 第一版用 <code>requires_fields</code> / <code>requires_sections</code> 就能表达。它们确实值得独立成类型—— 但那是 v2 的迁移问题，不是第 1 天的设计问题。</li><li>选 3 不行：<code>decision</code> 的不可变性与 <code>rule</code> 的溯源要求是<strong>结构性</strong>的， 用可选字段表达等于把它们降级成&quot;记得填&quot;的约定（反模式 2）。</li><li>&quot;加类型很便宜&quot;是错的：类型是 grep、目录分区、emitter 分支、检索路由的公共键。 多一种类型，所有下游都多一条分支；而&quot;少一种、以后加&quot;只需要一次迁移—— 迁移通道在 ADR-0008 里先建，正是为了让这个代价可支付。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：4 种类型的写规则互不重叠，&quot;这条该算 state 还是 event&quot;有唯一答案。</li><li><strong>好</strong>：判定分支可穷举、可测试（<code>packages/core</code> 的类型相关分支一共 4 条）。</li><li><strong>代价</strong>：Phase 4 的抽取器遇到 spec / SOP 类内容时只能先归到 <code>state</code>，靠 <code>requires_fields</code> 区分。</li><li><strong>代价</strong>：加类型要走 v2 迁移（迁移脚本 + bump 版本 + 配 ADR），这是有意的摩擦。</li><li><strong>残余风险</strong>：4 种够不够，只有真实采集数据能回答。若 Phase 4 发现某类内容反复落错桶， 那是一次迁移的正当理由（棘轮），而不是现在先把 15 种建好。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

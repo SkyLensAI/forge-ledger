@@ -16,6 +16,8 @@ export const PRECOMMIT_ENTRY = "scripts/gates/pre-commit.mjs";
 export const PREPUSH_ENTRY = "scripts/gates/pre-push.mjs";
 /** 闸门 3 的实现入口。 */
 export const CI_ENTRY = "scripts/gates/ci.mjs";
+/** 闸门 3 的 eval 阈值子闸门入口（Phase 3 · S14）。 */
+export const EVAL_GATE_ENTRY = "scripts/gates/evals.mjs";
 /** 闸门 5 的实现入口。 */
 export const RELEASE_ENTRY = "scripts/gates/release.mjs";
 /** 闸门 3 的 required status check 名字，必须与分支保护里的 context 完全一致。 */
@@ -190,6 +192,28 @@ export function checkHarness(options) {
         fix: "在 actions/checkout 里设 fetch-depth: 0",
       });
     }
+  }
+
+  // 闸门 3 的 eval 阈值子闸门（S14）。
+  //
+  // 为什么它需要一条**自己的**检查：删掉这个子闸门不会让任何别的东西变红。
+  // lint 照样绿、快照照样绿、测试照样绿——"绿灯"于是只剩"代码看起来还行"的意思，
+  // 而"需求被满足了吗"重新变回无人回答。这正是 implement1.md §2.3 说的那件事，
+  // 也是 Phase 3 存在的全部理由。
+  const evalGateText = readTextOrNull(join(root, EVAL_GATE_ENTRY));
+  const ciEntryText = readTextOrNull(join(root, CI_ENTRY));
+  if (evalGateText === null) {
+    findings.push({
+      code: "G3_EVAL_GATE_MISSING",
+      message: `${EVAL_GATE_ENTRY} 不存在：eval 阈值判定没有载体，绿灯只剩"代码看起来还行"。`,
+      fix: "恢复该子闸门（判定在 evals/runner/gate.ts，见 Phase 3 / S14）",
+    });
+  } else if (ciEntryText === null || !ciEntryText.includes("evals.mjs")) {
+    findings.push({
+      code: "G3_EVAL_GATE_MISSING",
+      message: `${CI_ENTRY} 不再执行 evals.mjs：子闸门还在，但没人调用它——这是最省事的绕过方式。`,
+      fix: "把 evals.mjs 加回 ci.mjs 的子闸门清单",
+    });
   }
 
   // 闸门 5：发布门

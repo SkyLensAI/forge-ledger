@@ -1,4 +1,5 @@
 ---
+schema_version: 1
 id: dec_01M6QE3MZDZ9JE8EFMW27VAVKT
 type: decision
 status: accepted
@@ -7,9 +8,9 @@ last_confirmed: 2026-11-06
 supersedes: null
 origin_incident: null
 sources:
-  - "implement2.md#Phase 0 · 常见失败"
-  - "directory.md#六、v0 最小版"
-  - "directory.md#七、反模式清单（4）"
+  - "file://docs/implement2.md#t:把闸门写成 checklist"
+  - "file://docs/directory.md#h:六、v0 最小版（照抄这个开始，别一上来就建 20 个包）"
+  - "file://docs/directory.md#t:每个来源一个包 / 建一个万能"
 sensitivity: internal
 confidence: 0.8
 ---

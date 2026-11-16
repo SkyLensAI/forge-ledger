@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>store 三层是三条**权限规则**，由 API 形状强制，不靠自觉 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6Q2FD00GRZFQ6K3F6KPGA03</p>
+<h1>store 三层是三条<strong>权限规则</strong>，由 API 形状强制，不靠自觉</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0015-store-three-layers-are-permission-rules.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/directory.md#t:源头不可变，编译层可重建</code></li>
+<li><code>file://docs/implement2.md#t:只读、`assets/` 可写、`index/` 可重建</code></li>
+<li><code>file://docs/directory.md#t:数据目录按 ID 前缀分区</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>store 三层是三条<strong>权限规则</strong>，由 API 形状强制，不靠自觉</h1>
+<h2>问题</h2>
+<p><code>directory.md</code> 给了三层（<code>sources</code> / <code>assets</code> / <code>index</code>），但&quot;层&quot;如果只是三个文件夹， 它就只是一个命名约定。Phase 2 要把它变成代码，于是必须先回答： <strong>这三条规则里，哪一条是真正不可逆的？</strong></p>
+<p>答案是 <code>sources</code>：它存的是用户导出的原始字节，是整个系统里唯一<strong>不能重算</strong>的东西。 而最容易犯的错恰好是&quot;顺手修一下&quot;——比如为了加行号重新序列化一遍 JSON。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>三个目录 + 文档里的约定</strong>（&quot;请不要修改 sources&quot;）。反模式 2 的标准形态。</li><li><strong>运行时校验</strong>：写入时检查目标路径是否属于 <code>sources/</code>，是就拒绝。</li><li><strong>API 形状</strong>：<code>sources</code> 层<strong>没有提供</strong>修改/删除的函数，只有 <code>import</code> / <code>list</code> / <code>read</code>； 幂等靠内容寻址，写入靠 <code>wx</code>（已存在即失败）。</li><li><strong>文件系统只读位</strong>（<code>chmod 444</code>）。跨平台行为不一致，且用户会自己 <code>chmod</code> 回来。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3，并在真正不可逆的那一处再加一道运行时断言。</strong></p>
+<ul><li>选 2 的&quot;运行时校验&quot;是**把规则写成一句 <code>if</code>**：它仍然是一条可以被下一个人删掉的分支。 选 3 让&quot;修改来源&quot;在 API 层面不存在——不是&quot;不要做&quot;，是&quot;没有那个函数&quot;。 这是 R8 说的&quot;把信任边界实现在代码里&quot;的最小形态。</li><li>内容寻址（ADR-0013）让&quot;只写一次&quot;不再是一个需要人记住的规矩： 同一份字节映射到同一个目录，<code>wx</code> 保证第二次写失败， <code>meta.sha256</code> 与当前字节不一致时<strong>抛错而不是覆盖</strong>—— 覆盖来源层是本系统最不可逆的动作，宁可炸掉。</li><li><code>index/</code> 的规则用<strong>同样的方式</strong>实现：这一层只有 <code>rebuild()</code>， 没有&quot;更新某一行&quot;。有了 <code>update</code> 就一定会有人把不可重建的东西塞进去， 然后&quot;删掉能重建&quot;这句话就不成立了。</li><li><code>assets/</code> 分成 <code>writeDerived</code> / <code>writeAuthored</code> 两个函数，而不是 <code>write(doc, {overwrite})</code>： 布尔参数在调用点读不出来，而这两种写入的错误后果完全不同 （派生写错 = 破坏幂等；人工写错 = 覆盖用户的东西）。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：三条规则各有一个<strong>在调用点能读出来的</strong>执行体，而不是一段注释。</li><li><strong>好</strong>：<code>--vault</code> 下的目录布局与 <code>directory.md</code> 一致，但&quot;层&quot;的语义不依赖布局 （换 SQLite 存 sources 也不需要改判定）。</li><li><strong>代价</strong>：少了灵活性——想就地修一条来源必须走&quot;新建一个来源&quot;。 这是故意的：来源层的修改<strong>必须</strong>留下痕迹，而&quot;就地改&quot;不留下任何东西。</li><li><strong>代价</strong>：<code>ensureVault</code> 会创建 <code>audit/</code> 空目录，而审计日志是 Phase 7 的事。 先建空目录是承认&quot;它要有地方放&quot;，但<strong>不要在报告里说审计已经做了</strong>。</li><li><strong>残余风险</strong>：<code>sources/</code> 的只读是<strong>应用层</strong>的。用户直接 <code>rm -rf sources/</code> 挡不住， 文件系统权限也没解决这个问题（选 4 被否）。真正的兜底是&quot;内容寻址 + 可以从用户的导出重导&quot;， 也就是说：来源层可丢，但<strong>不可改</strong>。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

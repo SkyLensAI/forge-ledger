@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>模型是一台**可注入的同步** `Model`：真实调用在边缘，评测对着录像跑 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV05GPG015QD6E4X09KWRCCP</p>
+<h1>模型是一台<strong>可注入的同步</strong> `Model`：真实调用在边缘，评测对着录像跑</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.8</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0021-model-is-an-injectable-sync-seam.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement1.md#t:模型负责抽取，代码负责不信任</code></li>
+<li><code>file://docs/implement2.md#t:Extractor：LLM</code></li>
+<li><code>file://docs/implement2.md#t:连续 3 天稳定</code></li>
+<li><code>file://docs/implement1.md#t:用便宜模型，冲突裁决才用贵模型</code></li>
+<li><code>file://AGENTS.md#t:产出必须逐字节确定</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>模型是一台<strong>可注入的同步</strong> <code>Model</code>：真实调用在边缘，评测对着录像跑</h1>
+<h2>问题</h2>
+<p>Phase 4（S15）要接第一处模型。而&quot;接一处模型&quot;这件事有两种接法， 它们的差别在<strong>半年后</strong>才会显形：</p>
+<ul><li>一种是把网络调用塞进抽取器里。写起来最直接，代价是：抽取链路上任何一段判定 都变得不可复现——同一份输入今天和明天可能得到不同的输出，而&quot;改了 harness 之后 变好了吗&quot;这个问题从此没有答案（implement2.md S17 要求<strong>调 harness 而不是换模型</strong>， 而那句话的前提是能比较两次改动）。</li><li>一种是把模型做成<strong>可注入、可回放</strong>的东西，真实的网络调用退到一个角落。</li></ul>
+<p>还有第二个问题：<code>Extractor</code> 接口是同步的（Phase 3 定的）。一个异步的模型 会把 <code>async</code> 渗进 runner、闸门、报告——而它们全都是确定性的东西。</p>
+<h2>考虑过的选项</h2>
+<ol><li>**把 <code>Extractor.extract</code> 改成 <code>async</code>**，真实调用直接写进去。 接口最&quot;自然&quot;，但 <code>async</code> 会一路渗到 <code>evals/runner/</code>、<code>packages/store</code> 与 CLI， 而且<strong>每一处判定都开始可能&quot;还没完成&quot;</strong>——确定性从架构上消失。</li><li><strong>保持同步，但模型实现内部用同步的网络调用</strong>（<code>execSync</code> 之类的招）。 把&quot;同步&quot;这个性质建立在一个 hack 上，而且它照样不可复现。</li><li>**<code>Model</code> 是一个同步的纯接缝，真实调用住在边缘适配器里，评测用录制/回放。**</li><li>**干脆不做评测，只做一条 <code>forge extract --live</code>。** 那就是 implement1.md 反模式 3（&quot;没有 eval 就说效果不错&quot;）换个说法。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3。</strong> 具体形状：</p>
+<ul><li><code>packages/core/src/model.ts</code> 定义 <code>Model { id, complete(request): ModelResponse }</code>—— <strong>同步</strong>。于是「渲染请求 → 解析响应 → sanitize → 守卫」整条链是纯函数， 可以用固定字符串做快照测试，与 <code>emit</code> 的确定性是同一种确定（R6）。</li><li>真实的网络调用住在 <code>apps/cli/src/model-http.ts</code>（<strong>全仓库唯一碰网络的地方</strong>）， 它只负责<strong>把响应录下来</strong>。抽取用的永远是录像（<code>packages/store/src/cassette.ts</code>）。</li><li><strong>请求的键是提示词的指纹</strong>（<code>JSON.stringify([system, user, max_tokens])</code> 的 sha256）， 不是用例 ID。提示词改一个字，键就变；旧录像对不上新问题时<strong>报错</strong>， 而不是悄悄拿一段回答另一个问题的文字来充数。</li><li><strong>仓库里不放任何 cassette。</strong> 没有 API key 就录不出真实录像，而放一份 手写的&quot;合成录像&quot;进仓库，会让人把它的分数读成模型的质量—— 那是&quot;让模型给自己发合格证&quot;的另一种写法。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：没有 API key 也能跑<strong>完整的</strong>抽取链路——这是 implement1.md §4 的架构纪律， 现在它在模型这一环也成立（此前只在 compile/lint/emit 上成立）。</li><li><strong>好</strong>：评测可比。换提示词、换分块、换受控词表之后，分数的变化是因为那些改动。</li><li><strong>好</strong>：一条候选能被追溯到<strong>当时那段响应原文</strong>，而不是&quot;模型是这么说的&quot;—— 与产品对用户资产的出处要求是同一条（ADR-0009）。</li><li><strong>好</strong>：<code>Model</code> 只有两个成员，所以&quot;换模型&quot;的代价是换一个对象。 implement2.md 说&quot;够难就调 harness，不是换模型&quot;——这句话现在有执行体了： 换模型便宜到不构成诱惑，于是调 harness 才是唯一划算的动作。</li><li><strong>代价</strong>：多一层间接（<code>Model</code> + cassette + 边缘适配器）。 它买到的东西是&quot;可复现&quot;，而这是整个产品的地基。</li><li><strong>代价</strong>：<code>extract</code> 是 CLI 里唯一异步的命令（<code>--record</code> 要网络）。 异步被限制在&quot;把响应取回来&quot;这一步，不渗进任何判定。</li><li><strong>残余风险</strong>：<code>model-http.ts</code> 只被<strong>桩 fetch</strong> 测过（<code>apps/cli/test/extract.test.ts</code>）， 没有被真实端点测过——本仓库没有 key。逐步接入真实端点时需要验的是三件事： 鉴权头、<code>choices[0].message.content</code> 的取值、以及超时行为。<strong>这是记账，不是&quot;应该没问题&quot;。</strong></li><li><strong>残余风险</strong>：只有一个 provider 适配器（OpenAI 兼容的 <code>/chat/completions</code>）。 加第二个的判据是&quot;有人真的用它&quot;（ADR-0004 的同一条理由），不是&quot;主流模型有几种&quot;。</li><li><strong>残余风险</strong>：录像只证明&quot;这段响应会被怎么处理&quot;，<strong>不</strong>证明模型现在还会这么答。 所以它在评测里给出的分数不是模型的质量。这条限制写在 <code>evals/README.md</code> 里， 不留给读者自己发现。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

@@ -1,3 +1,9 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# pnpm 10+ moved build-script approval out of package.json; v11+ replaced
+# `onlyBuiltDependencies` with the `allowBuilds` map. Without this, a clean
+# `pnpm install --frozen-lockfile` fails in CI with ERR_PNPM_IGNORED_BUILDS.
+allowBuilds:
+  esbuild: true

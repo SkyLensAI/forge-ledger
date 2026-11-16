@@ -1,0 +1,123 @@
+{
+  "name": "forge-spec",
+  "description": "把本仓库的『账本格式规范』导出成一个可独立发布、可独立校验的公开仓库。",
+  "default_out": "dist/forge-spec",
+  "entries": [
+    { "from": "spec/LICENSE", "to": "LICENSE" },
+    { "from": "spec/gitattributes.txt", "to": ".gitattributes" },
+    { "from": "spec/VERSION", "to": "VERSION" },
+    { "from": "spec/README.md", "to": "README.md" },
+    { "from": "spec/CHANGELOG.md", "to": "CHANGELOG.md" },
+    { "from": "spec/GOVERNANCE.md", "to": "GOVERNANCE.md" },
+    { "from": "spec/CONTRIBUTING.md", "to": "CONTRIBUTING.md" },
+    { "from": "spec/SECURITY.md", "to": "SECURITY.md" },
+    { "from": "spec/CODE_OF_CONDUCT.md", "to": "CODE_OF_CONDUCT.md" },
+    { "from": "spec/TRADEMARKS.md", "to": "TRADEMARKS.md" },
+    { "from": "spec/specification.md", "to": "specification.md" },
+    { "from": "spec/ids.md", "to": "ids.md" },
+    { "from": "spec/provenance.md", "to": "provenance.md" },
+    { "from": "spec/schema.json", "to": "schema.json" },
+    { "from": "spec/validate.mjs", "to": "validate.mjs" },
+    { "from": "spec/dco.mjs", "to": "dco.mjs" },
+    { "from": "spec/examples/README.md", "to": "examples/README.md" },
+    { "from": "spec/examples/sources", "to": "examples/sources" },
+    { "from": "spec/examples/ledger", "to": "examples/assets" },
+    { "from": "spec/decisions", "to": "decisions" },
+    { "from": "spec/GLOSSARY.md", "to": "GLOSSARY.md" },
+    { "from": "spec/zh", "to": "zh" },
+    { "from": "spec/github/workflows/spec.yml", "to": ".github/workflows/spec.yml" },
+    { "from": "spec/github/ISSUE_TEMPLATE", "to": ".github/ISSUE_TEMPLATE" },
+    { "from": "spec/github/PULL_REQUEST_TEMPLATE.md", "to": ".github/PULL_REQUEST_TEMPLATE.md" },
+    { "from": "schema/taxonomy.yaml", "to": "schema/taxonomy.yaml" },
+    { "from": "schema/asset-types", "to": "schema/asset-types" },
+    { "from": "LICENSES", "to": "LICENSES" }
+  ],
+  "sanitize": [
+    {
+      "find": "> 代码侧：`packages/core/src/provenance.ts`（语法与匹配的纯函数）、\n> `packages/core/src/asset.ts`（资产判定与违规码）、\n> `packages/core/src/extract.ts`（候选断言的判定与违规码）、\n> `packages/core/src/model.ts`（模型产出的 sanitize 与它的码）、\n> `packages/store/src/spans.ts`（解析，IO 在边缘）。\n> 五处与本文档必须一致，漂移由一致性闸门判红（ADR-0010）。",
+      "replace": "> 本文档定义格式。参考实现不是本规范的一部分。"
+    },
+    {
+      "find": "> 代码侧：`packages/schema/src/ids.ts`。ADR-0007 定了**形状**，ADR-0013 定了**取值来源**。\n> 这份文档与那两处必须一致，漂移由一致性闸门判红（ADR-0010）。",
+      "replace": "> 本文档定义 ID 的形状与取值来源。"
+    },
+    {
+      "find": "# 这份文件与 packages/schema 必须一一对应，一致性由闸门机器校验（ADR-0010）：\n# 改一边忘另一边 = CI 红。\"两者必须一一对应\"这句话只有在有执行体时才算数。",
+      "replace": "# 这份文件是规范的机器可读部分。规范与参考实现必须保持同步；\n# 本仓库只发布规范，不发布参考实现。"
+    },
+    {
+      "find": "// 在发布仓库里 taxonomy 在 ROOT/schema/；在源仓库里它在 spec/ 的上一级 schema/。",
+      "replace": "// taxonomy 位于 ROOT/schema/（或在上一级 schema/）。"
+    },
+    {
+      "find": "// 源仓库里示例放在 spec/examples/ledger/（避免被本仓库自己的 assets/ 扫描器当成正式资产）；\n// 发布仓库里它映射为 examples/assets/。",
+      "replace": "// 示例目录为 examples/assets/。"
+    },
+    {
+      "find": "（`evals/`）",
+      "replace": "（由独立评测）"
+    },
+    { "find": "（`forge link`）", "replace": "（归并工具）" },
+    { "find": "`forge link`", "replace": "归并工具" },
+    { "find": "（S18）", "replace": "" },
+    { "find": "（S19）", "replace": "" },
+    { "find": "（ADR-0008：只有一个版本号）", "replace": "（只有一个版本号）" },
+    { "find": "（不可变、只追加；见 ADR-0015 的 sources 层）", "replace": "（不可变、只追加）" },
+    { "regex": "（ADR-\\d{4}）", "replace": "" },
+    { "regex": "\\(ADR-\\d{4}\\)", "replace": "" },
+    { "regex": "，ADR-\\d{4}", "replace": "" },
+    {
+      "find": "\"file://docs/implement2.md#t:只定 4 种资产\"",
+      "replace": "\"file://examples/sources/conversation.md#t:只定四种资产类型\""
+    },
+    {
+      "find": "origin_incident: \"file://docs/implement2.md#t:把闸门写成 checklist 天生会被跳过\"",
+      "replace": "origin_incident: \"file://examples/sources/conversation.md#t:规则要绑一次事故\""
+    },
+    {
+      "find": "\"file://docs/implement2.md#t:把闸门写成 checklist\"",
+      "replace": "\"file://examples/sources/conversation.md#t:规则要绑一次事故\""
+    },
+    {
+      "find": "\"file://docs/directory.md#t:本地优先是这个品类被验证的用户偏好\"",
+      "replace": "\"file://examples/sources/conversation.md#t:索引层用本地 SQLite\""
+    },
+    { "find": "implement1.md §3.1", "replace": "规范说明" },
+    { "find": "implement1.md", "replace": "规范说明" },
+    { "find": "implement2.md", "replace": "规范说明" },
+    { "find": "directory.md", "replace": "架构说明" },
+    { "find": "packages/schema", "replace": "参考实现" },
+    { "find": "packages/core", "replace": "参考实现" },
+    { "find": "packages/store", "replace": "参考实现" }
+  ],
+  "forbidden_paths": [
+    "data/",
+    "evals/",
+    "docs/",
+    "packages/",
+    "apps/",
+    "listing/",
+    "demo/",
+    "handoff/",
+    "scripts/gates/",
+    ".git/",
+    ".env"
+  ],
+  "forbidden_text": [
+    "implement1.md",
+    "implement2.md",
+    "positioning.md",
+    "directory.md",
+    "asset1.md",
+    "asset2.md",
+    "docs/adr",
+    "docs/implement",
+    "payment_signal",
+    "FORGE_GATE_OVERRIDE",
+    "NPM_TOKEN",
+    "FORGE_ALLOW_MAIN_PUSH",
+    "packages/",
+    "evals/",
+    "handoff/"
+  ]
+}

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>新鲜度任务只能问，不能自己答 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV1Q7H3K5NDZ1RE0EXTCHB4C</p>
+<h1>新鲜度任务只能问，不能自己答</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.85</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0036-freshness-job-asks-never-answers.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:新鲜度任务：state 超期主动确认</code></li>
+<li><code>file://docs/implement2.md#t:linter、定时任务 | **什么算过期**</code></li>
+<li><code>file://packages/core/src/asset.ts#t:确认它是否仍然成立</code></li>
+<li><code>file://packages/store/src/vault.ts#t:没有理由的确认等于一次点击</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>新鲜度任务只能问，不能自己答</h1>
+<h2>问题</h2>
+<p>implement2.md 给 S26 写的是&quot;新鲜度任务：state 超期主动确认&quot;，交付物是&quot;定时 job&quot;。 而人机分工表里 P7 那一行的&quot;人必须做&quot;写着四个字：<strong>什么算过期</strong>。</p>
+<p>三件事因此要定下来：</p>
+<ol><li>窗口存在哪、谁定；</li><li>任务跑起来之后<strong>做什么</strong>；</li><li><strong>谁</strong>把 <code>last_confirmed</code> 刷新掉。</li></ol>
+<h2>考虑过的选项</h2>
+<p><strong>关于窗口：</strong></p>
+<ol><li><strong>在健康检查里写死 30 天。</strong> 否决。窗口是分类法的一部分 （<code>schema/taxonomy.yaml</code> 的 <code>confirm_within_days</code>）， 而在判定里再写一份必然与它漂移——漂移的方向是&quot;健康检查报了、审核没报&quot;， 于是人开始不信两边的任何一个。判据只有一个来源。</li></ol>
+<p><strong>关于任务做什么：</strong></p>
+<ol><li>**任务发现过期的就自动刷新 <code>last_confirmed</code>。<strong> 这是最省事的做法，也是</strong>最坏的做法<strong>。 它会让库在一年之后全部显示&quot;30 天内确认过&quot;——而其中绝大多数你从来没再看过一眼。 维护机器会把</strong>唯一有价值的那个信号自己抹掉**：过期之所以有价值， 是因为它准确地指出&quot;这条你已经很久没核对了&quot;。 一个永远不报过期的检查，与没有检查在结果上一样，而它更糟——它让人以为自己被照顾着。</li></ol>
+<ol><li><strong>任务只问，人回答。</strong> 采纳。任务负责让&quot;该确认的那些&quot;浮出来（<code>forge health --due</code>， 有到期的事就非零退出，于是 cron 只在需要你动手时才来敲门）； 回答由 <code>forge confirm</code> 完成，而且三样东西<strong>必填</strong>：日期、理由、谁。</li></ol>
+<p>**关于 <code>confirm</code> 的写入范围：**</p>
+<ol><li><strong>把它做成一个通用的 front-matter 编辑器。</strong> 否决。ADR-0028 已经说过： 改写已有状态只有一条通路（冲突的 resolve）。<code>confirm</code> 是<strong>第二个</strong>会写已有资产的地方， 所以它必须被限制到只改一个字段；否则&quot;谁能改用户的状态&quot;这个问题的答案 会悄悄多出一个。</li><li>**只改 <code>last_confirmed</code>，而且用一个自证函数把这件事重新问一遍。** 采纳。与 <code>modelLeaks</code> / <code>retrievalViolations</code> 同一条思路： 关键性质写成函数，它才会在每次改动之后被重新问一遍（R8）， 而不是靠&quot;读代码相信它是这么写的&quot;。</li></ol>
+<p><strong>关于理由进哪儿：</strong></p>
+<ol><li><strong>把理由写进正文。</strong> 否决：下一个读这条状态的人会分不清哪句是事实、 哪句是当时的辩解。正文是<strong>现在是什么样</strong>，不是<strong>为什么我认为它还是这样</strong>。</li><li><strong>理由进审计、不进资产。</strong> 采纳。它同时满足了另一件事： &quot;谁在什么时候凭什么认为它仍然成立&quot;变成了可查的，而资产一个字节都没变。</li></ol>
+<h2>选定</h2>
+<ul><li>窗口只从分类法读（<code>confirmWithinDays</code>），健康检查复用 Phase 1 就写好的 <code>checkFreshness</code>——<strong>不写第二份</strong>。</li><li><code>forge health --due</code>：只列到期的，最旧的在前，<strong>有到期的就非零退出</strong>。</li><li><code>forge confirm &lt;id&gt; --date &lt;D&gt; --note &lt;为什么&gt;</code>：三样必填，没有默认值 （默认值会让&quot;确认&quot;退化成一次点击，而这是整个产品里最像人的那部分判断）。</li><li><code>confirm</code> **只动 <code>last_confirmed</code>**，由 <code>unchangedExceptLastConfirmed</code> 自证； 写别的东西就拒绝落盘。</li><li>理由进<strong>审计</strong>（<code>state-confirmed</code> 条目），不进资产。</li><li>往回填日期被拒绝：确认只能把&quot;最后一次看过它&quot;往后推， 往回填会让这条状态看起来比实际更旧。</li></ul>
+<p>**<code>forge</code> 里刻意没有 <code>--auto-confirm</code>。<strong> 这不是&quot;还没做&quot;： 自动确认等于删掉新鲜度这套东西。</strong>任务只能问，不能自己答**—— 这一条由 <code>apps/cli/test/maintenance.test.ts</code> 钉住： 跑两遍 <code>--due</code>，第二遍仍然报同样的到期清单。</p>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：定时任务终于有了&quot;什么时候该吵你&quot;的判据，而且它是<strong>退出码</strong>—— 与所有调度器都能对接，不需要一个常驻进程。</li><li><strong>好</strong>：<code>confirm</code> 是安全的：它改不动内容。探针与测试各断言一遍 &quot;改写之后正文、出处、题面逐字节不变&quot;。</li><li><strong>代价</strong>：<code>confirm</code> 需要一条 <code>--note</code>。一个人每天确认十条状态时会觉得烦—— 这是<strong>故意</strong>的摩擦：烦的成本，远小于&quot;理由全是待补&quot;之后这份记录失去意义。</li><li><strong>代价</strong>：draft（刚 <code>promote</code> 出来）的 <code>last_confirmed</code> 是 <code>null</code>， 它不是&quot;过期&quot;，归审核报 <code>REQUIRED_FIELD_MISSING</code>。两种状态在报告里分开， 因为修法不同（一个去补确认，一个去补理由）。</li><li><strong>残余风险</strong>：窗口是<strong>按类型</strong>定的（现在只有 <code>state</code> 有窗口）。 &quot;同一个类型里有的状态该 7 天确认、有的该 90 天&quot;这件事现在表达不了。 它在真实用法里出现之前不加——加它意味着分类法又要长一个维度。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

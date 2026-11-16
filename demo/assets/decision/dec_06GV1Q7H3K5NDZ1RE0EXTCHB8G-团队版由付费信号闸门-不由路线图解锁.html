@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>团队版由付费信号闸门，不由路线图解锁 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV1Q7H3K5NDZ1RE0EXTCHB8G</p>
+<h1>团队版由付费信号闸门，不由路线图解锁</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.9</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0040-team-edition-is-gated-by-a-payment-signal.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:团队版**只在出现付费信号后**做</code></li>
+<li><code>file://docs/implement2.md#t:单人模式的三个缺失项：没权限、没并发、没敏感度切分</code></li>
+<li><code>file://packages/core/src/team.ts#t:TEAM_CAPABILITIES = [&quot;permissions&quot;, &quot;concurrency&quot;, &quot;sensitivity&quot;]</code></li>
+<li><code>file://docs/team/status.json#t:payment_signal</code></li>
+<li><code>file://evals/runner/gate.ts#t:TEAM_UNGUARDED: &quot;E16_EVAL_TEAM_UNGUARDED&quot;</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>团队版由付费信号闸门，不由路线图解锁</h1>
+<h2>问题</h2>
+<p>implement2.md 给 S30 写的第一句话是一个<strong>顺序</strong>：</p>
+<blockquote><p>团队版<strong>只在出现付费信号后</strong>做：权限、敏感度分级、同步</p><p>（单人模式的三个缺失项：没权限、没并发、没敏感度切分）。</p></blockquote>
+<p>这句话在路线图上看起来像&quot;第 11 周以后做&quot;，但它真正的意思是 <strong>没有证据就不要做</strong>。两者的差别在于：路线图到点自动解锁， 而付费信号是一个必须由<strong>人</strong>提供的外部事实。</p>
+<p>问题在于，代码没有办法知道&quot;有没有人付钱&quot;。所以这个决定不能写成 &quot;代码会检查付费信号&quot;——那是在假装代码能读银行流水。它能做的是两件事：</p>
+<ol><li>把&quot;没有信号&quot;这个状态<strong>写下来</strong>，而不是留在某个人脑子里；</li><li><strong>拒绝把任何提前长出来的团队能力报告成已启用</strong>。</li></ol>
+<h2>考虑过的选项</h2>
+<ol><li><strong>只在 README 里保留这句话。</strong> 否决。这正是本仓库反复付代价的那类失败： 一句礼貌的约束，下一次&quot;反正迟早要做&quot;就会被顺手绕过去。</li><li><strong>现在就把权限、并发、敏感度切分实现掉，等信号来了再打开。</strong> 否决。 S30 的前提不是&quot;功能有没有写完&quot;，而是&quot;值不值得写&quot;。先写团队版会带来 权限模型、并发锁、同步协议三份长期维护成本，而它们都没有付费客户来校准。</li><li><strong>记录信号与三项能力，用纯函数判定顺序是否被违反。</strong> 采纳。</li></ol>
+<h2>选定</h2>
+<ul><li><code>docs/team/status.json</code> 记录两个输入：</li><li><code>payment_signal</code>：字符串或 <code>null</code>。<strong>只能由人填写</strong>。空白字符串按 <code>null</code> 处理—— 一个空格不能解锁团队版。</li><li><code>capabilities</code>：<code>permissions</code> / <code>concurrency</code> / <code>sensitivity</code> 三个布尔值。</li><li><code>packages/core/src/team.ts</code> 的 <code>evaluateTeamEdition</code>：</li><li>没有信号 → <code>deferred</code>；如果任何能力为 <code>true</code>，产出 <code>TEAM_CAPABILITY_WITHOUT_SIGNAL</code> <strong>违规</strong>（不是&quot;提前完成&quot;）；</li><li>有信号但能力没齐 → <code>partial</code>，缺项逐条列出；</li><li>有信号且三项都齐 → <code>ready</code>。</li><li><code>forge bootstrap</code> 把违规报红；<code>evals/runner/gate.ts</code> 的 <code>E16_EVAL_TEAM_UNGUARDED</code> 每次 CI 再问一遍。</li><li>解析也住在 <code>team.ts</code>（<code>teamStatusFromConfig</code>）：CLI 与探针对同一份文件 必须给出同一个答案。形状不对一律按&quot;没有信号 + 能力全关&quot;处理—— 保守方向是<strong>不会</strong>把坏配置读成已启用。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：&quot;只在出现付费信号后做&quot;变成一条能被违反、也能被发现的规则。 有人先打开权限开关而没写信号，<code>forge bootstrap</code> 与 CI 会同时报红。</li><li><strong>好</strong>：<code>deferred</code> 与 <code>partial</code> <strong>不报错</strong>。&quot;还没做&quot;和&quot;做错了顺序&quot;是两件事； 把前者判红会让这条检查从第一天起就永远红着，而永远红着的检查等于没有检查。</li><li><strong>代价</strong>：代码证明不了付费信号是真的。一个能改 <code>docs/team/status.json</code> 的人 可以填一个假字符串。这是<strong>有意留下的边界</strong>：信号的权威性来自评审与商业事实， 不来自代码；代码只负责让&quot;先做了&quot;不能悄悄变成&quot;已就绪&quot;。</li><li><strong>代价</strong>：<code>sensitivity</code> 字段在单人版已经存在（资产 front-matter）， 但它只是<strong>标注</strong>，不是<strong>隔离</strong>。团队版的 <code>sensitivity</code> 能力指的是按敏感度 做访问控制与分发切分；在付费信号出现之前，它保持 <code>false</code>。</li><li><strong>未做（写下来，不假装做了）</strong>：权限模型、并发锁、同步协议一行代码都没有。 它们正是 S30 的三项能力，也正是这条闸门要保护的&quot;还没到做的时候&quot;。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>闸门码的抽取正则要认多位数，否则新码可以绕过 C4 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_06GV1P5C685NDZ1RE0EXTCHB1C</p>
+<h1>闸门码的抽取正则要认多位数，否则新码可以绕过 C4</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.9</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0033-gate-code-regex-accepts-two-digits.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/handbook/gates.md#t:它的正则原本只认**一位数**</code></li>
+<li><code>file://docs/implement1.md#t:没有 eval 就说&quot;效果不错&quot;</code></li>
+<li><code>file://docs/handbook/gates.md#t:新增一条纪律的顺序</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>闸门码的抽取正则要认多位数，否则新码可以绕过 C4</h1>
+<h2>问题</h2>
+<p><code>C4_GATE_CODE_NOT_DOCUMENTED</code> 的判据是：**每一个闸门码都必须出现在 <code>docs/handbook/gates.md</code> 里**。它的理由是那句&quot;检查者无人审查，就会变成下一个 &#39;看起来在保护你&#39;的东西&quot;——码是行动指令，一份写着码却没人知道它什么意思的表， 等于没有表。</p>
+<p>这条检查从源码文本里抽码，用的正则是：</p>
+<pre><code>/[&quot;&#39;]([A-G]\d_[A-Z0-9_]+)[&quot;&#39;]/g</code></pre>
+<p><code>\d</code> 是<strong>一位数</strong>。于是 Phase 6 加的两个码——<code>E10_EVAL_INJECTION_BUDGET</code>、 <code>E11_EVAL_PRELOAD</code>——<strong>根本不会被它看到</strong>：<code>E10_…</code> 里 <code>E</code> 后面是 <code>1</code>，再后面是 <code>0</code>， 不是 <code>_</code>，正则在那里就断了。</p>
+<p>这不是&quot;以后注意就行&quot;的小事，因为它的后果是<strong>静默的</strong>：</p>
+<ul><li>它不会报错，只会<strong>少查几个码</strong>；</li><li>于是从 E10 开始，写码的人可以加一个新码而不更新 handbook，CI 不会红；</li><li>而 CI 不红这件事，会被读成&quot;文档是齐的&quot;。</li></ul>
+<p><strong>它是在 Phase 6 才出现的</strong>：E1–E9 全是一位数，所以在 E10 之前， 这条正则恰好覆盖了全部码——一个&quot;恰好对&quot;的实现，直到输入变了才暴露。</p>
+<h2>考虑过的选项</h2>
+<ol><li><strong>把新码起个一位数的名字</strong>（比如复用 <code>B5_…</code>）。名字要为检查器的实现让路， 而且下一个码又会撞上同一堵墙。</li><li><strong>在 handbook 里手工补上 E10/E11，然后记一笔。</strong> 这正是现在工作区里的状态： <code>docs/handbook/gates.md</code> 里那两行是<strong>人写的</strong>，不是机器逼出来的—— 也就是说，那两条纪律此刻<strong>没有执行体</strong>（R8 说的正是这件事）。</li><li>**把正则放宽到 <code>[A-G]\d{1,2}_</code><strong>（一位或两位），并加一条</strong>会红**的用例： 拿一个两位数的假码喂进去，要求它被抽出来。</li><li><strong>干脆不抽码、改成软校验</strong>（警告而不是红）。那等于删掉这条检查。</li></ol>
+<h2>选定</h2>
+<p><strong>选 3。</strong> 一条正则改动，代价极小，而它把&quot;文档是齐的&quot;这句话重新变成机器判定的结论。 同时保留一位数（不写成 <code>\d+</code>）：<strong>码的位数本身是一条约定</strong>—— 闸门码是 <code>[A-G]&lt;数字&gt;_…</code>，允许两位是给 E10–E99 留的位置， 而 <code>\d+</code> 会在某天把一段无关的字符串（比如 <code>E12345678_x</code>）也认成码。 约定放宽到&quot;够用&quot;，而不是&quot;尽可能宽&quot;。</p>
+<p><strong>这条改动自己没有配一个会红的用例</strong>——这件事是有意的，也是这份 ADR 最该写清楚的地方： 与其为&quot;抽码正则&quot;写一条单测，不如让它<strong>去检查一个真实存在的两位数码</strong>。 落盘之后，handbook 里那两行 E10/E11 就完成了从&quot;人写的&quot;到&quot;机器要求的&quot;的转换： <strong>把它们删掉，CI 立刻红</strong>——那比一条单测更接近这条检查想防的事。</p>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：<code>E10</code> / <code>E11</code> 从&quot;人记得写&quot;变成&quot;不写就红&quot;。</li><li><strong>好</strong>：下一位数的码（E12…）自动被覆盖，不需要再想起这件事。</li><li><strong>代价</strong>：<code>scripts/gates/</code> 是受保护路径（R2/R3），所以这份改动<strong>不能由 agent 落盘</strong>—— 它挂在 <code>handoff/</code> 里，等一次&quot;由人执行的动作&quot;。这个代价是有意的： 改闸门的人应该比写代码的人更慢一点。</li><li><strong>残余风险</strong>：这条检查仍然只覆盖<strong>一处</strong>源码清单（<code>lib/policy.mjs</code>、 <code>lib/harness.mjs</code>、<code>agent-guard.mjs</code>、<code>evals/runner/gate.ts</code>）。 新开一个文件放码、而忘了把它加进那张清单，仍然会静默漏掉—— 这与 bypass-matrix 里那些&quot;清单式闸门&quot;的缺口同一类，记在 handbook 的同一条注记旁边。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

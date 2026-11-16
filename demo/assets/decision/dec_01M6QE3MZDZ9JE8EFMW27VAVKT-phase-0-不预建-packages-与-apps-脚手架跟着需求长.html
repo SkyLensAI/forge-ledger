@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="forge demo">
+<title>Phase 0 不预建 `packages/` 与 `apps/`：脚手架跟着需求长 · forge</title>
+<style>
+:root{color-scheme:light dark;--fg:#1d1d1f;--muted:#6b6b70;--bg:#fbfbfd;--card:#fff;--line:#e3e3e8;--accent:#0b5fff}
+@media (prefers-color-scheme:dark){:root{--fg:#f2f2f7;--muted:#9a9aa2;--bg:#111114;--card:#18181c;--line:#2c2c33;--accent:#78a4ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.hero,main,footer,nav{max-width:860px;margin:0 auto;padding:0 22px}
+.hero{padding-top:56px}.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.2;margin:8px 0 12px}h2{font-size:20px;margin:34px 0 12px}
+.lead{font-size:17px;color:var(--muted);margin:0 0 8px}.notice{color:var(--muted);font-size:13px;margin:0 0 28px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 26px}.count{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:92px}
+.count span{display:block;color:var(--muted);font-size:12px}.count strong{font-size:22px}
+.assets{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.assets li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.meta,.muted{color:var(--muted);font-size:13px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.facts dt{color:var(--muted);font-size:12px}.facts dd{margin:2px 0 0}
+.sources{padding-left:20px}.sources code{font-size:12px;word-break:break-all}
+.prose h1,.prose h2,.prose h3{margin-top:30px}.prose p{margin:0 0 14px}.prose blockquote{margin:0 0 14px;padding:2px 16px;border-left:3px solid var(--line);color:var(--muted)}
+.prose pre{overflow:auto;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13px}
+.prose code{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.9em}
+.prose pre code{border:0;padding:0;background:none}.prose .table{white-space:pre}
+footer{color:var(--muted);font-size:12px;padding-top:44px;padding-bottom:44px}
+</style>
+</head>
+<body>
+<nav><a href="../../index.html">← 资产库</a></nav>
+<header class="hero">
+<p class="eyebrow">decision · dec_01M6QE3MZDZ9JE8EFMW27VAVKT</p>
+<h1>Phase 0 不预建 `packages/` 与 `apps/`：脚手架跟着需求长</h1>
+</header>
+<main>
+<dl class="facts">
+<div><dt>状态</dt><dd>accepted</dd></div>
+<div><dt>创建</dt><dd>2026-11-06</dd></div>
+<div><dt>最后确认</dt><dd>2026-11-06</dd></div>
+<div><dt>敏感度</dt><dd>internal</dd></div>
+<div><dt>置信度</dt><dd>0.8</dd></div>
+<div><dt>来源文件</dt><dd><code>docs/adr/0004-no-speculative-packages-in-phase-0.md</code></dd></div>
+</dl>
+<section>
+<h2>出处</h2>
+<ul class="sources">
+<li><code>file://docs/implement2.md#t:把闸门写成 checklist</code></li>
+<li><code>file://docs/directory.md#h:六、v0 最小版（照抄这个开始，别一上来就建 20 个包）</code></li>
+<li><code>file://docs/directory.md#t:每个来源一个包 / 建一个万能</code></li>
+</ul>
+</section>
+<article class="prose">
+<h1>Phase 0 不预建 <code>packages/</code> 与 <code>apps/</code>：脚手架跟着需求长</h1>
+<h2>问题</h2>
+<p><code>directory.md</code> 给出了完整的目录树（6 个包 + 5 个端）。Phase 0 只要求&quot;一个 <code>pnpm test</code> 能跑过的空仓&quot;。要不要把目录树先建出来？</p>
+<h2>考虑过的选项</h2>
+<ol><li>**先建全部目录（含空 <code>services/</code>、<code>apps/web</code> 等）**。看起来&quot;架构清楚&quot;。</li><li><strong>只建 Phase 0 真正需要的东西</strong>：根工具链 + 闸门脚本 + 文档。<code>packages/</code>、<code>apps/</code> 在 Phase 1/2 有真实内容时再建。</li></ol>
+<h2>选定</h2>
+<p><strong>选 2。</strong></p>
+<ul><li>&quot;先建目录&quot;违反本项目自己的反模式 4（**建一个万能 <code>utils/</code> 或包地狱**）。空目录不会提供任何约束，只会制造&quot;结构已存在&quot;的错觉。</li><li>更硬的理由：<strong>空目录里的 schema 检查是假的</strong>。Phase 0 的价值在于&quot;闸门真的会红&quot;，而一个没有内容的 <code>packages/schema/</code> 只会让 <code>packages/schema/</code> 变成受保护路径却毫无内容可保护——保护一个空壳是自欺。</li><li>唯一例外：<code>scripts/gates/</code> 在 Phase 0 就有真实内容（判定逻辑 + 测试），且<strong>自己是受保护路径</strong>——闸门从第一天起就在管自己。</li></ul>
+<h2>后果</h2>
+<ul><li><strong>好</strong>：每个目录出现时都有明确职责，没有&quot;待填&quot;的悬空结构。</li><li><strong>好</strong>：<code>pnpm test</code> 在 Phase 0 就跑的是真东西（闸门自身的测试 34 条），不是空转。</li><li><strong>代价</strong>：Phase 1/2 需要把 <code>pnpm-workspace.yaml</code> 的 <code>packages/*</code>、<code>apps/*</code> 真正用起来，并确认 <code>turbo</code> 在有包之后能正常编排任务。</li><li><strong>注</strong>：<code>turbo.json</code> 已按 <code>directory.md</code> 的 6 包 + 3 端形态配好任务图，无需等到那时再改。</li></ul>
+</article>
+</main>
+<footer>由 <code>forge demo</code> 生成 · 正文来自资产文件，不是样例</footer>
+</body>
+</html>

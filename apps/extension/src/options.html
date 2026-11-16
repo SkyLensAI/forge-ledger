@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <title>forge · 选项</title>
+    <style>
+      body { font: 13px/1.6 system-ui, sans-serif; margin: 0; padding: 16px; width: 420px; }
+      label { display: block; margin-top: 10px; }
+      input { width: 100%; box-sizing: border-box; font: inherit; }
+      button { font: inherit; margin-top: 12px; }
+      .muted { color: #666; }
+      #saved { color: #0a6; }
+    </style>
+  </head>
+  <body>
+    <h1>forge 桥</h1>
+    <p class="muted">
+      扩展不直接读你的资产库：它把请求发给本机的 <code>forge serve</code>。
+      token 在那条命令的输出里，每次重启都会换一个。
+    </p>
+    <label>桥地址<input id="url" placeholder="http://127.0.0.1:8787" /></label>
+    <label>token<input id="token" type="password" /></label>
+    <button id="save">保存</button>
+    <p id="saved"></p>
+    <p class="muted">
+      · 桥只绑 127.0.0.1，而且网页来的请求一律 403（即使拿到了 token）。<br />
+      · 选择器配置走热更新：桥用 <code>--selectors &lt;URL&gt;</code> 拉远端那一份。
+      平台改版时改配置就行，不用等商店审核。
+    </p>
+    <script src="options.js" type="module"></script>
+  </body>
+</html>
