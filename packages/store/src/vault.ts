@@ -1416,6 +1416,10 @@ export function readRepoAssets(
 /** 检索范围排除。`schema/` 是宪法不是资产；`data/` 是用户数据（R1）。 */
 export const DEFAULT_REPO_EXCLUDES: readonly string[] = [
   "schema",
+  // `spec/` 是公开规范仓的导出源（白名单在 public-export.json），不是本仓库的资产库。
+  // 不排除它，示例账本会被 readRepoAssets 当成正式资产，进而把 bootstrap 的
+  // "44 条 ADR" 变成 "48 条资产"，并让 listing/demo 产生产物漂移。
+  "spec",
   "data",
   "node_modules",
   "dist",

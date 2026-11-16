@@ -2,6 +2,12 @@
 # 如果 CRLF/LF 随平台漂移，快照测试会在 CI 上以最不可读的方式失败。
 * text=auto eol=lf
 
+# Windows 原生入口用 CRLF：
+# cmd.exe 对纯 LF 的批处理在标签/多行块上有已知怪癖；这里是一个明确的例外，
+# 不影响 emit 的产物（那些仍然由 ADR-0017 钉死为 LF）。
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
 *.png binary
 *.jpg binary
 *.ico binary

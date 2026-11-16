@@ -1,16 +1,22 @@
 # License texts
 
-This directory contains the full license texts, layered by the material they cover.
+This repository is layered by material. The root `LICENSE` is the license GitHub
+(and most visitors) will see, so it covers the reference implementation.
 
 | File | Applies to |
 |---|---|
-| `CC0-1.0.txt` | specification text, `schema/taxonomy.yaml`, `schema.json`, examples |
+| `../LICENSE` (= `AGPL-3.0-only.txt`) | reference implementation: `apps/`, `packages/`, `scripts/`, `evals/`, `schema/` |
+| `CC0-1.0.txt` | specification text, `spec/`, `schema/taxonomy.yaml`, `schema.json`, examples |
 | `CC-BY-4.0.txt` | documentation, governance, and contribution documents |
-| `AGPL-3.0-only.txt` | reference implementation (**not in this repository**; reserved for a future implementation) |
 
 The specification uses CC0-1.0: the first requirement of a standard is zero friction.
 The reference implementation uses AGPL-3.0-only: it needs to prevent "fork it and
 offer a closed-source hosted service".
+
+The specification is designed to be published as an independent repository
+(`public-export.json` exports it to `dist/forge-spec`, including a
+`MANIFEST.sha256`). Until that repository exists, the normative text lives in
+`spec/`; the reference implementation lives here.
 
 The license texts come from their official publication pages:
 

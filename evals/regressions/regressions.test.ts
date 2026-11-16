@@ -18,7 +18,9 @@
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -267,6 +269,74 @@ const CASES: RegressionCase[] = [
       );
       assert.equal(parsed.records.length, 0, "坏日期不许变成一条事件");
       assert.equal(parsed.skipped.length, 1, "坏日期必须进 skipped，不能静默丢");
+    },
+  },
+  {
+    id: "0009",
+    check: () => {
+      // Windows 上没有符号链接权限时，pnpm 用 junction 链 workspace 包，
+      // @forge/* 的解析路径仍落在 node_modules 里，而 Node 的原生类型擦除拒绝那里面的 .ts。
+      // 修复是 tsx 启动垫片 + 两个包装。
+      const pkg = JSON.parse(readFileSync(join(REPO_ROOT, "package.json"), "utf8")) as {
+        scripts: Record<string, string>;
+        devDependencies: Record<string, string>;
+      };
+      assert.ok(pkg.devDependencies["tsx"], "tsx 是 Windows 启动垫片；删掉它，包装会直接找不到入口");
+      assert.match(pkg.scripts["forge"] ?? "", /\btsx\b/, "pnpm forge 必须走 tsx");
+      assert.match(pkg.scripts["mcp"] ?? "", /\btsx\b/, "pnpm mcp 必须走 tsx");
+
+      const cmd = readFileSync(join(REPO_ROOT, "forge.cmd"), "utf8");
+      assert.match(cmd, /tsx\\dist\\cli\.mjs/, "forge.cmd 必须指向 tsx 的入口");
+      assert.match(cmd, /apps\\cli\\src\\main\.ts/, "forge.cmd 必须指向 CLI 入口");
+      assert.match(cmd, /\r\n/, "forge.cmd 必须是 CRLF：cmd.exe 会把纯 LF 的批处理整个当成一行");
+
+      const mcpCmd = readFileSync(join(REPO_ROOT, "forge-mcp.cmd"), "utf8");
+      assert.match(mcpCmd, /apps\\mcp\\src\\main\.ts/, "forge-mcp.cmd 必须指向 MCP 入口");
+      assert.match(mcpCmd, /\r\n/, "forge-mcp.cmd 必须是 CRLF");
+
+      for (const ps of ["forge.ps1", "forge-mcp.ps1"]) {
+        const text = readFileSync(join(REPO_ROOT, ps), "utf8");
+        assert.match(text, /tsx\/dist\/cli\.mjs/, `${ps} 必须走同一个 tsx 启动垫片`);
+      }
+    },
+  },
+  {
+    id: "0010",
+    check: () => {
+      // docs/automation.md 的流水线靠 `health --due --out due.md` 通知人。
+      // 上一版 `--due` 分支解析完参数后直接 return，`--out` 被静默忽略：
+      // 退出码是对的，文件却不存在——而只盯退出码的定时任务发现不了。
+      const root = mkdtempSync(join(tmpdir(), "forge-reg-0010-"));
+      try {
+        const vault = join(root, "vault");
+        const report = join(root, "due.md");
+        const run = spawnSync(
+          "node",
+          [
+            join(REPO_ROOT, "apps", "cli", "src", "main.ts"),
+            "health",
+            "--vault",
+            vault,
+            "--today",
+            "2026-11-12",
+            "--due",
+            "--out",
+            report,
+          ],
+          {
+            cwd: REPO_ROOT,
+            encoding: "utf8",
+            env: { PATH: process.env["PATH"] ?? "" },
+          },
+        );
+
+        assert.equal(run.status, 0, run.stderr);
+        assert.equal(existsSync(report), true, "`--due --out` 必须真的写出文件，不能只退出 0");
+        assert.match(readFileSync(report, "utf8"), /没有到期的 state（基准日 2026-11-12）/);
+        assert.equal(run.stdout, "", "给了 --out 就不该把正文同时打到 stdout");
+      } finally {
+        rmSync(root, { recursive: true, force: true });
+      }
     },
   },
 ];

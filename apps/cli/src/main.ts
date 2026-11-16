@@ -19,13 +19,16 @@
  */
 import { randomBytes } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
+import { homedir } from "node:os";
 import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   AUDIT_KINDS,
   DEFAULT_BUDGET_TOKENS,
   EXTRACTION_HARNESS,
   MIN_BUDGET_TOKENS,
   buildExtractionRequest,
+  buildMcpLaunch,
   checkFreshness,
   emitDemo,
   emitEvalCases,
@@ -34,14 +37,21 @@ import {
   emitSkill,
   evalExportFile,
   evaluateBootstrap,
+  formatClientList,
   formatViolation,
+  inspectAutomation,
   judgeLibrary,
   modelLeaks,
+  renderAutomationBundle,
+  renderAutomationPolicy,
   renderBootstrapReport,
+  renderClientConfig,
   sortViolations,
   teamStatusFromConfig,
   stalePaths,
+  validateClientManifest,
   type BootstrapArtifact,
+  type ClientPlatform,
   type EvalReviewInput,
   type SeedRulesInput,
   type Model,
@@ -146,7 +156,7 @@ const USAGE = `forge —— 把痕迹编译成资产
       健康检查（S25）：孤儿页 / 索引漂移 / 过期断言 / 静默被取代 / 审计完整性。
       **它只读**——只报，不修。有需要动手的问题时退出码为 1（孤儿不计）。
       --due   只列到期未确认的状态（S26 的定时任务问的就是这一个问题）
-      --out   把报告写到文件（定时任务把它当周报正文）
+      --out   把报告写到文件（定时任务把它当周报正文）；与 --due 同给时写的是当天到期清单
 
   forge confirm <资产 ID> --date <YYYY-MM-DD> --note <为什么仍然成立> [--vault <目录>] [--actor <谁>]
       重新确认一条 state 仍然成立（S26）。**只动 last_confirmed 一个字段**——
@@ -171,7 +181,30 @@ const USAGE = `forge —— 把痕迹编译成资产
       --token 不给就生成一个并打在 stderr 上（填进扩展的选项页）。
       --selectors 指到一份远端选择器配置：平台改版时改它，不用重新发扩展。
 
-选项：
+  forge mcp-config --list [--platform win32|darwin|linux]
+  forge mcp-config --client <id> [--vault <目录>] [--platform win32|darwin|linux]
+      为 MCP 客户端生成**可直接粘贴**的配置片段（S22）。
+      清单只有一份：docs/integrations/clients.json；加客户端 = 加一行数据。
+      stdout 只有片段本身（JSON / TOML / YAML / GUI 字段），路径与提示走 stderr，
+      所以 forge mcp-config --client cursor > mcp.json 是安全的。
+      --list     列出客户端 id、支持级别、配置形状与当前位置
+      --client   选一个客户端；形状由清单决定（VS Code 是 servers，Zed 是 context_servers）
+      --platform 目标平台（默认当前平台）；路径与启动命令都按它生成
+      **启动命令一律绝对路径**：客户端的 cwd 与 PATH 不可控，不让人去猜。
+
+  forge automate --list
+  forge automate --out <目录> [--forge-bin <命令>] [--workdir <目录>] [--check]
+      自动化政策与**可直接安装的配方**（docs/automation.md）。
+      --list        打印三档判断：可无人值守 / 准备给人 / 设计上禁止
+      --out         生成 pipeline.sh / pipeline.ps1 / pipeline.cron /
+                    task-scheduler.xml；逐字节确定，--check 不一致退出 1
+      --forge-bin   写进脚本的 forge 命令（默认 forge；运行时可用 FORGE_BIN 覆盖）
+      --workdir     计划任务启动脚本的工作目录（默认当前目录）
+      **它不执行任何动作、也不内置调度器**：装不装、何时跑由 cron / 计划任务决定。
+      生成物的**可执行行**里永远没有 promote / resolve / confirm——那三个「点头」由人做，
+      越界会被生成时的安全检查判红（不是靠注释提醒）。
+
+ 选项：
   --vault <目录>   资产库位置（默认：./data）
   --repo           对**本仓库**的资产（带 front-matter 的 markdown）做 lint
   --today <日期>   lint / health / weekly 的基准日 / context、serve 的新鲜度基准日
@@ -221,6 +254,11 @@ interface ParsedArgs {
   kind: string | null;
   since: string | null;
   until: string | null;
+  client: string | null;
+  platform: string | null;
+  listClients: boolean;
+  forgeBin: string | null;
+  workdir: string | null;
 }
 
 /**
@@ -265,6 +303,11 @@ function parseArgs(argv: string[]): ParsedArgs {
     kind: null,
     since: null,
     until: null,
+    client: null,
+    platform: null,
+    listClients: false,
+    forgeBin: null,
+    workdir: null,
   };
 
   const rest = [...argv];
@@ -388,6 +431,21 @@ function parseArgs(argv: string[]): ParsedArgs {
       case "--until":
         args.until = value();
         break;
+      case "--client":
+        args.client = value();
+        break;
+      case "--platform":
+        args.platform = value();
+        break;
+      case "--list":
+        args.listClients = true;
+        break;
+      case "--forge-bin":
+        args.forgeBin = value();
+        break;
+      case "--workdir":
+        args.workdir = value();
+        break;
       default:
         throw new UsageError(`未知选项：${flag}`);
     }
@@ -465,6 +523,10 @@ async function main(): Promise<number> {
       return runWeekly(args);
     case "serve":
       return await runServe(args);
+    case "mcp-config":
+      return runMcpConfig(args);
+    case "automate":
+      return runAutomate(args);
     default:
       err(`✗ 未知命令：${args.command}`);
       err(USAGE);
@@ -1030,20 +1092,36 @@ function runHealthCommand(args: ParsedArgs): number {
   }
 
   if (args.due) {
-    if (run.report.due.length === 0) {
-      out(`✓ 没有到期的 state（基准日 ${today}）。`);
-      return run.invalid.length > 0 ? 1 : 0;
+    const due = run.report.due;
+    const lines: string[] =
+      due.length === 0
+        ? [`✓ 没有到期的 state（基准日 ${today}）。`]
+        : [
+            `${String(due.length)} 条 state 超过了确认窗口，最旧的先看：`,
+            ...due.map(
+              (item) =>
+                `  ${item.path} —— 已 ${String(item.ageDays)} 天没确认（窗口 ${String(item.windowDays)} 天）`,
+            ),
+            "",
+            "确认它：forge confirm <资产 ID> --date <日期> --note <为什么它仍然成立>",
+            "· **定时任务只能问，不能自己答**：机器自动刷新会让「过期」永远不被看见（ADR-0036）",
+          ];
+    const body = `${lines.join("\n")}\n`;
+
+    if (args.out !== null) {
+      // --out 与 --due 一起给时，写的是**这一天的到期清单**。
+      // 没有到期项也要写：留着一份昨天的 due.md，比没有文件更容易骗人。
+      const path = resolve(args.out);
+      mkdirSync(join(path, ".."), { recursive: true });
+      writeFileSync(path, body, "utf8");
+      err(`✓ 到期报告已写入 ${path}（${String(due.length)} 条）`);
+    } else {
+      process.stdout.write(body);
     }
-    out(`${String(run.report.due.length)} 条 state 超过了确认窗口，最旧的先看：`);
-    for (const item of run.report.due) {
-      out(`  ${item.path} —— 已 ${String(item.ageDays)} 天没确认（窗口 ${String(item.windowDays)} 天）`);
-    }
-    out("");
-    out("确认它：forge confirm <资产 ID> --date <日期> --note <为什么它仍然成立>");
-    out("· **定时任务只能问，不能自己答**：机器自动刷新会让「过期」永远不被看见（ADR-0036）");
+
     // **有到期的事就非零**：定时任务靠这个退出码决定要不要来敲门。
     // 永远返回 0 的定时任务不是"安静"，是"没接上"——它把那句最有价值的提醒吞掉了。
-    return 1;
+    return due.length > 0 || run.invalid.length > 0 ? 1 : 0;
   }
 
   if (args.out !== null) {
@@ -1337,6 +1415,172 @@ async function runServe(args: ParsedArgs): Promise<number> {
   // 停不下来是正常的：这是一个服务。进程靠信号退出。
   await new Promise<void>(() => {});
   return 0;
+}
+
+/**
+ * `forge mcp-config` —— 一份清单，多个客户端（personal2.md）。
+ *
+ * 它**不改 server、不启动 server**：只把同一条绝对路径的启动命令，
+ * 渲染成各个客户端认识的配置形状。这样"支持一个客户端"是加一行数据，
+ * 而不是再写一套会漂移的集成代码。
+ *
+ * stdout 只有片段本身：`forge mcp-config --client cursor > mcp.json` 必须能直接用。
+ * 路径提示、注意事项、错误全部走 stderr——与 `forge context` 的分工一致。
+ *
+ * @param {ParsedArgs} args
+ * @returns {number}
+ */
+function runMcpConfig(args: ParsedArgs): number {
+  const platform = platformFromArg(args.platform);
+  if (platform === null) {
+    err(`✗ 不认识的平台「${args.platform ?? ""}」：只支持 win32 / windows、darwin / macos、linux。`);
+    return 2;
+  }
+
+  const path = join(repoRoot(), "docs", "integrations", "clients.json");
+  let raw: string;
+  try {
+    raw = readFileSync(path, "utf8");
+  } catch (error) {
+    err(`✗ 读不到客户端清单：${path}`);
+    err(`  ${error instanceof Error ? error.message : String(error)}`);
+    return 1;
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw) as unknown;
+  } catch (error) {
+    err(`✗ 客户端清单不是合法 JSON：${path}`);
+    err(`  ${error instanceof Error ? error.message : String(error)}`);
+    return 1;
+  }
+
+  const verdict = validateClientManifest(parsed);
+  if (!verdict.ok) {
+    err(`✗ 客户端清单不合法：${path}`);
+    for (const issue of verdict.issues) err(`  - ${issue}`);
+    return 1;
+  }
+
+  if (args.listClients) {
+    if (args.client !== null) {
+      err("✗ --list 与 --client 只能给一个：一个是列清单，一个是渲染一个客户端。");
+      return 2;
+    }
+    process.stdout.write(formatClientList(verdict.manifest, platform));
+    return 0;
+  }
+
+  if (args.client === null) {
+    err("✗ mcp-config 需要 --client <id> 或 --list。");
+    err(`  已知客户端：${verdict.manifest.clients.map((client) => client.id).join("、")}`);
+    return 2;
+  }
+
+  const client = verdict.manifest.clients.find((entry) => entry.id === args.client);
+  if (client === undefined) {
+    err(`✗ 未知客户端：${args.client}`);
+    err(`  已知客户端：${verdict.manifest.clients.map((entry) => entry.id).join("、")}`);
+    return 2;
+  }
+
+  const launch = buildMcpLaunch(platform, repoRoot(), resolve(args.vault));
+  const rendered = renderClientConfig(client, launch, { platform });
+  process.stdout.write(rendered.content);
+
+  err(`· 客户端：${client.name}（${client.tier}，${client.scope}，${client.shape}）`);
+  for (const line of rendered.instructions) {
+    err(`· ${line.startsWith("配置位置：") ? `配置位置：${expandPathHint(line.slice("配置位置：".length))}` : line}`);
+  }
+  err(`· 资产库：${resolve(args.vault)}`);
+  err("· 只读四个工具，stdio，不需要 API key；确认与判决仍然只在 CLI 里由人执行。");
+  return 0;
+}
+
+/**
+ * 仓库根。`mcp-config` 要把**绝对路径**写进配置，所以不能用 cwd——
+ * 用户可能在任意目录里生成一份要给另一台机器用的配置。
+ *
+ * @returns 仓库绝对路径（带结尾分隔符，`buildMcpLaunch` 会去掉）
+ */
+function repoRoot(): string {
+  return fileURLToPath(new URL("../../../", import.meta.url));
+}
+
+/**
+ * @param value `--platform` 的原值；null = 当前平台
+ * @returns 三个受支持平台之一；不认识时为 null
+ */
+function platformFromArg(value: string | null): ClientPlatform | null {
+  const raw = value ?? process.platform;
+  if (raw === "win32" || raw === "windows") return "win32";
+  if (raw === "darwin" || raw === "macos" || raw === "mac") return "darwin";
+  if (raw === "linux") return "linux";
+  return null;
+}
+
+/**
+ * 把清单里的 `~` 与 `%VAR%` 展开成当前机器的路径，**只用于 stderr 提示**。
+ * 片段本身不依赖这些展开：启动命令用的是 `resolve()` 出来的绝对路径。
+ *
+ * @param hint 清单里的路径提示
+ * @returns 展开后的路径；未知变量原样保留
+ */
+function expandPathHint(hint: string): string {
+  let value = hint;
+  if (value === "~") return homedir();
+  if (value.startsWith("~/") || value.startsWith("~\\")) value = join(homedir(), value.slice(2));
+  return value.replace(/%([A-Za-z_][A-Za-z0-9_]*)%/g, (whole, name: string) => process.env[name] ?? whole);
+}
+
+/**
+ * `forge automate` —— 把 docs/automation.md 的三档判断落成可安装的配方。
+ *
+ * 它**只生成文本，不执行任何动作**：forge 仍然没有内置调度器，
+ * "什么时候跑"是 cron / 计划任务的事。生成后可以 `--check` 对账，
+ * 这样配方不会变成第二份手写的真相。
+ *
+ * 生成前会先扫一遍：`promote` / `resolve` / `confirm` 与闸门绕过手法
+ * 一旦出现在可执行行里就拒绝落盘。这是边界写进代码的地方——
+ * 文档里可以解释它们，脚本里不行。
+ *
+ * @param args
+ * @returns 退出码
+ */
+function runAutomate(args: ParsedArgs): number {
+  if (args.listClients) {
+    out(renderAutomationPolicy());
+    return 0;
+  }
+  if (args.out === null) {
+    err(
+      "✗ automate 必须给 --out <目录>（或用 --list 查看政策）。\n" +
+        "  配方写哪儿是个决定，不该有默认值；forge 也不会替你安装它。",
+    );
+    return 2;
+  }
+
+  const files = renderAutomationBundle({
+    forgeBin: args.forgeBin ?? "forge",
+    // 原样写进 cron / 计划任务：路径是目标机器的，不该被当前平台的 path.resolve 改写。
+    // 默认当前目录（绝对路径）；跨平台生成时用 --workdir 显式给目标路径。
+    workdir: args.workdir ?? process.cwd(),
+    // 调度器必须从**生成目录**启动脚本；相对路径按 workdir 解释。
+    bundleDir: args.out,
+  });
+
+  const findings = inspectAutomation(files);
+  if (findings.length > 0) {
+    err(`✗ 生成的配方里出现了 ${String(findings.length)} 处不该自动化的调用（这是缺陷，不是配置问题）：`);
+    for (const finding of findings) {
+      err(`  - ${finding.path}:${String(finding.line)} [${finding.code}] ${finding.message}`);
+    }
+    err("  边界在 packages/core/src/automation.ts：修生成器，不要绕过检查。");
+    return 1;
+  }
+
+  return writeProjection(args, files, "自动化配方");
 }
 
 /**

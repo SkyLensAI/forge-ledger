@@ -32,3 +32,5 @@ export * from "./bootstrap.ts";
 export * from "./distribution.ts";
 export * from "./demo.ts";
 export * from "./projection.ts";
+export * from "./integrations.ts";
+export * from "./automation.ts";

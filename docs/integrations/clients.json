@@ -1,0 +1,279 @@
+{
+  "manifest_version": 1,
+  "_about": "MCP 客户端清单：一份数据，不是十份会漂移的文档。加一个客户端 = 在这里加一行，然后跑 `forge mcp-config --list` 确认它能被渲染。支持级别：p0 必须覆盖，p1 正式支持，p2 只给通用模板、不承诺。形状（shape）由 `packages/core/src/integrations.ts` 定义并校验。",
+  "clients": [
+    {
+      "id": "claude-desktop",
+      "name": "Claude Desktop",
+      "tier": "p0",
+      "shape": "mcpServers-json",
+      "scope": "user",
+      "transport": "stdio",
+      "paths": {
+        "windows": "%APPDATA%\\Claude\\claude_desktop_config.json",
+        "macos": "~/Library/Application Support/Claude/claude_desktop_config.json"
+      },
+      "notes": "改完要完全退出（含托盘）再打开。"
+    },
+    {
+      "id": "claude-code",
+      "name": "Claude Code",
+      "tier": "p0",
+      "shape": "mcpServers-json",
+      "scope": "project",
+      "transport": "stdio",
+      "paths": {
+        "windows": ".mcp.json",
+        "macos": ".mcp.json",
+        "linux": ".mcp.json"
+      },
+      "notes": "放在项目根；也可以用 `claude mcp add --scope project forge -- <command> <args>`。"
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "tier": "p0",
+      "shape": "mcpServers-json",
+      "scope": "both",
+      "transport": "stdio",
+      "paths": {
+        "windows": "%USERPROFILE%\\.cursor\\mcp.json",
+        "macos": "~/.cursor/mcp.json",
+        "linux": "~/.cursor/mcp.json"
+      },
+      "notes": "全局之外也可以放项目级 `.cursor/mcp.json`。"
+    },
+    {
+      "id": "vscode",
+      "name": "VS Code + GitHub Copilot（Local harness）",
+      "tier": "p0",
+      "shape": "servers-json",
+      "scope": "project",
+      "transport": "stdio",
+      "paths": {
+        "windows": ".vscode\\mcp.json",
+        "macos": ".vscode/mcp.json",
+        "linux": ".vscode/mcp.json"
+      },
+      "notes": "顶层键是 servers，不是 mcpServers。这是旧 Local harness 的形状；新 Copilot harness 用 vscode-copilot。"
+    },
+    {
+      "id": "vscode-copilot",
+      "name": "VS Code + GitHub Copilot（Copilot harness）",
+      "tier": "p0",
+      "shape": "mcpServers-json",
+      "scope": "both",
+      "transport": "stdio",
+      "paths": {
+        "windows": "%COPILOT_HOME%\\mcp-config.json",
+        "macos": "~/.copilot/mcp-config.json",
+        "linux": "~/.copilot/mcp-config.json"
+      },
+      "notes": "工作区根的 `.mcp.json` 也可。%COPILOT_HOME% 未设置时用 ~/.copilot/mcp-config.json（Windows 同理）。"
+    },
+    {
+      "id": "cherry-studio",
+      "name": "Cherry Studio",
+      "tier": "p0",
+      "shape": "gui",
+      "scope": "user",
+      "transport": "stdio",
+      "paths": {},
+      "notes": "设置 → MCP → MCP 服务器 → 添加；传输方式选 stdio，Command / Args 照下面的字段填。"
+    },
+    {
+      "id": "cline",
+      "name": "Cline",
+      "tier": "p0",
+      "shape": "mcpServers-json",
+      "scope": "workspace",
+      "transport": "stdio",
+      "paths": {},
+      "notes": "在 Cline 的 MCP Servers 面板点 Configure MCP Servers，把片段粘进 mcpServers。"
+    },
+    {
+      "id": "roo-code",
+      "name": "Roo Code",
+      "tier": "p0",
+      "shape": "mcpServers-json",
+      "scope": "workspace",
+      "transport": "stdio",
+      "paths": {},
+      "notes": "与 Cline 同源；在 MCP Servers 面板点 Configure，把片段粘进 mcpServers。"
+    },
+    {
+      "id": "codex",
+      "name": "Codex CLI",
+      "tier": "p1",
+      "shape": "mcp_servers-toml",
+      "scope": "both",
+      "transport": "stdio",
+      "paths": {
+        "windows": "%USERPROFILE%\\.codex\\config.toml",
+        "macos": "~/.codex/config.toml",
+        "linux": "~/.codex/config.toml"
+      },
+      "notes": "TOML，键名是 snake_case 的 mcp_servers；项目级可放 .codex/config.toml（受信任项目）。"
+    },
+    {
+      "id": "gemini-cli",
+      "name": "Gemini CLI",
+      "tier": "p1",
+      "shape": "mcpServers-json",
+      "scope": "both",
+      "transport": "stdio",
+      "paths": {
+        "windows": "%USERPROFILE%\\.gemini\\settings.json",
+        "macos": "~/.gemini/settings.json",
+        "linux": "~/.gemini/settings.json"
+      },
+      "notes": "项目级也可放 .gemini/settings.json；`gemini mcp add` 也能写同一份。"
+    },
+    {
+      "id": "windsurf",
+      "name": "Windsurf",
+      "tier": "p1",
+      "shape": "mcpServers-json",
+      "scope": "user",
+      "transport": "stdio",
+      "paths": {
+        "windows": "%USERPROFILE%\\.codeium\\windsurf\\mcp_config.json",
+        "macos": "~/.codeium/windsurf/mcp_config.json",
+        "linux": "~/.codeium/windsurf/mcp_config.json"
+      },
+      "notes": "UI 里也有 MCP 面板；文件与 UI 是同一份配置。"
+    },
+    {
+      "id": "jetbrains",
+      "name": "JetBrains AI Assistant / Junie",
+      "tier": "p1",
+      "shape": "gui",
+      "scope": "both",
+      "transport": "stdio",
+      "paths": {},
+      "notes": "Settings → Tools → AI Assistant → MCP；Junie 也读 .junie/mcp.json。具体入口以 IDE 版本为准。"
+    },
+    {
+      "id": "continue",
+      "name": "Continue",
+      "tier": "p1",
+      "shape": "mcpServers-yaml",
+      "scope": "project",
+      "transport": "stdio",
+      "paths": {
+        "windows": ".continue\\mcpServers\\forge.yaml",
+        "macos": ".continue/mcpServers/forge.yaml",
+        "linux": ".continue/mcpServers/forge.yaml"
+      },
+      "notes": "YAML，且 mcpServers 是**数组**；也可以写进 ~/.continue/config.yaml。"
+    },
+    {
+      "id": "zed",
+      "name": "Zed",
+      "tier": "p1",
+      "shape": "context_servers-json",
+      "scope": "both",
+      "transport": "stdio",
+      "paths": {
+        "windows": "%APPDATA%\\Zed\\settings.json",
+        "macos": "~/.config/zed/settings.json",
+        "linux": "~/.config/zed/settings.json"
+      },
+      "notes": "顶层键是 context_servers，不是 mcpServers；项目级可放 .zed/settings.json。"
+    },
+    {
+      "id": "lm-studio",
+      "name": "LM Studio",
+      "tier": "p1",
+      "shape": "mcpServers-json",
+      "scope": "user",
+      "transport": "stdio",
+      "paths": {
+        "windows": "%USERPROFILE%\\.lmstudio\\mcp.json",
+        "macos": "~/.lmstudio/mcp.json",
+        "linux": "~/.lmstudio/mcp.json"
+      },
+      "notes": "也可以在 LM Studio 的 MCP 面板里编辑同一份 mcp.json。"
+    },
+    {
+      "id": "trae",
+      "name": "TRAE",
+      "tier": "p1",
+      "shape": "mcpServers-json",
+      "scope": "both",
+      "transport": "stdio",
+      "paths": {
+        "windows": ".trae\\mcp.json",
+        "macos": ".trae/mcp.json",
+        "linux": ".trae/mcp.json"
+      },
+      "notes": "项目级配置：项目根 `.trae/mcp.json`，用 mcpServers 声明；首次使用要在 设置 > MCP 打开「启用项目级 MCP」并确认。全局 MCP 在 设置 > MCP 里手动添加。"
+    },
+    {
+      "id": "codebuddy",
+      "name": "CodeBuddy",
+      "tier": "p1",
+      "shape": "mcpServers-typed-json",
+      "scope": "both",
+      "transport": "stdio",
+      "paths": {
+        "windows": "%USERPROFILE%\\.codebuddy\\.mcp.json",
+        "macos": "~/.codebuddy/.mcp.json",
+        "linux": "~/.codebuddy/.mcp.json"
+      },
+      "notes": "用户级推荐 `~/.codebuddy/.mcp.json`（旧路径 `~/.codebuddy/mcp.json` 已弃用）；项目级推荐项目根 `.mcp.json`。支持 JSONC（注释与尾逗号），项目级 server 首次连接需要人工批准。"
+    },
+    {
+      "id": "qoder",
+      "name": "Qoder",
+      "tier": "p1",
+      "shape": "mcpServers-typed-json",
+      "scope": "both",
+      "transport": "stdio",
+      "paths": {
+        "windows": "%USERPROFILE%\\.qoder\\settings.json",
+        "macos": "~/.qoder/settings.json",
+        "linux": "~/.qoder/settings.json"
+      },
+      "notes": "用户级 `~/.qoder/settings.json`，项目级 `.qoder/settings.json`；`type` 省略时默认 stdio，生成器显式写出来。也可以用 `qoder mcp add forge -- <command> <args>`。"
+    },
+    {
+      "id": "deepseek-harness",
+      "name": "DeepSeek Harness（DSH）",
+      "tier": "p1",
+      "shape": "cordis-yaml",
+      "scope": "both",
+      "transport": "stdio",
+      "paths": {
+        "windows": "%USERPROFILE%\\.dsh\\cordis.patch.yml",
+        "macos": "~/.dsh/cordis.patch.yml",
+        "linux": "~/.dsh/cordis.patch.yml"
+      },
+      "notes": "DSH 没有 mcp.json：一个 server 就是 cordis.patch.yml 里的一条 insert。先安装与 dsh 版本对齐的插件：`dsh plugin --profile web add @deepseek-ai/dsh-mcp-client@<你的 dsh 版本>`，把片段并入 `~/.dsh/cordis.patch.yml`（项目级 `.dsh/cordis.patch.yml`），再重启 `dsh web`。serverName 必须全局唯一。"
+    },
+    {
+      "id": "kimi-code",
+      "name": "Kimi Code",
+      "tier": "p1",
+      "shape": "mcpServers-json",
+      "scope": "both",
+      "transport": "stdio",
+      "paths": {
+        "windows": "%USERPROFILE%\\.kimi-code\\mcp.json",
+        "macos": "~/.kimi-code/mcp.json",
+        "linux": "~/.kimi-code/mcp.json"
+      },
+      "notes": "用户级 `~/.kimi-code/mcp.json`（可用 KIMI_CODE_HOME 改目录），项目级 `.kimi-code/mcp.json`；同名时项目级覆盖用户级。项目级 stdio server 只应在可信仓库里启用。也可以用 `kimi mcp add`。"
+    },
+    {
+      "id": "generic-mcp-servers",
+      "name": "通用 mcpServers 模板（P2）",
+      "tier": "p2",
+      "shape": "mcpServers-json",
+      "scope": "varies",
+      "transport": "stdio",
+      "paths": {},
+      "notes": "适用于 5ire / Witsy / ChatWise / Msty 等长尾 mcpServers 客户端。Open WebUI 通常需要 mcpo 之类的代理才能接 stdio；其他国内 IDE 需逐个验证，不承诺。"
+    }
+  ]
+}

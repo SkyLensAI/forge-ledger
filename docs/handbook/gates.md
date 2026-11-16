@@ -24,27 +24,30 @@ pnpm gate:rehearse    # 演练：故意写错的改动必须被拦住
 | `node scripts/gates/assets.mjs` | 只跑资产出处审核（本仓库里所有带 front-matter 的 markdown） |
 | `node scripts/gates/evals.mjs` | 只跑 eval 判定（阈值 + 两把尺子的人工确认 + 信任边界 / 冲突 / 取用 / 维护四个探针） |
 
-## 产品侧的十六条命令（`forge`）+ 两个宿主
+## 产品侧的十七条命令（`forge`）+ 两个宿主
 
 ```bash
-node apps/cli/src/main.ts compile --import <导出文件>   # 来源 → 事件 IR → 重建索引
-node apps/cli/src/main.ts lint --repo                    # 审核本仓库的资产
-node apps/cli/src/main.ts emit --out <目录>              # 资产 → AGENTS.md / INDEX.md / adr/
-node apps/cli/src/main.ts bootstrap                      # 自举：ADR / 规则 / eval / 两个对外产物（S29）
-node apps/cli/src/main.ts listing --repo --out listing   # 上架包（S31，永远 draft）
-node apps/cli/src/main.ts demo --repo --out demo         # 对外 demo（S32，自己的库）
-node apps/cli/src/main.ts extract --cassette <文件>       # 事件 → 模型抽取 → 守卫 → 候选区
-node apps/cli/src/main.ts inbox                          # 候选区：列出 / --promote 确认成草稿
-node apps/cli/src/main.ts link                           # 归并 + 冲突判定 → 队列（不写 assets/）
-node apps/cli/src/main.ts conflicts                      # 队列：列出 / --resolve 由人判决
-node apps/cli/src/main.ts context "存储后端怎么选"        # 取用：检索 → 预算内的一段注入（S21）
-node apps/cli/src/main.ts health --today 2026-11-06       # 健康检查（S25）：四类腐烂 + 审计
-node apps/cli/src/main.ts health --today 2026-11-06 --due # 只问到期的（S26 的定时任务问这个）
-node apps/cli/src/main.ts confirm <状态 ID> --date <日期> --note <为什么仍然成立>   # 人重新确认（S26）
-node apps/cli/src/main.ts audit [--verify]                # 审计日志：列出 / 核对哈希链（S27）
-node apps/cli/src/main.ts weekly --today 2026-11-06       # 周报（S28）：这周变成了什么样 + 谁动了它
-node apps/cli/src/main.ts serve                           # 本机回环桥：浏览器扩展靠它取用 + 采集
-node apps/mcp/src/main.ts --vault data                    # MCP server（stdio）：给 Claude / Cursor
+pnpm forge compile --import <导出文件>   # 来源 → 事件 IR → 重建索引
+pnpm forge lint --repo                    # 审核本仓库的资产
+pnpm forge emit --out <目录>              # 资产 → AGENTS.md / INDEX.md / adr/
+pnpm forge bootstrap                      # 自举：ADR / 规则 / eval / 两个对外产物（S29）
+pnpm forge listing --repo --out listing   # 上架包（S31，永远 draft）
+pnpm forge demo --repo --out demo         # 对外 demo（S32，自己的库）
+pnpm forge extract --cassette <文件>       # 事件 → 模型抽取 → 守卫 → 候选区
+pnpm forge inbox                          # 候选区：列出 / --promote 确认成草稿
+pnpm forge link                           # 归并 + 冲突判定 → 队列（不写 assets/）
+pnpm forge conflicts                      # 队列：列出 / --resolve 由人判决
+pnpm forge context "存储后端怎么选"        # 取用：检索 → 预算内的一段注入（S21）
+pnpm forge health --today 2026-11-06       # 健康检查（S25）：四类腐烂 + 审计
+pnpm forge health --today 2026-11-06 --due # 只问到期的（S26 的定时任务问这个）
+pnpm forge confirm <状态 ID> --date <日期> --note <为什么仍然成立>   # 人重新确认（S26）
+pnpm forge audit [--verify]                # 审计日志：列出 / 核对哈希链（S27）
+pnpm forge weekly --today 2026-11-06       # 周报（S28）：这周变成了什么样 + 谁动了它
+pnpm forge serve                           # 本机回环桥：浏览器扩展靠它取用 + 采集
+pnpm mcp --vault data                      # MCP server（stdio）：给 Claude / Cursor
+pnpm forge mcp-config --list               # MCP 客户端清单（VS Code / Zed / Codex / Continue …）
+pnpm forge mcp-config --client cursor --vault data   # 生成该客户端的配置片段
+pnpm mcp:smoke --vault data                # 通用 MCP stdio 冒烟（四工具 + stdout 纯净）
 ```
 
 `bootstrap` / `listing` / `demo` 是 Phase 8 加的三条，用法见

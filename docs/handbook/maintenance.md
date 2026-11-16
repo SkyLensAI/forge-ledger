@@ -42,6 +42,9 @@ forge health --today 2026-11-06 --out health.md
 ```bash
 # 每天问一次：有没有到期的 state？
 forge health --today "$(date +%F)" --due
+
+# 也可以把结果落成文件，交给 cron / 计划任务去通知人：
+forge health --today "$(date +%F)" --due --out reports/due.md
 ```
 
 有到期的事就**非零退出**——cron / 计划任务只在需要你动手时来敲门。
@@ -62,7 +65,7 @@ forge confirm state_01M6Q… --date 2026-11-20 --note "又问了一遍，索引�
 
 ```cron
 # crontab -e —— 每个工作日早上 9 点问一次；有到期的事才会吵你
-0 9 * * 1-5  cd ~/forge && forge health --today "$(date +\%F)" --due
+0 9 * * 1-5  cd ~/forge && forge health --today "$(date +\%F)" --due --out reports/due.md
 ```
 
 Windows 计划任务 / launchd / 公司里的调度平台同理：**一条命令，看退出码**。

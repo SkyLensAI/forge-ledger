@@ -145,6 +145,55 @@ test("health：空的库是健康的；到期之后 `--due` 会把它列出来�
   }
 });
 
+test("health --due --out：写出当天的到期清单；没有到期项时覆盖旧文件", () => {
+  const run = temp("forge-cli-health-due-out-");
+  try {
+    const vaultRoot = join(run.root, "vault");
+    const report = join(run.root, "reports", "due.md");
+    const id = seed(vaultRoot);
+    assert.equal(
+      forge(["confirm", id, "--vault", vaultRoot, "--date", "2026-11-01", "--note", "仍然是 sqlite"]).status,
+      0,
+    );
+
+    const late = forge([
+      "health",
+      "--vault",
+      vaultRoot,
+      "--today",
+      "2027-01-15",
+      "--due",
+      "--out",
+      report,
+    ]);
+    assert.equal(late.status, 1, "到期时退出码仍然必须非零");
+    assert.equal(late.stdout, "", "给了 --out 就不该把正文同时打到 stdout");
+    assert.equal(late.stderr.includes("到期报告已写入"), true);
+
+    const body = readFileSync(report, "utf8");
+    assert.equal(body.includes("已 75 天没确认"), true);
+    assert.equal(body.includes("只能问，不能自己答"), true);
+    assert.equal(body.endsWith("\n"), true);
+    assert.equal(body.includes("\r"), false, "报告必须是 LF，才能进 diff / 快照");
+
+    // 同一天没有到期项时也要重写：留着一份昨天的 due.md 比没有文件更容易骗人。
+    const early = forge([
+      "health",
+      "--vault",
+      vaultRoot,
+      "--today",
+      "2026-11-20",
+      "--due",
+      "--out",
+      report,
+    ]);
+    assert.equal(early.status, 0);
+    assert.equal(readFileSync(report, "utf8").includes("没有到期的 state"), true);
+  } finally {
+    run.cleanup();
+  }
+});
+
 test("confirm：--note / --date 必填，改了之后审计里多一条（理由进审计、不进资产）", () => {
   const run = temp("forge-cli-confirm-");
   try {

@@ -1,5 +1,5 @@
 {
-  "about": "由 forge demo 从本仓库自己的 44 条资产生成。每一条都带可解析的出处；这里没有编造的样例数据。",
+  "about": "由 forge demo 从本仓库自己的 45 条资产生成。每一条都带可解析的出处；这里没有编造的样例数据。",
   "assets": [
     {
       "confidence": 0.85,
@@ -782,21 +782,39 @@
       "sensitivity": "internal",
       "sources": [
         "file://listing/SUBMISSION.md#t:成为一个真正可安装的命令",
-        "file://README.md#t:一个真正可安装的",
+        "file://STATUS.md#t:一个真正可安装的",
         "file://docs/gates/bypass-matrix.md#t:闸门 5 · 发布门",
         "file://docs/adr/0041-listing-is-a-draft-not-a-submission.md#t:需要账号、仓库 URL、一个真正可安装的"
       ],
       "status": "accepted",
       "title": "发布门要检查包结构，而不是只打一个占位",
       "type": "decision"
+    },
+    {
+      "confidence": 0.9,
+      "created": "2026-11-16",
+      "id": "dec_06GY8AT36MSF331D4QYBVV3Q0D",
+      "last_confirmed": "2026-11-16",
+      "page": "assets/decision/dec_06GY8AT36MSF331D4QYBVV3Q0D-用-gh-pages-分支发布已经生成好的-demo.html",
+      "path": "docs/adr/0045-pages-serves-the-generated-demo.md",
+      "sensitivity": "internal",
+      "sources": [
+        "file://README.md#t:Byte-for-byte reproducible.",
+        "file://demo/README.md#t:页面没有外部依赖",
+        "file://scripts/gates/lib/policy.mjs#t:.github/workflows/",
+        "file://STATUS.md#t:demo/` 的每一页、每一处出处都来自本仓库自己的"
+      ],
+      "status": "accepted",
+      "title": "用 gh-pages 分支发布已经生成好的 demo",
+      "type": "decision"
     }
   ],
   "counts": {
-    "decision": 44,
+    "decision": 45,
     "event": 0,
     "rule": 0,
     "state": 0,
-    "total": 44
+    "total": 45
   },
   "kind": "forge-demo",
   "schema_version": 1,
